@@ -1,0 +1,31 @@
+.button {
+  border: none;
+  border-radius: 999px;
+  padding: 10px 18px;
+  font-weight: bold;
+  transition: 0.15s ease;
+  cursor: pointer;
+}
+
+/* hover */
+.button:hover {
+  transform: translateY(-1px);
+  opacity: 0.95;
+}
+
+/* 押した時 */
+.button:active {
+  transform: translateY(1px);
+}
+
+/* primary */
+.button-primary {
+  background: #e60012;
+  color: white;
+}
+
+/* secondary */
+.button-secondary {
+  background: #444;
+  color: white;
+}

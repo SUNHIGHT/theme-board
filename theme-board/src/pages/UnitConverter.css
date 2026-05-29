@@ -1,0 +1,15 @@
+.unit-radio-group {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 16px;
+  max-width: 360px;
+  margin: 8px auto 24px;
+}
+
+.unit-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}

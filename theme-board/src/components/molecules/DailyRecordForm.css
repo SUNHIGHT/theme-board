@@ -1,0 +1,40 @@
+.daily-record-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.daily-record-form__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.daily-record-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.daily-record-form__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #444;
+}
+
+.daily-record-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+@media (max-width: 640px) {
+  .daily-record-form__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-record-form__actions {
+    flex-direction: column-reverse;
+  }
+}

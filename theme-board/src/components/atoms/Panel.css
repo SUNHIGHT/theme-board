@@ -1,0 +1,10 @@
+.panel {
+  background: #ffffff;
+  border: 2px solid #e5e5e5;
+  border-radius: 20px;
+
+  padding: 20px;
+  margin-bottom: 24px;
+
+  box-shadow: 0 4px 0 #d0d0d0;
+}
