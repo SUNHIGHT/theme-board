@@ -61,6 +61,16 @@
       titles: [ { id: "danganronpa", file: "danganronpa.html", name: "TRIGGER HAPPY HAVOC", sub: "希望ヶ峰学園" } ] },
     { id: "armoredcore", name: "ARMORED CORE", sub: "アーマード・コア",        c1: "#ff6a00", c2: "#0b0d10",
       titles: [ { id: "ac6", file: "ac6.html", name: "ARMORED CORE VI", sub: "ルビコン3" } ] },
+    { id: "papers",  name: "PAPERS, PLEASE",    sub: "ペーパーズ・プリーズ",     c1: "#8b1e1e", c2: "#d9d2a8",
+      titles: [ { id: "papers", file: "papers.html", name: "PAPERS, PLEASE", sub: "グレスティン国境" } ] },
+    { id: "aceattorney", name: "ACE ATTORNEY", sub: "逆転裁判",                 c1: "#ff9a00", c2: "#0b1d4d",
+      titles: [ { id: "ace", file: "ace_attorney.html", name: "ACE ATTORNEY", sub: "逆転裁判" } ] },
+    { id: "metalslug", name: "METAL SLUG",     sub: "メタルスラッグ",           c1: "#ffd400", c2: "#434c22",
+      titles: [ { id: "metalslug", file: "metalslug.html", name: "METAL SLUG", sub: "出撃!" } ] },
+    { id: "dq",     name: "DRAGON QUEST",      sub: "ドラゴンクエスト",         c1: "#7ec8ff", c2: "#04042c",
+      titles: [ { id: "dq11", file: "dq11.html", name: "DRAGON QUEST XI", sub: "過ぎ去りし時を求めて" } ] },
+    { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
+      titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
@@ -74,7 +84,8 @@
     darksouls: ["アクション", "RPG"], eldenring: ["アクション", "RPG"], resident: ["ホラー", "アクション"],
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
-    splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"]
+    splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
