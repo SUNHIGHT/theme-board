@@ -114,7 +114,27 @@
   #stamp .big { animation:zoomIn .6s .15s cubic-bezier(.2,.9,.3,1) backwards; }
   @keyframes fade { from { opacity:0; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+
+  /* ===== typography ===== */
+  body { font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:500; }
+  .date, .stat i, .ttl, .stat b, .save, #stamp .big, #stamp .sub, .dark, .entry small, .cal, .cal .dow {
+    font-family:"Barlow Condensed","Zen Kaku Gothic New",sans-serif; font-style:italic; }
+  .date { font-weight:800; font-size:clamp(84px,19vw,160px); letter-spacing:-.02em; line-height:.85;
+    -webkit-text-stroke:1px rgba(94,200,255,.6); text-shadow:0 0 24px rgba(94,200,255,.9), 6px 6px 0 rgba(0,40,110,.8); }
+  .date small { font-size:.3em; font-weight:600; letter-spacing:.12em; text-shadow:none; -webkit-text-stroke:0; }
+  .ttl { font-weight:800; font-size:16px; letter-spacing:.3em; }
+  .stat i { font-weight:800; font-size:52px; line-height:1; letter-spacing:.02em; text-shadow:0 0 12px rgba(94,200,255,.7); }
+  .stat b { font-weight:600; font-size:14px; }
+  .moods button { font-weight:900; letter-spacing:.12em; }
+  .save { font-weight:800; font-size:28px; letter-spacing:.3em; }
+  #stamp .big { font-weight:800; font-size:clamp(56px,16vw,130px); letter-spacing:.08em; }
+  .cal div { font-size:18px; font-weight:600; }
+  .entry small { font-weight:600; font-size:14px; }
+  .entry p, textarea { font-weight:500; }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,600;1,800&family=Zen+Kaku+Gothic+New:wght@500;900&display=swap" rel="stylesheet">
 </head>
 <body>
 <main>

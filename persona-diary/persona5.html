@@ -113,12 +113,34 @@
   #stamp .box { animation:pop .5s .2s cubic-bezier(.2,1.8,.4,1) backwards; }
   #stamp .big { display:inline-block; animation:shake .4s .55s; }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+
+  /* ===== typography ===== */
+  body { font-family:"Dela Gothic One","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:400; }
+  h1, h2, .tag, .stat i, .save, #stamp .big, .stat b, label.h, .entry small, .cal { font-family:Anton,"Dela Gothic One",Impact,sans-serif; font-weight:400; }
+  textarea, input[type=text], .entry p, .moods button, .hint { font-family:"Dela Gothic One","Hiragino Kaku Gothic ProN",sans-serif; font-weight:400; }
+  h1 { font-size:clamp(46px,12vw,104px); letter-spacing:.02em; text-shadow:none; line-height:1.05; }
+  h1 .c { display:inline-block; padding:0 .04em; color:var(--white); background:var(--dark); margin-right:.03em;
+    transform:rotate(calc((var(--n) - 2.5) * 2.4deg)) translateY(calc((var(--n) - 2.5) * -.04em)) skewX(-8deg);
+    box-shadow:.05em .05em 0 var(--white); }
+  h1 .c:nth-child(2n) { background:var(--white); color:var(--dark); box-shadow:.05em .05em 0 var(--dark); }
+  h1 .c:nth-child(3n) { font-size:1.18em; }
+  h2 { font-size:38px; letter-spacing:.06em; }
+  .stat i { font-size:52px; letter-spacing:.02em; }
+  .stat b, label.h { letter-spacing:.2em; }
+  .tag { letter-spacing:.2em; }
+  .save { font-size:34px; letter-spacing:.08em; }
+  #stamp .big { font-size:clamp(54px,15vw,120px); letter-spacing:.04em; -webkit-text-stroke:2px var(--dark); }
+  .cal { gap:5px; } .cal div { font-size:17px; }
+  .entry p { font-size:15px; line-height:1.8; }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Dela+Gothic+One&display=swap" rel="stylesheet">
 </head>
 <body>
 <main>
   <span class="tag">DAILY LOG ─ 日記</span>
-  <h1>TAKE YOUR <span>DIARY</span></h1>
+  <h1 aria-label="TAKE YOUR DIARY"><span class="c" style="--n:0">T</span><span class="c" style="--n:1">A</span><span class="c" style="--n:2">K</span><span class="c" style="--n:3">E</span> <span class="c" style="--n:5">Y</span><span class="c" style="--n:0">O</span><span class="c" style="--n:1">U</span><span class="c" style="--n:2">R</span>  <span class="c" style="--n:4">D</span><span class="c" style="--n:5">I</span><span class="c" style="--n:0">A</span><span class="c" style="--n:1">R</span><span class="c" style="--n:2">Y</span></h1>
 
   <section class="panel">
     <div class="stats">
