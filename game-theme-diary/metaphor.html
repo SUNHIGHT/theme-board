@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archetype Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display+SC:wght@700;900&family=Shippori+Mincho+B1:wght@600;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Metaphor-style menus: painterly teal/magenta/red splashes, cascading serif command words, slanted party list with red brush, dark status sheet with ink splatter */
+  :root { --teal:#2aa49c; --teald:#0f3b3d; --mag:#b43dcc; --red:#c8202a; --ink:#0b0b0d; --paper:#f3f0e9; --w:#fff; --gold:#d8b24a; --hp:#7fe0a8; --mp:#7fb8ff;
+    --fs:'Playfair Display SC',Georgia,serif; --fm:'Shippori Mincho B1',serif; --fb:'Zen Kaku Gothic New',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:var(--w); background:var(--ink); overflow:hidden; }
+  button { font:inherit; color:inherit; }
+  /* paper grain over everything */
+  body::after { content:""; position:fixed; inset:0; z-index:85; pointer-events:none; opacity:.22; mix-blend-mode:overlay;
+    background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+  .view { position:fixed; inset:0; display:none; overflow:hidden; }
+  body[data-view="menu"] #vMenu, body[data-view="journal"] #vJournal, body[data-view="status"] #vStatus, body[data-view="calendar"] #vCal { display:block; animation:viewIn .45s both; }
+
+  /* painterly backdrop: brush splashes are clip-path polygons generated in JS */
+  .paint { position:absolute; inset:0; overflow:hidden; background:linear-gradient(120deg,#16302f,#0d1d1f 60%,#1a0e12); }
+  .paint i { position:absolute; display:block; opacity:var(--o,1); animation:breathe var(--t,14s) ease-in-out infinite alternate; }
+  .paint::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at 70% 40%,transparent 30%,rgba(0,0,0,.55)); }
+
+  /* ---------- MENU ---------- */
+  .emblem { position:absolute; right:-6vmin; top:6vmin; width:min(46vmin,360px); aspect-ratio:1; border-radius:50%; z-index:2; animation:spinIn .8s both;
+    background:conic-gradient(from 200deg,var(--red) 0 38%,var(--w) 38% 52%,var(--red) 52% 60%,#7a0f16 60% 72%,var(--w) 72% 76%,var(--red) 76%);
+    -webkit-mask:radial-gradient(circle,transparent 30%,#000 31%); mask:radial-gradient(circle,transparent 30%,#000 31%); }
+  .emblem2 { position:absolute; right:calc(min(46vmin,360px) * .2 - 6vmin); top:calc(min(46vmin,360px) * .22 + 6vmin); z-index:3; font:900 clamp(60px,14vmin,130px)/1 var(--fs); color:var(--w); -webkit-text-stroke:3px var(--ink); paint-order:stroke fill; rotate:12deg; animation:spinIn .8s .1s both; }
+  .emblem3 { position:absolute; right:clamp(10px,3vw,30px); top:calc(min(34vmin,270px) + 14vmin); z-index:3; writing-mode:vertical-rl; font:700 13px var(--fs); letter-spacing:.3em; color:var(--w); background:var(--red); padding:8px 3px; }
+  .cascade { position:absolute; inset:0; z-index:4; list-style:none; padding:0; }
+  .cmd { all:unset; cursor:pointer; position:absolute; left:calc(var(--x) * 1%); top:calc(var(--y) * 1%); rotate:calc(var(--r) * 1deg); transform-origin:left center; white-space:nowrap;
+    font:900 clamp(34px,8.2vmin,96px)/1 var(--fs); letter-spacing:-.01em; color:var(--w); -webkit-text-stroke:clamp(5px,1vmin,9px) var(--ink); paint-order:stroke fill;
+    text-shadow:4px 5px 0 rgba(0,0,0,.45); animation:cmdIn .5s calc(var(--i) * 70ms + .15s) both; transition:color .12s; }
+  .cmd::first-letter { font-size:1.35em; }
+  .cmd .bg { position:absolute; z-index:-1; left:-8%; right:-12%; top:-30%; bottom:-35%; background:var(--mag); clip-path:var(--brush); transform:scaleX(0); transform-origin:left; transition:transform .22s cubic-bezier(.2,.9,.3,1); }
+  .cmd .jp { position:absolute; right:4%; bottom:-24px; font:800 14px/1 var(--fm); -webkit-text-stroke:0; text-shadow:none; background:var(--w); color:var(--ink); padding:3px 10px; opacity:0; transform:translateY(-6px); transition:.18s; }
+  .cmd.cur .bg { transform:scaleX(1); } .cmd.cur .jp { opacity:1; transform:none; } .cmd.cur { color:var(--w); }
+  .cmd:not(.cur):hover { color:#d9f3f0; } .cmd:focus-visible { outline:3px solid var(--gold); outline-offset:6px; }
+  .purse { position:absolute; right:0; bottom:52px; z-index:4; width:min(380px,70vw); display:flex; flex-direction:column; gap:6px; animation:slideL .5s .3s both; }
+  .purse div { position:relative; display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:4px 26px 4px 34px; background:rgba(245,242,235,.94); color:var(--ink); clip-path:polygon(18px 0,100% 0,100% 100%,0 100%); }
+  .purse small { font:700 11px var(--fs); letter-spacing:.2em; position:absolute; left:40px; top:2px; color:#555; }
+  .purse span { font:800 13px var(--fm); padding-top:12px; } .purse b { font:900 30px/1 var(--fs); letter-spacing:.04em; }
+
+  /* hint bar (all views) */
+  .hints { position:fixed; right:14px; bottom:12px; z-index:30; display:flex; gap:16px; font:700 12px var(--fb); color:var(--w); text-shadow:0 1px 3px #000; }
+  .hints button { all:unset; cursor:pointer; display:flex; align-items:center; gap:5px; } .hints button:hover, .hints button:focus-visible { color:var(--gold); outline:0; }
+  .hints i { font-style:normal; width:18px; height:18px; border-radius:50%; border:2px solid currentColor; display:grid; place-items:center; font-size:10px; }
+
+  /* ---------- JOURNAL (party list) ---------- */
+  .bigttl { position:absolute; left:-1vw; top:-2vmin; z-index:3; font:900 clamp(70px,17vmin,190px)/.9 var(--fs); letter-spacing:.02em; color:var(--w); -webkit-text-stroke:4px var(--ink); paint-order:stroke fill; animation:ttlIn .55s both; }
+  .bigttl::after { content:attr(data-sub); position:absolute; left:2vw; top:100%; font:800 14px var(--fm); letter-spacing:.1em; -webkit-text-stroke:0; color:#d9f3f0; margin-top:6px; }
+  .plist { position:absolute; z-index:4; left:2vw; top:calc(clamp(70px,17vmin,190px) * .9 + 40px); width:min(560px,58vw); display:flex; flex-direction:column; gap:10px; list-style:none; padding:0; }
+  .pr { all:unset; cursor:pointer; position:relative; display:grid; grid-template-columns:30px minmax(0,1fr) auto; align-items:center; gap:10px; width:100%; box-sizing:border-box; padding:6px 20px 6px 8px; animation:rowIn .4s calc(var(--i) * 60ms + .2s) both; }
+  .pr::before { content:""; position:absolute; inset:0 0 0 30px; border:2px solid rgba(255,255,255,.85); background:rgba(10,20,22,.55); clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%); transform:skewX(-10deg); }
+  .pr::after { content:""; position:absolute; z-index:-1; left:-4vw; right:-12vw; top:-8px; bottom:-8px; background:var(--red); clip-path:var(--brush); transform:scaleX(0); transform-origin:left; transition:transform .2s cubic-bezier(.2,.9,.3,1); }
+  .pr.cur::after { transform:scaleX(1); } .pr.cur::before { background:rgba(10,10,12,.82); border-color:var(--w); }
+  .pr .side { position:relative; writing-mode:vertical-rl; transform:rotate(180deg); font:700 10px var(--fs); letter-spacing:.2em; color:#cfe; opacity:.85; height:48px; text-align:center; }
+  .pr .mid { position:relative; min-width:0; padding-left:14px; }
+  .pr .nm { font:800 clamp(15px,1.8vmin,19px) var(--fm); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:block; }
+  .pr .bars { display:flex; gap:10px; margin-top:4px; font:700 11px var(--fs); }
+  .pr .bars span { flex:1; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:6px; }
+  .pr .bars em { display:block; height:5px; background:rgba(255,255,255,.18); position:relative; } .pr .bars em::after { content:""; position:absolute; inset:0 auto 0 0; width:var(--v); background:var(--c); }
+  .pr .lv { position:relative; font:900 clamp(28px,4vmin,40px)/1 var(--fs); white-space:nowrap; } .pr .lv small { font-size:.36em; margin-right:4px; letter-spacing:.1em; }
+  .pr.empty .nm, .pr.empty .lv { opacity:.45; }
+  .pr:focus-visible { outline:3px solid var(--gold); }
+  .scroll { position:absolute; z-index:3; right:4vw; top:12vmin; bottom:13vmin; width:min(360px,30vw); background:var(--paper); color:var(--ink); padding:28px 26px; transform:rotate(3deg); box-shadow:12px 12px 0 rgba(0,0,0,.45), -6px 0 0 var(--red); animation:scrollIn .5s .2s both; overflow:hidden; }
+  .scroll::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 80% 90%,rgba(42,164,156,.25),transparent 40%),radial-gradient(circle at 10% 5%,rgba(200,32,42,.18),transparent 35%); pointer-events:none; }
+  .scroll .vt { position:relative; height:100%; writing-mode:vertical-rl; font:600 clamp(15px,2vmin,19px)/2 var(--fm); overflow:hidden; white-space:pre-wrap; word-break:break-all; }
+  .scroll .vt b { font-weight:800; font-size:1.3em; margin-left:.6em; display:inline-block; border-right:3px solid var(--red); padding-right:.2em; }
+  .front { position:absolute; z-index:4; right:3vw; bottom:44px; display:flex; align-items:baseline; gap:2vw; font:900 clamp(16px,2.4vmin,24px) var(--fs); letter-spacing:.06em; }
+  .front button { all:unset; cursor:pointer; opacity:.55; border-bottom:2px solid transparent; } .front button.on { opacity:1; border-color:var(--w); } .front button:hover { opacity:1; }
+  .front b { font-size:2.2em; letter-spacing:.02em; -webkit-text-stroke:2px var(--ink); paint-order:stroke fill; }
+
+  /* ---------- STATUS ---------- */
+  #vStatus .paint { background:radial-gradient(ellipse at 50% 50%,#2a1214,#0b0b0d 70%); }
+  .sheet { position:absolute; z-index:4; left:3vw; top:11vmin; width:min(420px,42vw); display:flex; flex-direction:column; gap:10px; animation:slideR .45s .1s both; }
+  .nameplate { display:flex; align-items:center; gap:12px; background:var(--paper); color:var(--ink); padding:4px 14px; clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); font:800 16px var(--fm); }
+  .nameplate small { font:700 11px var(--fs); letter-spacing:.2em; color:#666; }
+  .rankrow { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:6px; border-bottom:2px solid rgba(255,255,255,.7); }
+  .arch { display:flex; align-items:center; gap:10px; font:800 20px var(--fm); } .arch svg { width:40px; height:40px; }
+  .rank { text-align:right; font:700 12px var(--fs); letter-spacing:.15em; } .rank b { font:900 40px/1 var(--fs); } .rank b small { font-size:.45em; } .rank em { display:block; font-style:normal; border-top:1px solid #fff; margin-top:2px; padding-top:2px; } .rank em b { font-size:17px; }
+  .hpmp { display:flex; gap:24px; font:700 11px var(--fs); letter-spacing:.15em; } .hpmp b { display:block; font:900 38px/1 var(--fs); } .hpmp .h b { color:var(--hp); } .hpmp .m b { color:var(--mp); }
+  .aff { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+  .aff button { all:unset; cursor:pointer; text-align:center; } .aff .h { display:block; background:var(--paper); color:var(--ink); font:800 14px/1.6 var(--fm); } .aff .c { display:block; font:800 14px/1.9 var(--fm); border-bottom:1px solid rgba(255,255,255,.35); }
+  .aff button.today .h { background:var(--gold); } .aff button:hover .h { background:#fff; }
+  .stats { display:flex; flex-direction:column; gap:6px; margin-top:4px; }
+  .sr { display:grid; grid-template-columns:2.2em 1fr 4.2em; align-items:center; gap:10px; font:800 15px var(--fm); }
+  .sr .tr { height:6px; background:rgba(255,255,255,.15); transform:skewX(-20deg); } .sr .tr i { display:block; height:100%; background:linear-gradient(90deg,#fff,#ffd2d6); width:var(--v); transition:width .8s cubic-bezier(.2,.9,.3,1); }
+  .sr b { font:900 24px/1 var(--fs); text-align:right; } .sr b small { font-size:.5em; color:#ff9aa3; margin-left:2px; }
+  .sigil { position:absolute; z-index:3; left:50%; top:50%; width:min(52vmin,440px); aspect-ratio:1; translate:-46% -50%; animation:fadeIn .8s .2s both; filter:drop-shadow(0 0 22px rgba(200,32,42,.7)); }
+  .sigil svg { width:100%; height:100%; animation:spin 60s linear infinite; }
+  .skills { position:absolute; z-index:4; right:2vw; top:8vmin; width:min(400px,34vw); animation:slideL .45s .15s both; }
+  .tabs { display:flex; gap:4px; margin-bottom:10px; } .tabs span { flex:1; text-align:center; font:800 12px var(--fm); padding:4px 0; border:1px solid rgba(255,255,255,.5); } .tabs span.on { background:var(--paper); color:var(--ink); }
+  .sk { display:grid; grid-template-columns:26px 1fr auto; align-items:center; gap:10px; padding:5px 10px; border-bottom:1px solid rgba(255,255,255,.25); font:800 15px var(--fm); }
+  .sk i { width:22px; height:22px; border-radius:50%; border:2px solid var(--c,#fff); display:grid; place-items:center; font-style:normal; font-size:11px; color:var(--c,#fff); }
+  .sk em { font:700 11px var(--fs); font-style:normal; letter-spacing:.1em; } .sk em b { font:900 20px var(--fs); }
+  .sk.dim { opacity:.5; }
+  .nexthd { margin:14px 0 4px; font:900 14px var(--fs); letter-spacing:.2em; background:linear-gradient(90deg,var(--w),transparent); color:var(--ink); padding:2px 12px; clip-path:polygon(10px 0,100% 0,100% 100%,0 100%); }
+  .learn { all:unset; position:absolute; z-index:5; left:54%; bottom:56px; cursor:pointer; display:flex; align-items:center; gap:12px; padding:8px 40px 8px 10px; font:800 17px var(--fm); color:var(--ink); background:linear-gradient(90deg,var(--gold),#e8cd7a 70%,transparent); clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%); animation:slideU .5s .3s both; }
+  .learn::before { content:"A"; display:grid; place-items:center; width:34px; height:34px; border-radius:50%; background:var(--ink); color:var(--w); font:900 16px var(--fs); box-shadow:0 0 0 3px var(--w); }
+  .learn:hover, .learn:focus-visible { filter:brightness(1.1); outline:0; }
+
+  /* ---------- CALENDAR ---------- */
+  .cal { position:absolute; z-index:4; left:50%; top:calc(clamp(70px,17vmin,190px) * .9 + 30px); translate:-50% 0; width:min(760px,92vw); animation:slideU .45s .15s both; }
+  .calhd { display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:8px; }
+  .calhd b { font:900 clamp(24px,4vmin,40px) var(--fs); letter-spacing:.06em; } .calhd button { all:unset; cursor:pointer; font:900 18px var(--fs); padding:0 10px; border:2px solid var(--w); } .calhd button:hover { background:var(--w); color:var(--ink); }
+  .grid { display:grid; grid-template-columns:repeat(7,1fr); gap:clamp(3px,.6vw,8px); background:rgba(243,240,233,.95); color:var(--ink); padding:clamp(8px,1.4vw,16px); transform:rotate(-1.2deg); box-shadow:10px 10px 0 rgba(0,0,0,.4); }
+  .dw { text-align:center; font:700 11px var(--fs); letter-spacing:.15em; border-bottom:2px solid var(--ink); padding-bottom:2px; }
+  .dy { all:unset; cursor:pointer; position:relative; aspect-ratio:1.25; display:grid; place-items:center; font:900 clamp(16px,2.6vmin,26px) var(--fs); isolation:isolate; }
+  .dy::before { content:""; position:absolute; inset:8%; z-index:-1; background:var(--c,transparent); clip-path:var(--brush); opacity:.9; }
+  .dy.on { color:var(--w); -webkit-text-stroke:2px var(--ink); paint-order:stroke fill; }
+  .dy small { position:absolute; right:6%; bottom:4%; font:800 10px var(--fm); -webkit-text-stroke:0; color:var(--ink); }
+  .dy.out { opacity:.25; } .dy.fut { cursor:default; opacity:.35; } .dy.today { outline:2px solid var(--ink); outline-offset:-4px; }
+  .dy.sel { box-shadow:inset 0 0 0 3px var(--mag); } .dy:not(.fut):hover { background:rgba(180,61,204,.15); }
+
+  /* ---------- editor ---------- */
+  #ed { position:fixed; inset:0; z-index:50; display:none; place-items:center; background:rgba(5,8,10,.72); padding:12px; }
+  #ed.show { display:grid; }
+  .win { position:relative; width:min(640px,100%); max-height:94vh; overflow:auto; background:var(--paper); color:var(--ink); transform:rotate(-1deg); box-shadow:12px 12px 0 var(--red), -8px -8px 0 var(--teal); animation:pop .28s both; }
+  .win h3 { display:flex; align-items:baseline; justify-content:space-between; gap:12px; background:var(--ink); color:var(--w); padding:8px 22px 8px 18px; clip-path:polygon(0 0,100% 0,calc(100% - 20px) 100%,0 100%); margin-right:30px; }
+  .win h3 b { font:900 28px/1 var(--fs); letter-spacing:.04em; } .win h3 span { font:800 16px var(--fm); }
+  .win .in { padding:12px 20px 18px; display:flex; flex-direction:column; gap:10px; }
+  .lb { font:700 12px var(--fs); letter-spacing:.2em; color:#555; border-bottom:1px solid #999; }
+  .moods { display:flex; flex-wrap:wrap; gap:6px; list-style:none; padding:0; }
+  .moods button { all:unset; cursor:pointer; position:relative; padding:4px 14px; font:800 15px var(--fm); isolation:isolate; }
+  .moods button::before { content:""; position:absolute; inset:-2px -6px; z-index:-1; background:var(--red); clip-path:var(--brush); transform:scaleX(0); transform-origin:left; transition:transform .15s; }
+  .moods button small { font:700 10px var(--fs); letter-spacing:.1em; margin-left:6px; color:#777; }
+  .moods button:hover::before { transform:scaleX(.35); } .moods button.on { color:var(--w); } .moods button.on::before { transform:scaleX(1); } .moods button.on small { color:#ffd6da; }
+  textarea { min-height:160px; resize:vertical; width:100%; background:transparent; color:var(--ink); border:2px solid var(--ink); font:600 17px/1.9 var(--fm); padding:6px 12px; outline:0; background-image:repeating-linear-gradient(transparent 0 31px,rgba(0,0,0,.14) 31px 32px); background-attachment:local; }
+  textarea:focus { box-shadow:4px 4px 0 var(--teal); }
+  .acts { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .save { all:unset; cursor:pointer; display:flex; align-items:center; gap:10px; padding:6px 34px 6px 6px; font:800 16px var(--fm); background:linear-gradient(90deg,var(--gold),#e8cd7a); clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%); }
+  .save::before { content:"A"; display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:var(--ink); color:var(--w); font:900 13px var(--fs); }
+  .cl { all:unset; cursor:pointer; font:800 14px var(--fm); border-bottom:2px solid var(--ink); }
+  .save:hover, .save:focus-visible { filter:brightness(1.08); outline:2px solid var(--ink); }
+  .hint { font:700 12px var(--fb); color:#666; }
+  button:focus-visible, textarea:focus-visible { outline:3px solid var(--gold); outline-offset:2px; }
+
+  /* ---------- transition wipe + save overlay ---------- */
+  #wipe { position:fixed; inset:-10% -20%; z-index:60; pointer-events:none; background:var(--red); clip-path:var(--brush); transform:translateX(-120%) rotate(-8deg); }
+  #wipe.go { animation:wipe .5s cubic-bezier(.7,0,.3,1); }
+  #ov { position:fixed; inset:0; z-index:70; display:grid; place-content:center; justify-items:center; text-align:center; visibility:hidden; pointer-events:none; overflow:hidden; }
+  #ov.show { visibility:visible; pointer-events:auto; cursor:pointer; animation:ovOut .45s 2.5s forwards; }
+  #ov .sp { position:absolute; left:50%; top:50%; width:var(--s); height:calc(var(--s) * .5); translate:-50% -50%; background:var(--c); clip-path:var(--brush); rotate:var(--r); transform:scale(0); }
+  #ov.show .sp { animation:splash .45s calc(var(--d) * 1ms) cubic-bezier(.2,.9,.3,1.1) forwards; }
+  #ov b { position:relative; font:900 clamp(54px,13vw,150px)/1 var(--fs); color:var(--w); -webkit-text-stroke:clamp(6px,1.2vw,12px) var(--ink); paint-order:stroke fill; rotate:-8deg; opacity:0; }
+  #ov.show b { animation:stamp .4s .3s cubic-bezier(.3,1.5,.5,1) forwards; }
+  #ov b::first-letter { font-size:1.3em; }
+  #ov span { position:relative; font:800 clamp(18px,3vw,28px) var(--fm); background:var(--w); color:var(--ink); padding:2px 18px; rotate:-8deg; margin-top:6px; opacity:0; } #ov.show span { animation:fadeIn .3s .6s forwards; }
+  #ov em { position:relative; font:900 18px var(--fs); font-style:normal; letter-spacing:.12em; margin-top:16px; text-shadow:0 2px 4px #000; opacity:0; } #ov.show em { animation:fadeIn .3s .8s forwards; }
+
+  @keyframes viewIn { from { opacity:0; } }
+  @keyframes breathe { to { transform:translate(-1.5%,1%) scale(1.04); } }
+  @keyframes spinIn { from { opacity:0; transform:rotate(-60deg) scale(.7); } }
+  @keyframes cmdIn { from { opacity:0; transform:translateX(-60px); } }
+  @keyframes slideL { from { opacity:0; transform:translateX(40px); } }
+  @keyframes slideR { from { opacity:0; transform:translateX(-40px); } }
+  @keyframes slideU { from { opacity:0; transform:translateY(24px); } }
+  @keyframes ttlIn { from { opacity:0; transform:translateY(-30px) scale(1.1); } }
+  @keyframes rowIn { from { opacity:0; transform:translateX(-30px); } }
+  @keyframes scrollIn { from { opacity:0; transform:rotate(10deg) translateY(30px); } }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes pop { from { opacity:0; transform:rotate(-4deg) scale(.92); } }
+  @keyframes wipe { 0% { transform:translateX(-120%) rotate(-8deg); } 100% { transform:translateX(120%) rotate(-8deg); } }
+  @keyframes splash { to { transform:scale(1); } }
+  @keyframes stamp { from { opacity:0; transform:scale(1.8); } to { opacity:1; transform:none; } }
+  @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  body.ready .cmd, body.ready .pr { animation:none; }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; } }
+
+  @media (max-width:860px) {
+    .cmd { top:calc(var(--y) * .84%); font-size:clamp(30px,10vw,60px); -webkit-text-stroke:5px var(--ink); }
+    .cmd .jp { font-size:12px; bottom:-20px; }
+    .purse { width:min(300px,78vw); bottom:46px; } .purse b { font-size:24px; }
+    #vJournal, #vStatus, #vCal { overflow-y:auto; overflow-x:hidden; }
+    .bigttl { position:relative; display:block; padding:6px 0 0 8px; margin-right:120px; font-size:clamp(40px,11vw,80px); }
+    .plist { position:relative; left:0; top:0; width:auto; margin:34px 12px 0 8px; }
+    .pr::after { right:-12px; left:-12px; }
+    .scroll { position:relative; right:auto; top:auto; bottom:auto; width:auto; height:300px; margin:24px 18px 0; }
+    .front { position:relative; right:auto; bottom:auto; justify-content:center; margin:22px 0 80px; flex-wrap:wrap; }
+    .sheet { position:relative; left:0; top:0; width:auto; margin:62px 12px 0; }
+    .sigil { position:relative; left:auto; top:auto; translate:none; width:220px; margin:10px auto 0; }
+    .skills { position:relative; right:auto; top:auto; width:auto; margin:0 12px; }
+    .learn { position:relative; left:auto; bottom:auto; margin:18px 12px 80px; }
+    .cal { position:relative; left:auto; top:auto; translate:none; margin:30px auto 80px; }
+    .hints { left:0; right:0; bottom:0; justify-content:center; padding:8px; background:rgba(0,0,0,.75); }
+  }
+</style>
+</head>
+<body data-view="menu">
+<!-- MENU -->
+<section class="view" id="vMenu" aria-label="メニュー">
+  <div class="paint" data-paint="menu"></div>
+  <div class="emblem"></div><div class="emblem2" id="emD">D</div><div class="emblem3">DIARY</div>
+  <ul class="cascade" id="cascade"></ul>
+  <div class="purse"><div><small>EXP</small><span>経験</span><b id="mXp">0</b></div><div><small>STREAK</small><span>連続</span><b id="mSt">0</b></div></div>
+</section>
+
+<!-- JOURNAL -->
+<section class="view" id="vJournal" aria-label="日誌">
+  <div class="paint" data-paint="journal"></div>
+  <div class="bigttl" data-sub="どの日の記録を開く？">JOURNAL</div>
+  <ul class="plist" id="plist"></ul>
+  <div class="scroll"><div class="vt" id="vt"></div></div>
+  <div class="front" id="front"></div>
+</section>
+
+<!-- STATUS -->
+<section class="view" id="vStatus" aria-label="能力">
+  <div class="paint" data-paint="status"></div>
+  <div class="sheet">
+    <div class="nameplate"><small>NAME</small>旅の記録者</div>
+    <div class="rankrow">
+      <div class="arch"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="#fff" stroke-width="2.5"/><path d="M20 7v26M11 14l18 12M29 14L11 26" stroke="#fff" stroke-width="2.5"/></svg><span id="aName">見習い書記</span></div>
+      <div class="rank">RANK <b id="sRank">01<small>/20</small></b><em>NEXT <b id="sNext">300</b> EXP</em></div>
+    </div>
+    <div class="hpmp"><div class="h">連続日数<b id="sSt">0</b></div><div class="m">総記録<b id="sAll">0</b></div></div>
+    <div class="aff" id="aff"></div>
+    <div class="stats" id="stats"></div>
+  </div>
+  <div class="sigil" aria-hidden="true"><svg viewBox="0 0 200 200"><g fill="none" stroke="#f3f0e9" stroke-width="1.6"><circle cx="100" cy="100" r="92" stroke-dasharray="2 6"/><circle cx="100" cy="100" r="80"/><circle cx="100" cy="100" r="52" stroke="#c8202a" stroke-width="3"/><path d="M100 12L176 144H24z"/><path d="M100 188L24 56h152z" stroke="#2aa49c"/><path d="M100 48v104M48 100h104" stroke-width="1"/></g><circle cx="100" cy="100" r="14" fill="#c8202a"/><circle cx="100" cy="100" r="6" fill="#f3f0e9"/></svg></div>
+  <div class="skills">
+    <div class="tabs"><span class="on">調子</span><span>段位</span><span>記録</span></div>
+    <div id="moodList"></div>
+    <div class="nexthd">NEXT RANK</div>
+    <div id="nextList"></div>
+  </div>
+  <button class="learn" id="learn">今日を記す</button>
+</section>
+
+<!-- CALENDAR -->
+<section class="view" id="vCal" aria-label="暦">
+  <div class="paint" data-paint="cal"></div>
+  <div class="bigttl" data-sub="暦をめくり、日を選ぶ">CALENDAR</div>
+  <div class="cal"><div class="calhd"><button id="mPrev" aria-label="前の月">‹</button><b id="calM"></b><button id="mNext" aria-label="次の月">›</button></div><div class="grid" id="grid"></div></div>
+</section>
+
+<div class="hints" id="hints"></div>
+
+<div id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="win">
+  <h3><b>JOURNAL</b><span id="eT"></span></h3>
+  <div class="in">
+    <div class="lb">CONDITION ─ 調子</div><ul class="moods" id="moods"></ul>
+    <div class="lb">RECORD ─ 記録</div><textarea id="body" placeholder="今日はどんな一日だった？"></textarea>
+    <div class="acts"><button class="save" id="save">記す</button><button class="cl" id="cl">戻る</button><span class="hint">Ctrl+Enterで記す ／ Escで戻る</span></div>
+  </div>
+</div></div>
+<div id="wipe"></div>
+<div id="ov"><b id="ovT"></b><span id="ovJ"></span><em id="ovS"></em></div>
+
+<script src="theme-switch.js" data-theme="metaphor"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MEN = { 最高:"BEST", 良い:"GOOD", 普通:"NORMAL", 微妙:"TIRED", 最悪:"SLUMP" };
+const MK = { 最高:"極", 良い:"良", 普通:"・", 微妙:"弱", 最悪:"危" };
+const MC = { 最高:"#d8b24a", 良い:"#2aa49c", 普通:"#7fb8ff", 微妙:"#b43dcc", 最悪:"#c8202a" };
+const ARCH = ["見習い書記", "記録者", "語り部", "吟遊詩人", "年代記作家", "賢者", "大書記官"];
+const DOW = ["日","月","火","水","木","金","土"];
+const MONTHS = ["JANUARY","FEBRUARY","MARCH","APRIL","MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, PER = 5;
+const CMDS = [
+  { id:"write", en:"WRITE", jp:"今日を記す" },
+  { id:"journal", en:"JOURNAL", jp:"日誌を読む" },
+  { id:"status", en:"STATUS", jp:"記録者の能力" },
+  { id:"calendar", en:"CALENDAR", jp:"暦をめくる" },
+  { id:"system", en:"SYSTEM", jp:"テーマ選択へ" }
+];
+// cascade positions (% of viewport) — fans out like the command menu
+const POS = [[6, 10, -2], [12, 27, 2], [17, 44, 7], [21, 61, 13], [24, 77, 20]];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+const pad2 = n => String(n).padStart(2, "0");
+
+// jagged brush-stroke polygon for clip-path
+function brush(seed, j = 14) {
+  let s = seed * 9301 + 49297; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280;
+  const top = [], bot = [];
+  for (let x = 0; x <= 100; x += 5) { top.push(`${x}% ${(r() * j).toFixed(1)}%`); bot.unshift(`${x}% ${(100 - r() * j).toFixed(1)}%`); }
+  return `polygon(0% ${(30 + r() * 20).toFixed(1)}%, ${top.join(",")}, 100% ${(40 + r() * 20).toFixed(1)}%, ${bot.join(",")})`;
+}
+document.documentElement.style.setProperty("--brush", brush(7));
+
+function paintBackdrops() {
+  const sets = {
+    menu:    [["#2aa49c", -8, 18, 70, 60, -14], ["#b43dcc", -6, -4, 46, 30, -6], ["#1e6f6a", 30, 55, 70, 60, 8], ["#c8202a", 60, 60, 50, 40, -20], ["#0f3b3d", 46, 0, 60, 50, 12], ["#3fc3b8", 4, 66, 40, 30, 4]],
+    journal: [["#1e6f6a", -10, 30, 80, 60, -8], ["#2aa49c", 40, 10, 60, 40, 10], ["#c8202a", 55, 62, 50, 36, -14], ["#0f3b3d", -5, -10, 60, 40, 4]],
+    status:  [["#2aa49c", 30, 4, 34, 18, -24], ["#c8202a", 54, 60, 40, 22, 18], ["#1e6f6a", 4, 70, 30, 16, 10], ["#c8202a", 70, 10, 26, 12, -10]],
+    cal:     [["#b43dcc", -6, 0, 50, 34, -6], ["#2aa49c", 50, 50, 60, 50, 12], ["#c8202a", 0, 70, 46, 30, -12], ["#0f3b3d", 30, 20, 60, 50, 4]]
+  };
+  document.querySelectorAll("[data-paint]").forEach(el => {
+    el.innerHTML = sets[el.dataset.paint].map(([c, x, y, w, h, r], i) =>
+      `<i style="left:${x}%;top:${y}%;width:${w}%;height:${h}%;background:${c};rotate:${r}deg;clip-path:${brush(i * 13 + c.length, 24)};--t:${10 + i * 3}s;--o:${el.dataset.paint === "status" ? .55 : .9}"></i>`).join("");
+  });
+}
+
+let data = load(), view = "menu", mcur = 0, page = 0, cur = 0, selected = ymd(new Date()), mood = null, calSel = ymd(new Date()), ovTimer;
+const dayOf = i => { const d = new Date(); d.setDate(d.getDate() - (page * PER + i)); return ymd(d); };
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+
+const HINTS = {
+  menu: [["✕", "決定", "ok"], ["○", "戻る", "back"]],
+  journal: [["↕", "選択", null], ["L R", "ページ", "page"], ["✕", "記す", "ok"], ["○", "戻る", "back"]],
+  status: [["✕", "記す", "ok"], ["○", "戻る", "back"]],
+  calendar: [["✥", "日を選ぶ", null], ["L R", "月", "month"], ["✕", "記す", "ok"], ["○", "戻る", "back"]]
+};
+
+function renderMenu() {
+  $("cascade").innerHTML = CMDS.map((c, i) => { const [x, y, r] = POS[i];
+    return `<li><button class="cmd ${i === mcur ? "cur" : ""}" data-c="${i}" style="--x:${x};--y:${y};--r:${r};--i:${i}">${c.en}<span class="bg" style="--brush:${brush(i + 3, 18)}"></span><span class="jp">${c.jp}</span></button></li>`; }).join("");
+  $("mXp").textContent = totalXp().toLocaleString(); $("mSt").textContent = streakCount().toLocaleString();
+}
+
+function renderJournal() {
+  const today = ymd(new Date());
+  $("plist").innerHTML = Array.from({ length: PER }, (_, i) => {
+    const k = dayOf(i), e = data[k], len = e ? e.text.length : 0, sk = streakAt(k);
+    return `<li><button class="pr ${i === cur ? "cur" : ""} ${e ? "" : "empty"}" data-i="${i}" style="--i:${i};--brush:${brush(i + 21, 16)}">
+      <span class="side">${e && e.mood ? MEN[e.mood] : (k === today ? "TODAY" : "BLANK")}</span>
+      <span class="mid"><span class="nm">${k === today ? "今日 ─ " : ""}${md(k)}</span>
+        <span class="bars"><span>${len}<em style="--v:${Math.min(len / 300 * 100, 100)}%;--c:var(--hp)"></em></span><span>${sk}<em style="--v:${Math.min(sk / 30 * 100, 100)}%;--c:var(--mp)"></em></span></span></span>
+      <span class="lv"><small>記</small>${e ? pad2(sk) : "──"}</span></button></li>`;
+  }).join("");
+  const k = dayOf(cur), e = data[k];
+  $("vt").innerHTML = `<b>${esc(md(k))}</b>${e ? esc((e.mood ? "【" + e.mood + "】\n" : "") + e.text) : "まだ何も記されていない。\nこの頁に、今日を残そう。"}`;
+  const labels = ["FRONT", "FRONT", "FRONT", "BACK"];
+  $("front").innerHTML = labels.map((l, i) => `<button class="${i === Math.min(page, 3) ? "on" : ""}" data-pg="${i}">${l}</button>`).join("") + `<b>PAGE ${page + 1}</b>`;
+}
+
+function renderStatus() {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, st = streakCount(), all = Object.keys(data), today = ymd(new Date()), month = today.slice(0, 7);
+  const chars = Object.values(data).reduce((s, x) => s + x.text.length, 0), good = all.filter(k => ["最高", "良い"].includes(data[k].mood)).length, mon = all.filter(k => k.startsWith(month)).length;
+  $("aName").textContent = ARCH[Math.min(Math.floor((lv - 1) / 3), ARCH.length - 1)];
+  $("sRank").innerHTML = `${pad2(Math.min(lv, 99))}<small>/20</small>`; $("sNext").textContent = XP_PER_RANK - xp % XP_PER_RANK;
+  $("sSt").textContent = st; $("sAll").textContent = all.length;
+  const now = new Date(), sun = new Date(now); sun.setDate(now.getDate() - now.getDay());
+  $("aff").innerHTML = DOW.map((d, i) => { const x = new Date(sun); x.setDate(sun.getDate() + i); const dk = ymd(x), e = data[dk];
+    return `<button class="${dk === today ? "today" : ""}" ${dk > today ? "disabled" : `data-go="${dk}"`} aria-label="${md(dk)}"><span class="h">${d}</span><span class="c" style="color:${e ? MC[e.mood] || "#fff" : "#888"}">${e ? MK[e.mood] || "記" : dk > today ? "" : "─"}</span></button>`; }).join("");
+  const S = [["筆", chars, 5000], ["根", st, 30], ["継", all.length, 100], ["月", mon, 31], ["運", good, Math.max(all.length, 1)]];
+  const todayLen = data[today] ? data[today].text.length : 0;
+  $("stats").innerHTML = S.map(([l, v, m], i) => `<div class="sr"><span>${l}</span><span class="tr"><i style="--v:${Math.min(v / m * 100, 100)}%"></i></span><b>${pad2(v)}${i === 0 && todayLen ? `<small>(+${todayLen})</small>` : ""}</b></div>`).join("");
+  $("moodList").innerHTML = MOODS.map(m => { const n = all.filter(k => data[k].mood === m).length;
+    return `<div class="sk ${n ? "" : "dim"}"><i style="--c:${MC[m]}">${MK[m]}</i><span>${m}</span><em>× <b>${n}</b></em></div>`; }).join("");
+  $("nextList").innerHTML = [1, 2, 3, 4].map(n => `<div class="sk dim"><i>∞</i><span>${ARCH[Math.min(Math.floor((lv + n - 1) / 3), ARCH.length - 1)]}</span><em>RANK <b>${pad2(lv + n)}</b></em></div>`).join("");
+}
+
+function renderCal() {
+  const sd = new Date(calSel + "T00:00:00"), y = sd.getFullYear(), m = sd.getMonth(), first = new Date(y, m, 1), start = new Date(first); start.setDate(1 - first.getDay());
+  const today = ymd(new Date()), weeks = Math.ceil((first.getDay() + new Date(y, m + 1, 0).getDate()) / 7);
+  $("calM").textContent = `${MONTHS[m]} ${y}`;
+  let h = ["SUN","MON","TUE","WED","THU","FRI","SAT"].map(d => `<span class="dw">${d}</span>`).join("");
+  for (let i = 0; i < weeks * 7; i++) {
+    const d = new Date(start); d.setDate(start.getDate() + i); const dk = ymd(d), e = data[dk], fut = dk > today;
+    h += `<button class="dy ${e ? "on" : ""} ${d.getMonth() !== m ? "out" : ""} ${fut ? "fut" : ""} ${dk === today ? "today" : ""} ${dk === calSel ? "sel" : ""}" ${fut ? "disabled" : `data-go="${dk}"`} style="--c:${e ? MC[e.mood] || "#c8202a" : "transparent"};--brush:${brush(d.getDate() + 40, 22)}" aria-label="${md(dk)}${e ? " 記録あり" : ""}">${d.getDate()}${e && e.mood ? `<small>${MK[e.mood]}</small>` : ""}</button>`;
+  }
+  $("grid").innerHTML = h;
+}
+
+function render() {
+  document.body.dataset.view = view;
+  ({ menu: renderMenu, journal: renderJournal, status: renderStatus, calendar: renderCal })[view]();
+  $("hints").innerHTML = HINTS[view].map(([k, l, a]) => `<button ${a ? `data-h="${a}"` : "tabindex='-1'"}><i>${k.length > 1 ? k[0] : k}</i>${l}</button>`).join("");
+}
+
+function go(v) {
+  if (v === view) return;
+  const w = $("wipe"); w.classList.remove("go"); void w.offsetWidth; w.classList.add("go");
+  setTimeout(() => { view = v; cur = 0; page = 0; document.body.classList.remove("ready"); render(); setTimeout(() => document.body.classList.add("ready"), 900); }, 180);
+}
+function runCmd(i) {
+  const c = CMDS[i].id;
+  if (c === "write") return openEd(ymd(new Date()));
+  if (c === "system") { location.href = "index.html"; return; }
+  if (c === "calendar") calSel = ymd(new Date());
+  go(c);
+}
+function back() { if (view !== "menu") go("menu"); }
+function ok() {
+  if (view === "menu") return runCmd(mcur);
+  if (view === "journal") return openEd(dayOf(cur));
+  if (view === "status") return openEd(ymd(new Date()));
+  if (view === "calendar") return openEd(calSel);
+}
+function shiftCal(days) {
+  const d = new Date(calSel + "T00:00:00"); d.setDate(d.getDate() + days); const k = ymd(d);
+  if (k > ymd(new Date())) return; calSel = k; renderCal();
+}
+function shiftMonth(n) {
+  const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() + n);
+  const k = ymd(d) > ymd(new Date()) ? ymd(new Date()) : ymd(d); calSel = k; renderCal();
+}
+function moveRow(n) {
+  if (n < 0) { if (page === 0) return; page--; cur = PER - 1; }
+  else if (n >= PER) { page++; cur = 0; }
+  else cur = n;
+  renderJournal();
+}
+
+function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
+function openEd(k) {
+  selected = k; const e = data[k]; mood = e ? e.mood : null;
+  $("eT").textContent = `${k === ymd(new Date()) ? "今日 ─ " : ""}${md(k)}${e ? "（追記）" : ""}`;
+  $("moods").innerHTML = MOODS.map((m, i) => `<li><button data-m="${m}" class="${m === mood ? "on" : ""}" style="--brush:${brush(i + 60, 20)}">${m}<small>${MEN[m]}</small></button></li>`).join("");
+  $("body").value = e ? e.text : "";
+  $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
+}
+const closeEd = () => $("ed").classList.remove("show");
+function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  const xp0 = totalXp(), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data);
+  const xp1 = totalXp(), up = Math.floor(xp1 / XP_PER_RANK) > Math.floor(xp0 / XP_PER_RANK);
+  $("ovT").textContent = up ? "RANK UP" : "RECORDED"; $("ovJ").textContent = up ? "段位が上がった" : "記録完了";
+  $("ovS").textContent = isNew ? `+${xp1 - xp0} EXP ─ ${streakCount()} DAYS` : "UPDATED";
+  const o = $("ov"); o.querySelectorAll(".sp").forEach(x => x.remove());
+  [["#2aa49c", 90, -18, 0], ["#c8202a", 70, 14, 80], ["#b43dcc", 55, -6, 140], ["#f3f0e9", 30, 8, 200]].forEach(([c, s, r, d], i) => {
+    const sp = document.createElement("i"); sp.className = "sp"; sp.style.cssText = `--c:${c};--s:${s}vmax;--r:${r}deg;--d:${d};--brush:${brush(i + 90, 26)}`; o.prepend(sp); });
+  o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2950);
+  closeEd(); render();
+}
+
+document.addEventListener("click", e => {
+  const c = e.target.closest(".cmd"); if (c) { mcur = +c.dataset.c; return runCmd(mcur); }
+  const pr = e.target.closest(".pr"); if (pr) { cur = +pr.dataset.i; return openEd(dayOf(cur)); }
+  const g = e.target.closest("[data-go]"); if (g) { if (view === "calendar") { calSel = g.dataset.go; renderCal(); } return openEd(g.dataset.go); }
+  const pg = e.target.closest("[data-pg]"); if (pg) { page = +pg.dataset.pg; cur = 0; return renderJournal(); }
+  const mb = e.target.closest("#moods button"); if (mb) return setMood(mood === mb.dataset.m ? null : mb.dataset.m);
+  const h = e.target.closest("[data-h]");
+  if (h) { const a = h.dataset.h; if (a === "ok") return ok(); if (a === "back") return back(); if (a === "page") { page++; cur = 0; return renderJournal(); } if (a === "month") return shiftMonth(-1); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#cl") || e.target.id === "ed") return closeEd();
+  if (e.target.closest("#learn")) return openEd(ymd(new Date()));
+  if (e.target.closest("#mPrev")) return shiftMonth(-1);
+  if (e.target.closest("#mNext")) return shiftMonth(1);
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("mouseover", e => {
+  if ($("ed").classList.contains("show")) return;
+  const c = e.target.closest(".cmd"); if (c && +c.dataset.c !== mcur) { mcur = +c.dataset.c; return renderMenu(); }
+  const pr = e.target.closest(".pr"); if (pr && +pr.dataset.i !== cur) { cur = +pr.dataset.i; renderJournal(); }
+});
+document.addEventListener("keydown", e => {
+  const open = $("ed").classList.contains("show");
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && open) { e.preventDefault(); return save(); }
+  if (e.key === "Escape" || (!open && e.key === "Backspace")) { e.preventDefault(); if (open) return closeEd(); if ($("ov").classList.contains("show")) return $("ov").classList.remove("show"); return back(); }
+  if (open) {
+    if (e.target.tagName !== "TEXTAREA" && (e.key === "ArrowLeft" || e.key === "ArrowRight")) {
+      e.preventDefault(); const dir = e.key === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : MOODS.length - 1) : (i + dir + MOODS.length) % MOODS.length]);
+      document.querySelector(`#moods button[data-m="${mood}"]`).focus();
+    }
+    return;
+  }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if ((e.key === "Enter" || e.key === " ") && e.target.tagName !== "BUTTON") { e.preventDefault(); return ok(); }
+  const k = e.key;
+  if (view === "menu") {
+    if (k === "ArrowUp" || k === "ArrowLeft") { e.preventDefault(); mcur = (mcur + CMDS.length - 1) % CMDS.length; return renderMenu(); }
+    if (k === "ArrowDown" || k === "ArrowRight") { e.preventDefault(); mcur = (mcur + 1) % CMDS.length; return renderMenu(); }
+  } else if (view === "journal") {
+    if (k === "ArrowUp") { e.preventDefault(); return moveRow(cur - 1); }
+    if (k === "ArrowDown") { e.preventDefault(); return moveRow(cur + 1); }
+    if (k === "ArrowRight" || k === "e" || k === "E") { e.preventDefault(); page++; cur = 0; return renderJournal(); }
+    if ((k === "ArrowLeft" || k === "q" || k === "Q") && page > 0) { e.preventDefault(); page--; cur = 0; return renderJournal(); }
+  } else if (view === "calendar") {
+    const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[k];
+    if (mv) { e.preventDefault(); return shiftCal(mv); }
+    if (k === "q" || k === "Q") return shiftMonth(-1);
+    if (k === "e" || k === "E") return shiftMonth(1);
+  }
+});
+
+paintBackdrops();
+render();
+setTimeout(() => document.body.classList.add("ready"), 1000);
+</script>
+</body>
+</html>
