@@ -88,6 +88,8 @@
       titles: [ { id: "paranoma", file: "paranormasight.html", name: "PARANORMASIGHT", sub: "本所七不思議" } ] },
     { id: "bloodborne", name: "BLOODBORNE", sub: "ブラッドボーン",           c1: "#c9a96a", c2: "#0a0c0f",
       titles: [ { id: "bb", file: "bloodborne.html", name: "BLOODBORNE", sub: "狩人の夢" } ] },
+    { id: "efootball", name: "EFOOTBALL", sub: "eFootball",               c1: "#fff200", c2: "#0a14ee",
+      titles: [ { id: "efb", file: "efootball.html", name: "EFOOTBALL", sub: "ホーム画面" } ] },
     { id: "coffeetalk", name: "COFFEE TALK", sub: "コーヒートーク",           c1: "#62d6b4", c2: "#1d2533",
       titles: [ { id: "coffeetalk", file: "coffeetalk.html", name: "COFFEE TALK", sub: "雨の夜のカフェ" } ] },
     { id: "toshidensetsu", name: "URBAN LEGEND CENTER", sub: "都市伝説解体センター",  c1: "#9fe6ff", c2: "#0d1a2d",
@@ -108,7 +110,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
