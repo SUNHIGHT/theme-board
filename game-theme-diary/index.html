@@ -131,7 +131,7 @@ function renderTitles(g) {
   $("ctl").hidden = true;
   $("step").textContent = `STEP 2 ─ ${g.name} ─ ナンバリングを選ぶ`;
   $("cards").innerHTML = `<button class="back" data-back="1">◀ BACK ─ ゲーム選択へ</button>` + g.titles.map((t, i) =>
-    `<a class="card" href="${t.file}" style="--a:${g.c1};--b:${g.c2};--i:${i};padding-right:20px"><i class="sw"></i><div class="tx"><b>${esc(t.name)}</b><span class="jp">${esc(t.sub)}</span></div>${t.id === state.last ? "<em style='right:20px'>前回</em>" : ""}</a>`).join("");
+    `<a class="card" href="${t.file}" style="--a:${t.c1 || g.c1};--b:${t.c2 || g.c2};--i:${i};padding-right:20px"><i class="sw"></i><div class="tx"><b>${esc(t.name)}</b><span class="jp">${esc(t.sub)}</span></div>${t.id === state.last ? "<em style='right:20px'>前回</em>" : ""}</a>`).join("");
 }
 
 function toggleFav(id) {

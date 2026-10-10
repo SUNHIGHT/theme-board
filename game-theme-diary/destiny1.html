@@ -115,6 +115,23 @@
   @keyframes engram { 0% { transform:scale(.1) rotateY(0) rotate(45deg); opacity:0; } 60% { transform:scale(1.15) rotateY(540deg); opacity:1; } 100% { transform:scale(1) rotateY(720deg); } }
   #stampSub::before { content:"LOOT ─ "; }
   
+  .geo { position:fixed; z-index:0; pointer-events:none; fill:none; stroke:#7fd4ff; stroke-width:1.2; filter:drop-shadow(0 0 5px rgba(127,212,255,.7)); }
+  .geo.big { width:min(118vmin,1100px); height:min(118vmin,1100px); right:-26vmin; top:50%; margin-top:calc(min(118vmin,1100px) / -2); opacity:.5; }
+  .geo.small { width:min(60vmin,560px); height:min(60vmin,560px); left:-22vmin; bottom:-18vmin; opacity:.28; }
+  .geo * { transform-origin:0 0; } .geo .dash { stroke-dasharray:3 12; } .geo .faint { stroke-opacity:.35; } .geo .sp { stroke-opacity:.18; } .geo .dot { fill:#c9eaff; stroke:none; }
+  .geo .g1 { animation:gspin 160s linear infinite; } .geo .g2 { animation:gspin 220s linear infinite reverse; } .geo .g3 { animation:gspin 70s linear infinite; }
+  .geo .g4 { animation:gspin 90s linear infinite reverse; } .geo .g5 { animation:gspin 50s linear infinite; } .geo .g6 { animation:gspin 28s linear infinite reverse; }
+  .geo .g7 { animation:gspin 36s linear infinite; } .geo .g8 { animation:gspin 14s linear infinite reverse; }
+  @keyframes gspin { to { transform:rotate(360deg); } }
+  .geo .g3 polygon, .geo .g6 polygon { animation:gpulse 6s ease-in-out infinite alternate; } @keyframes gpulse { from { stroke-opacity:.35; } to { stroke-opacity:1; } }
+  .panel { background-image:repeating-linear-gradient(60deg, rgba(127,212,255,.06) 0 1px, transparent 1px 30px), repeating-linear-gradient(120deg, rgba(127,212,255,.06) 0 1px, transparent 1px 30px), linear-gradient(rgba(10,20,34,.82), rgba(10,20,34,.82)); }
+  .panel::after { content:""; position:absolute; right:-1px; bottom:-1px; width:0; height:0; border-style:solid; border-width:0 0 22px 22px; border-color:transparent transparent var(--acc) transparent; }
+  .ttl::before { content:"△ "; }
+  .cal div { clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); border:0; background:rgba(127,212,255,.1); }
+  .cal .dow { clip-path:none; background:none; }
+  .cal .done { background:radial-gradient(circle,var(--hi) 0 14%,var(--acc) 55%,rgba(127,212,255,.35)); color:var(--bg); }
+  @media (max-width:560px) { .geo.big { opacity:.35; } }
+
 </style>
 </head>
 <body>
@@ -155,7 +172,25 @@
   <h2>VAULT ─ 過去の記録</h2>
   <div id="list"></div>
 </main>
-
+<svg class="geo big" viewBox="-450 -450 900 900" aria-hidden="true">
+  <g class="g1"><circle r="436" class="dash"/><circle r="418"/></g>
+  <g class="g2 sp"><line x1="90.0" y1="0.0" x2="430.0" y2="0.0"/><line x1="86.9" y1="23.3" x2="415.3" y2="111.3"/><line x1="77.9" y1="45.0" x2="372.4" y2="215.0"/><line x1="63.6" y1="63.6" x2="304.1" y2="304.1"/><line x1="45.0" y1="77.9" x2="215.0" y2="372.4"/><line x1="23.3" y1="86.9" x2="111.3" y2="415.3"/><line x1="0.0" y1="90.0" x2="0.0" y2="430.0"/><line x1="-23.3" y1="86.9" x2="-111.3" y2="415.3"/><line x1="-45.0" y1="77.9" x2="-215.0" y2="372.4"/><line x1="-63.6" y1="63.6" x2="-304.1" y2="304.1"/><line x1="-77.9" y1="45.0" x2="-372.4" y2="215.0"/><line x1="-86.9" y1="23.3" x2="-415.3" y2="111.3"/><line x1="-90.0" y1="0.0" x2="-430.0" y2="0.0"/><line x1="-86.9" y1="-23.3" x2="-415.3" y2="-111.3"/><line x1="-77.9" y1="-45.0" x2="-372.4" y2="-215.0"/><line x1="-63.6" y1="-63.6" x2="-304.1" y2="-304.1"/><line x1="-45.0" y1="-77.9" x2="-215.0" y2="-372.4"/><line x1="-23.3" y1="-86.9" x2="-111.3" y2="-415.3"/><line x1="-0.0" y1="-90.0" x2="-0.0" y2="-430.0"/><line x1="23.3" y1="-86.9" x2="111.3" y2="-415.3"/><line x1="45.0" y1="-77.9" x2="215.0" y2="-372.4"/><line x1="63.6" y1="-63.6" x2="304.1" y2="-304.1"/><line x1="77.9" y1="-45.0" x2="372.4" y2="-215.0"/><line x1="86.9" y1="-23.3" x2="415.3" y2="-111.3"/></g>
+  <g class="g3"><polygon points="0.0,-380.0 329.1,190.0 -329.1,190.0"/><polygon points="0.0,380.0 -329.1,-190.0 329.1,-190.0"/></g>
+  <g class="g4"><polygon points="0.0,-300.0 259.8,-150.0 259.8,150.0 0.0,300.0 -259.8,150.0 -259.8,-150.0"/><polygon points="150.0,-259.8 300.0,0.0 150.0,259.8 -150.0,259.8 -300.0,0.0 -150.0,-259.8" class="dash"/></g>
+  <g class="g5"><polygon points="0.0,-225.0 159.1,-159.1 225.0,0.0 159.1,159.1 0.0,225.0 -159.1,159.1 -225.0,0.0 -159.1,-159.1" class="dash"/><polygon points="86.1,-207.9 207.9,-86.1 207.9,86.1 86.1,207.9 -86.1,207.9 -207.9,86.1 -207.9,-86.1 -86.1,-207.9"/></g>
+  <g class="g6"><polygon points="0.0,-150.0 150.0,0.0 0.0,150.0 -150.0,0.0"/><polygon points="106.1,-106.1 106.1,106.1 -106.1,106.1 -106.1,-106.1"/></g>
+  <g class="g7"><circle r="300" class="faint"/><circle cx="300" r="9" class="dot"/><circle cx="-150" cy="259.8" r="9" class="dot"/><circle cx="-150" cy="-259.8" r="9" class="dot"/></g>
+  <g class="g8"><circle r="90"/><circle r="60" class="dash"/><circle r="8" class="dot"/></g>
+</svg><svg class="geo small" viewBox="-450 -450 900 900" aria-hidden="true">
+  <g class="g1"><circle r="436" class="dash"/><circle r="418"/></g>
+  <g class="g2 sp"><line x1="90.0" y1="0.0" x2="430.0" y2="0.0"/><line x1="86.9" y1="23.3" x2="415.3" y2="111.3"/><line x1="77.9" y1="45.0" x2="372.4" y2="215.0"/><line x1="63.6" y1="63.6" x2="304.1" y2="304.1"/><line x1="45.0" y1="77.9" x2="215.0" y2="372.4"/><line x1="23.3" y1="86.9" x2="111.3" y2="415.3"/><line x1="0.0" y1="90.0" x2="0.0" y2="430.0"/><line x1="-23.3" y1="86.9" x2="-111.3" y2="415.3"/><line x1="-45.0" y1="77.9" x2="-215.0" y2="372.4"/><line x1="-63.6" y1="63.6" x2="-304.1" y2="304.1"/><line x1="-77.9" y1="45.0" x2="-372.4" y2="215.0"/><line x1="-86.9" y1="23.3" x2="-415.3" y2="111.3"/><line x1="-90.0" y1="0.0" x2="-430.0" y2="0.0"/><line x1="-86.9" y1="-23.3" x2="-415.3" y2="-111.3"/><line x1="-77.9" y1="-45.0" x2="-372.4" y2="-215.0"/><line x1="-63.6" y1="-63.6" x2="-304.1" y2="-304.1"/><line x1="-45.0" y1="-77.9" x2="-215.0" y2="-372.4"/><line x1="-23.3" y1="-86.9" x2="-111.3" y2="-415.3"/><line x1="-0.0" y1="-90.0" x2="-0.0" y2="-430.0"/><line x1="23.3" y1="-86.9" x2="111.3" y2="-415.3"/><line x1="45.0" y1="-77.9" x2="215.0" y2="-372.4"/><line x1="63.6" y1="-63.6" x2="304.1" y2="-304.1"/><line x1="77.9" y1="-45.0" x2="372.4" y2="-215.0"/><line x1="86.9" y1="-23.3" x2="415.3" y2="-111.3"/></g>
+  <g class="g3"><polygon points="0.0,-380.0 329.1,190.0 -329.1,190.0"/><polygon points="0.0,380.0 -329.1,-190.0 329.1,-190.0"/></g>
+  <g class="g4"><polygon points="0.0,-300.0 259.8,-150.0 259.8,150.0 0.0,300.0 -259.8,150.0 -259.8,-150.0"/><polygon points="150.0,-259.8 300.0,0.0 150.0,259.8 -150.0,259.8 -300.0,0.0 -150.0,-259.8" class="dash"/></g>
+  <g class="g5"><polygon points="0.0,-225.0 159.1,-159.1 225.0,0.0 159.1,159.1 0.0,225.0 -159.1,159.1 -225.0,0.0 -159.1,-159.1" class="dash"/><polygon points="86.1,-207.9 207.9,-86.1 207.9,86.1 86.1,207.9 -86.1,207.9 -207.9,86.1 -207.9,-86.1 -86.1,-207.9"/></g>
+  <g class="g6"><polygon points="0.0,-150.0 150.0,0.0 0.0,150.0 -150.0,0.0"/><polygon points="106.1,-106.1 106.1,106.1 -106.1,106.1 -106.1,-106.1"/></g>
+  <g class="g7"><circle r="300" class="faint"/><circle cx="300" r="9" class="dot"/><circle cx="-150" cy="259.8" r="9" class="dot"/><circle cx="-150" cy="-259.8" r="9" class="dot"/></g>
+  <g class="g8"><circle r="90"/><circle r="60" class="dash"/><circle r="8" class="dot"/></g>
+</svg>
 <div id="stamp"><div class="bars"></div><div class="box"><div id="bang">◆</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
 
 <script src="theme-switch.js" data-theme="destiny1"></script>
@@ -164,7 +199,7 @@ const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
 const MOODS = [["最高", "EXOTIC", "#ffd24a"], ["良い", "LEGENDARY", "#b57cff"], ["普通", "RARE", "#5aa8ff"], ["微妙", "UNCOMMON", "#5fd37a"], ["最悪", "COMMON", "#e8edf2"]];
 const RANKS = ["NEW LIGHT", "INITIATE", "VANGUARD", "WARDEN", "EXEMPLAR", "LEGEND", "GUARDIAN"];
-const MSG_FILED = "ENGRAM DECRYPTED ─ 解読完了", MSG_PROMO = "RANK UP ─ ランクアップ";
+let MSG_FILED = "ENGRAM DECRYPTED ─ 解読完了", MSG_PROMO = "RANK UP ─ ランクアップ";
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
 const $ = id => document.getElementById(id);
 
@@ -252,6 +287,7 @@ function render() {
 $("moods").onclick = e => {
   const b = e.target.closest("button"); if (!b) return;
   mood = b.dataset.m;
+  
   document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
 };
 $("cal").onclick = e => {
@@ -274,6 +310,7 @@ $("save").onclick = () => {
   render();
 };
 $("stamp").onclick = () => $("stamp").classList.remove("show");
+
 render();
 </script>
 </body>

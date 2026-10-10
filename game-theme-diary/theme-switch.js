@@ -5,8 +5,9 @@
   var GAMES = [
     { id: "persona", name: "PERSONA",          sub: "ペルソナシリーズ",        c1: "#e60012", c2: "#0b0b0b",
       titles: [
-        { id: "p3", file: "persona3.html", name: "PERSONA 3", sub: "蒼い影時間" },
-        { id: "p5", file: "persona5.html", name: "PERSONA 5", sub: "赤と黒" }
+        { id: "p3", file: "persona3.html", name: "PERSONA 3", sub: "蒼い影時間", c1: "#5ec8ff", c2: "#0a58c8" },
+        { id: "p3r", file: "persona3_reload.html", name: "PERSONA 3 RELOAD", sub: "満月の下の日誌", c1: "#3cc8ff", c2: "#02143f" },
+        { id: "p5", file: "persona5.html", name: "PERSONA 5", sub: "赤と黒", c1: "#e60012", c2: "#0b0b0b" }
       ] },
     { id: "destiny", name: "DESTINY",          sub: "デスティニーシリーズ",     c1: "#7fd4ff", c2: "#0a1018",
       titles: [
@@ -25,8 +26,7 @@
       titles: [ { id: "eldenring", file: "eldenring.html", name: "ELDEN RING", sub: "狭間の地" } ] },
     { id: "resident", name: "RESIDENT EVIL",  sub: "バイオハザード",           c1: "#c9a15a", c2: "#0d0907",
       titles: [
-        { id: "re1", file: "resident1.html", name: "RESIDENT EVIL",   sub: "洋館事件" },
-        { id: "re2", file: "resident2.html", name: "RESIDENT EVIL 2", sub: "ラクーンシティ" }
+        { id: "re4", file: "resident4.html", name: "RESIDENT EVIL 4", sub: "辺境の村" }
       ] },
     { id: "backrooms", name: "BACKROOMS",      sub: "バックルーム",             c1: "#cdbb55", c2: "#3a3414",
       titles: [
