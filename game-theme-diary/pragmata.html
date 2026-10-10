@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cabin Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Sci-fi stamp-card screen: neon-cyan chamfered frames, 3x3 bingo board, chain progress, reward detail panel, bottom hint (after Pragmata's Stamp Club) */
+  :root { --bg:#040a1a; --cy:#2d9cff; --cy2:#6fe0ff; --cy3:#0b3a78; --red:#ff2a2a; --tx:#e6f2ff; --dim:#7fa8d8; --fr:'Rajdhani','Zen Kaku Gothic New',sans-serif; --fm:'Share Tech Mono','Zen Kaku Gothic New',monospace; --fj:'Zen Kaku Gothic New',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fj); color:var(--tx); overflow:hidden; background:var(--bg); }
+  .bg { position:fixed; inset:0; background:radial-gradient(ellipse at 50% 55%, #0c2a58 0%, transparent 60%), linear-gradient(180deg,#050c20,#030812); }
+  .bg::before { content:""; position:absolute; inset:0; opacity:.35; background:linear-gradient(rgba(60,140,255,.12) 1px, transparent 1px) 0 0/40px 40px, linear-gradient(90deg, rgba(60,140,255,.12) 1px, transparent 1px) 0 0/40px 40px; }
+  .bg::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 45%, rgba(0,0,0,.7)); }
+  .scan { position:fixed; inset:0; pointer-events:none; z-index:40; background:repeating-linear-gradient(0deg, rgba(0,0,0,.18) 0 1px, transparent 1px 3px); }
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto 1fr auto; padding:0 3.2% 0; }
+
+  .top { display:flex; justify-content:space-between; align-items:flex-start; padding-top:14px; }
+  .top h1 { font:600 clamp(24px,2.8vw,34px) var(--fr); letter-spacing:.04em; text-shadow:0 0 12px rgba(80,170,255,.6); }
+  .res { display:flex; margin-right:150px; border:1px solid var(--cy); background:rgba(5,20,50,.8); clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px)); box-shadow:0 0 14px rgba(45,156,255,.4); } .res div { display:flex; align-items:center; gap:14px; padding:5px 18px 5px 10px; font:600 20px var(--fr); min-width:150px; justify-content:space-between; } .res div + div { border-left:1px solid var(--cy); } .res i { width:26px; height:26px; background:#f5c400; clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%); box-shadow:0 0 8px #f5c400; } .res div + div i { background:#3ab0ff; box-shadow:0 0 8px #3ab0ff; clip-path:polygon(20% 0,80% 0,100% 20%,100% 80%,80% 100%,20% 100%,0 80%,0 20%); }
+
+  .main { display:grid; grid-template-columns:78px minmax(0,1.06fr) minmax(0,1fr); gap:14px; padding:12px 0 6px; min-height:0; }
+  .side { display:flex; flex-direction:column; gap:8px; padding-top:6px; }
+  .pg { all:unset; cursor:pointer; box-sizing:border-box; border:1px solid var(--cy); background:rgba(8,28,70,.8); padding:6px 4px; text-align:center; clip-path:polygon(0 0,calc(100% - 8px) 0,100% 8px,100% 100%,8px 100%,0 calc(100% - 8px)); transition:.12s; font:700 28px/1 var(--fr); color:var(--cy2); } .pg small { display:block; font:500 10px var(--fm); color:var(--dim); margin-top:2px; } .pg:hover { background:rgba(20,70,150,.8); } .pg.on { background:linear-gradient(180deg,#1c63c0,#0b3a78); border-color:var(--cy2); box-shadow:0 0 14px rgba(111,224,255,.6); color:#fff; } .pg:focus-visible { outline:2px solid #fff; }
+
+  .fr { position:relative; border:2px solid var(--cy); background:rgba(4,16,40,.82); clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 18px),calc(100% - 18px) 100%,18px 100%,0 calc(100% - 18px)); box-shadow:inset 0 0 28px rgba(45,156,255,.2); min-height:0; display:flex; flex-direction:column; animation:fade .5s both; }
+  .fh { padding:7px 16px; border-bottom:1px solid var(--cy); background:linear-gradient(90deg,rgba(20,80,170,.55),transparent); font:600 20px var(--fr); letter-spacing:.06em; }
+  .chain { display:flex; align-items:center; gap:10px; padding:10px 16px; border-bottom:1px solid var(--cy3); } .cab { padding:6px 12px; border:1px solid var(--cy); font:700 15px var(--fr); letter-spacing:.1em; color:var(--cy2); line-height:1.1; text-align:center; } .cab small { display:block; font-size:9px; color:var(--dim); letter-spacing:.2em; }
+  .st { display:flex; flex-direction:column; align-items:center; gap:3px; font:600 14px var(--fr); } .st b { width:54px; height:54px; border:1px solid #2a6ab8; background:#071a40; display:grid; place-items:center; font-size:26px; color:#3a6aa8; transition:.2s; } .st.ok b { border:2px solid var(--cy2); background:rgba(40,140,255,.35); color:#fff; box-shadow:0 0 14px rgba(111,224,255,.8); } .st.ok { color:#fff; } .st:not(.ok) { color:var(--dim); } .ar { color:var(--cy); font:700 22px var(--fr); }
+  .bd { display:grid; grid-template-columns:auto 1fr; gap:6px 20px; padding:10px 16px 14px; flex:1; min-height:0; align-content:start; }
+  .tb { grid-column:1/-1; font:500 15px var(--fm); color:var(--dim); } .tb span { display:inline-block; margin-top:4px; border:1px solid var(--cy); padding:4px 18px; font:600 24px var(--fr); color:var(--tx); background:rgba(8,28,70,.8); letter-spacing:.1em; }
+  .bd .lg { align-self:end; font:500 11px var(--fm); color:var(--dim); line-height:1.8; grid-column:2; grid-row:2/4; justify-self:end; text-align:right; } .lg i { display:inline-block; width:10px; height:10px; margin-right:6px; vertical-align:middle; } .lg .c { background:var(--cy2); } .lg .r { background:var(--red); } .lg .q { border:1px solid var(--cy); }
+  .brd { position:relative; display:grid; grid-template-columns:repeat(3,1fr); gap:10px; width:min(300px,100%,36vh); aspect-ratio:1; margin:14px auto 0; grid-column:1/-1; }
+  .brd::before { content:""; position:absolute; inset:-14%; border:1px solid rgba(45,156,255,.35); border-radius:50%; box-shadow:0 0 0 14px rgba(45,156,255,.06), inset 0 0 40px rgba(45,156,255,.15); pointer-events:none; } .brd::after { content:""; position:absolute; inset:-26%; border:1px dashed rgba(45,156,255,.25); border-radius:50%; pointer-events:none; animation:spin 40s linear infinite; }
+  .tl { all:unset; cursor:pointer; position:relative; z-index:2; border:2px solid #2a7ad8; background:linear-gradient(180deg,#0a2a60,#05163a); display:grid; place-items:center; font:700 clamp(28px,5vh,44px) var(--fr); color:#3aa8ff; text-shadow:0 0 12px #3aa8ff; transition:.12s; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px)); animation:pop .35s calc(var(--i)*40ms) both; }
+  .tl:hover { filter:brightness(1.4); } .tl small { position:absolute; right:6px; bottom:3px; font:500 11px var(--fm); color:var(--dim); text-shadow:none; }
+  .tl.ok { background:linear-gradient(180deg,#2ab8ff,#0c7ad8); border-color:#bdf0ff; color:#fff; box-shadow:0 0 16px rgba(90,200,255,.8), inset 0 0 20px rgba(255,255,255,.3); } .tl.ok small { color:#e8faff; }
+  .tl.rd { background:linear-gradient(180deg,#d82020,#7a0a0a); border-color:#ff7a7a; color:#fff; box-shadow:0 0 14px rgba(255,40,40,.7); text-shadow:0 0 10px #ff6a6a; }
+  .tl.cur::after { content:""; position:absolute; inset:-5px; border:2px solid #fff; box-shadow:0 0 14px #fff; animation:bl 1s steps(2) infinite; } .tl.td::before { content:"TODAY"; position:absolute; left:6px; top:3px; font:700 9px var(--fm); letter-spacing:.1em; color:#ffe27a; text-shadow:none; }
+  .tl:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+
+  .dt { padding:12px 18px; flex:1; min-height:0; display:flex; flex-direction:column; gap:8px; }
+  .rw { display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:center; border-bottom:1px solid var(--cy3); padding-bottom:10px; flex:none; }
+  .chip { position:relative; width:84px; height:56px; background:linear-gradient(135deg,#d8dde6,#8a93a4); transform:rotate(-8deg); border:2px solid #fff; box-shadow:0 0 14px rgba(160,200,255,.5); display:grid; place-items:center; font:700 12px var(--fm); color:#334; } .chip::before { content:""; position:absolute; left:8px; top:8px; width:20px; height:12px; background:#334; opacity:.6; }
+  .holo { height:96px; border:1px solid var(--cy); background:repeating-linear-gradient(0deg, rgba(60,170,255,.22) 0 2px, rgba(10,50,110,.4) 2px 5px); display:grid; place-items:center; font:700 56px var(--fr); color:#8fe8ff; text-shadow:0 0 18px #3ac0ff; position:relative; overflow:hidden; } .holo::after { content:""; position:absolute; left:0; right:0; height:20%; top:-20%; background:linear-gradient(180deg,transparent,rgba(160,240,255,.5),transparent); animation:sc 2.4s linear infinite; } .holo small { position:absolute; left:8px; bottom:4px; font:500 11px var(--fm); color:var(--dim); text-shadow:none; }
+  .ttl { font:700 28px var(--fr); letter-spacing:.04em; border-bottom:1px solid var(--cy); padding-bottom:4px; flex:none; display:flex; justify-content:space-between; align-items:baseline; } .ttl small { font:500 13px var(--fm); color:var(--dim); }
+  .mo { display:flex; gap:6px; flex-wrap:wrap; list-style:none; padding:0; flex:none; } .mb { all:unset; cursor:pointer; padding:2px 14px; border:1px solid #2a6ab8; background:#071a40; font:600 15px var(--fr); letter-spacing:.06em; color:var(--dim); } .mb:hover { border-color:var(--cy2); color:#fff; } .mb.on { background:linear-gradient(180deg,#2ab8ff,#0c7ad8); border-color:#bdf0ff; color:#fff; box-shadow:0 0 10px rgba(90,200,255,.6); }
+  textarea { flex:1; min-height:80px; resize:none; width:100%; background:rgba(2,10,30,.7); border:1px solid #2a6ab8; color:var(--tx); font:500 15px/1.8 var(--fj); padding:8px 12px; outline:0; } textarea::placeholder { color:#4a6a98; } textarea:focus { border-color:var(--cy2); box-shadow:0 0 12px rgba(90,200,255,.4); }
+  .ac { display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:none; } .stp { all:unset; cursor:pointer; padding:5px 34px; background:linear-gradient(180deg,#2ab8ff,#0c7ad8); border:1px solid #bdf0ff; font:700 20px var(--fr); letter-spacing:.2em; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,10px 100%,0 calc(100% - 10px)); box-shadow:0 0 14px rgba(90,200,255,.6); transition:.12s; } .stp:hover { filter:brightness(1.2); } .dte { background:#071a40; color:var(--tx); border:1px solid #2a6ab8; font:500 13px var(--fm); padding:3px 8px; color-scheme:dark; } .hint { font:500 12px var(--fm); color:#ffd27a; }
+
+  .foot { padding:2px 0 10px; display:flex; justify-content:flex-end; flex-direction:column; align-items:flex-end; font:500 15px var(--fr); letter-spacing:.04em; } .foot span { display:inline-flex; align-items:center; gap:6px; margin-left:14px; } .foot kbd { width:20px; height:20px; border-radius:50%; background:#0a2a60; border:1px solid var(--cy2); display:inline-grid; place-items:center; font:700 11px var(--fr); }
+  button:focus-visible, textarea:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+
+  #ov { position:fixed; inset:0; z-index:60; display:none; place-items:center; background:rgba(2,8,24,.82); }
+  #ov.show { display:grid; animation:fade .2s both, ovOut .4s 2.4s forwards; cursor:pointer; }
+  #ov .bx { position:relative; width:min(720px,92vw); padding:34px 20px; text-align:center; border-top:2px solid var(--cy2); border-bottom:2px solid var(--cy2); background:linear-gradient(90deg,transparent,rgba(30,120,230,.5) 20%,rgba(30,120,230,.5) 80%,transparent); animation:ex .5s both; } #ov b { display:block; font:700 clamp(36px,8vw,76px) var(--fr); letter-spacing:.2em; text-shadow:0 0 22px var(--cy2), 3px 0 rgba(255,40,40,.7), -3px 0 rgba(40,255,255,.7); animation:gl .3s steps(2) 5; } #ov small { font:500 15px var(--fm); letter-spacing:.3em; color:var(--cy2); }
+  @keyframes fade { from { opacity:0; } } @keyframes pop { from { opacity:0; transform:scale(.7); } } @keyframes bl { 50% { opacity:.3; } } @keyframes spin { to { transform:rotate(360deg); } } @keyframes sc { to { top:100%; } } @keyframes ex { from { transform:scaleY(.05); opacity:0; } } @keyframes gl { 50% { transform:translateX(6px); } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:980px) { body { overflow-y:auto; overflow-x:hidden; } .app { overflow-x:hidden; } .main > * { min-width:0; } .res { max-width:100%; } .res div { min-width:0; flex:1; } .brd { width:min(280px,70vw) !important; } .app { height:auto; min-height:100%; } .res { margin-right:0; } .top { flex-direction:column; gap:8px; padding-top:50px; } .main { grid-template-columns:1fr; } .side { flex-direction:row; padding:0; overflow-x:auto; } .pg { min-width:64px; } .brd { width:min(280px,76vw); margin:20px auto 14px; } .bd .lg { grid-column:1/-1; grid-row:auto; justify-self:start; text-align:left; } .chain { flex-wrap:wrap; } .st b { width:44px; height:44px; font-size:20px; } .foot { align-items:flex-start; padding-bottom:70px; } .rw { grid-template-columns:1fr; } .chip { display:none; } }
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="scan"></div>
+<div class="app">
+  <div class="top"><h1>Cabin's Stamp Club</h1><div class="res"><div><i></i><span id="r1">0</span></div><div><i></i><span id="r2">0</span></div></div></div>
+  <div class="main"><div class="side" id="side"></div><div class="fr" id="board"></div><div class="fr" id="detail"></div></div>
+  <div class="foot"><div id="msg">Select a location to stamp.</div><div><span><kbd>✕</kbd>Confirm (Ctrl+Enter)</span><span><kbd>◯</kbd>Back (Esc)</span><span><kbd>↕</kbd>Move</span><span><kbd>Q</kbd><kbd>E</kbd>Board</span></div></div>
+</div>
+<div id="ov"><div class="bx"><b id="ovT"></b><small id="ovS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="prg"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "EXCELLENT", "★"], ["良い", "GOOD", "◆"], ["普通", "NORMAL", "●"], ["微妙", "TIRED", "▼"], ["最悪", "SLUMP", "✕"]];
+const LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+const NAMES = ["Trainee", "Rookie", "Regular", "Veteran", "Expert", "Master"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}`; };
+
+let data = load(), page = 0, cur = 8, mood = null, draft = null, selectedOverride = null, ovTimer;
+const win = p => Array.from({ length: 9 }, (_, i) => shift(today(), -(p * 9 + (8 - i))));  // idx 8 = newest of the window
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const lineCount = p => { const w = win(p); return LINES.filter(l => l.every(i => data[w[i]])).length; };
+const stamped = p => win(p).filter(k => data[k]).length;
+const selKey = () => win(page)[cur];
+
+function render() {
+  $("r1").textContent = streakCount(); $("r2").textContent = totalXp();
+  $("side").innerHTML = Array.from({ length: 4 }, (_, p) => `<button class="pg ${p === page ? "on" : ""}" data-p="${p}">0${p + 1}<small>${stamped(p)}/9</small></button>`).join("");
+  const w = win(page), lc = lineCount(page), sc = stamped(page), t = today();
+  const st = [[lc >= 1, "▥", "Bingo"], [lc >= 3, "▦", "Triple Bingo"], [sc === 9, "✦", "Blackout"]];
+  $("board").innerHTML = `<div class="fh">0${page + 1} ${NAMES[page % NAMES.length]} Board</div>
+    <div class="chain"><div class="cab">CABIN<small>SYSTEM</small></div>${st.map(([ok, ic, n], i) => (i ? `<span class="ar">›</span>` : "") + `<div class="st ${ok ? "ok" : ""}"><b>${ic}</b>${n}</div>`).join("")}</div>
+    <div class="bd"><div class="tb">Total Bingos<br><span>${lc} / 8</span></div>
+      <div class="lg"><div><i class="c"></i>Stamped</div><div><i class="r"></i>Tough day</div><div><i class="q"></i>Empty</div></div>
+      <div class="brd">${w.map((k, i) => { const e = data[k], d = new Date(k + "T00:00:00"), m = e && MOODS.find(x => x[0] === e.mood);
+        return `<button class="tl ${e ? (["微妙", "最悪"].includes(e.mood) ? "rd" : "ok") : ""} ${i === cur ? "cur" : ""} ${k === t ? "td" : ""}" data-i="${i}" style="--i:${i}">${e ? (m ? m[2] : "◆") : "?"}<small>${md(k)}</small></button>`; }).join("")}</div></div>`;
+  const k = selKey(), e = data[k], d = new Date(k + "T00:00:00");
+  if (mood === null && e && draft === null) mood = e.mood;
+  $("detail").innerHTML = `<div class="dt"><div class="rw"><div class="chip">DATA</div><div class="holo">${d.getDate()}<small>${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")} ${DOW[d.getDay()].toUpperCase()}</small></div></div>
+    <div class="ttl"><span>${md(k)} ${DOW[d.getDay()]}</span><small>${e ? `STAMPED / STREAK ${streakAt(k)}` : "NOT STAMPED"}</small></div>
+    <ul class="mo">${MOODS.map(([m, en]) => `<li><button class="mb ${m === mood ? "on" : ""}" data-m="${m}">${m} ${en}</button></li>`).join("")}</ul>
+    <textarea id="ta" placeholder="Diary data will be uploaded to the Shelter. 今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+    <div class="ac"><button class="stp" id="save">STAMP</button><input type="date" class="dte" id="dt" value="${k}" max="${today()}"><span class="hint">${k === today() ? "" : "Editing a past date"}</span></div></div>`;
+  $("msg").textContent = e ? "Stamp again to update this entry." : "Select a location to stamp.";
+}
+function jumpTo(k) { const ago = Math.round((new Date(today() + "T00:00:00") - new Date(k + "T00:00:00")) / 864e5); page = Math.floor(ago / 9); cur = 8 - (ago % 9); mood = null; draft = null; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const k = selKey(), before = Math.floor(totalXp() / XP_PER_RANK), lb = lineCount(page), sb = stamped(page), isNew = !data[k];
+  data[k] = { mood, text }; store(data); draft = null;
+  const la = lineCount(page), sa = stamped(page), up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  let t = "STAMP CONFIRMED", s = isNew ? `${streakCount()} DAY STREAK` : "UPDATED";
+  if (sa === 9 && sb < 9) t = "BLACKOUT!"; else if (la >= 3 && lb < 3) t = "TRIPLE BINGO!"; else if (la >= 1 && lb < 1) t = "BINGO!"; else if (up) { t = "RANK UP"; s = "BOT DATA UPLOADED"; }
+  $("ovT").textContent = t; $("ovS").textContent = s;
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2900);
+  render();
+}
+document.addEventListener("click", e => {
+  const pg = e.target.closest(".pg"); if (pg) { page = +pg.dataset.p; cur = 8; mood = null; draft = null; return render(); }
+  const tl = e.target.closest(".tl"); if (tl) { cur = +tl.dataset.i; mood = null; draft = null; return render(); }
+  const mb = e.target.closest(".mb"); if (mb) { mood = mb.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { const t = $("ta").value, m = mood; jumpTo(e.target.value); if (!data[selKey()]) { draft = t; mood = m; render(); } } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $("ov").classList.remove("show"); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key === "q" || e.key === "Q") { page = Math.min(3, page + 1); cur = 8; mood = null; draft = null; return render(); }
+  if (e.key === "e" || e.key === "E") { page = Math.max(0, page - 1); cur = 8; mood = null; draft = null; return render(); }
+  if (e.key === "Enter") { const ta = $("ta"); if (ta) { e.preventDefault(); ta.focus(); } return; }
+  const mv = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!mv) return;
+  e.preventDefault(); const x = cur % 3 + mv[0], y = Math.floor(cur / 3) + mv[1]; if (x < 0 || x > 2 || y < 0 || y > 2) return;
+  cur = y * 3 + x; mood = null; draft = null; render();
+});
+render();
+</script>
+</body>
+</html>
