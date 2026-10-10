@@ -7,6 +7,7 @@
       titles: [
         { id: "p3", file: "persona3.html", name: "PERSONA 3", sub: "蒼い影時間", c1: "#5ec8ff", c2: "#0a58c8" },
         { id: "p3r", file: "persona3_reload.html", name: "PERSONA 3 RELOAD", sub: "満月の下の日誌", c1: "#3cc8ff", c2: "#02143f" },
+        { id: "p4g", file: "persona4g.html", name: "PERSONA 4 GOLDEN", sub: "霧の中の真実", c1: "#ffd21a", c2: "#c85a00" },
         { id: "p5", file: "persona5.html", name: "PERSONA 5", sub: "赤と黒", c1: "#e60012", c2: "#0b0b0b" }
       ] },
     { id: "destiny", name: "DESTINY",          sub: "デスティニーシリーズ",     c1: "#7fd4ff", c2: "#0a1018",
