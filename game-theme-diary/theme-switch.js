@@ -110,6 +110,7 @@
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
+        { id: "mgs1c", file: "mgs1_codec.html", name: "METAL GEAR SOLID  CODEC", sub: "コーデック無線" },
         { id: "mgs2", file: "mgs2.html", name: "METAL GEAR SOLID 2", sub: "サンズ・オブ・リバティ" },
         { id: "mgs3", file: "mgs3.html", name: "METAL GEAR SOLID 3", sub: "スネークイーター" },
         { id: "mgs4", file: "mgs4.html", name: "METAL GEAR SOLID 4", sub: "ガンズ・オブ・ザ・パトリオット" }
