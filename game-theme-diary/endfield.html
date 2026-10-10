@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Field Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oxanium:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Industrial sci-fi HUD: central radar with wireframe vessel, tilted white menu cards (left), tile grid (right), yellow accents; light skill-road screen */
+  :root { --y:#ffe100; --yd:#c9b000; --bg:#0b0d10; --card:#eceef0; --card2:#d6d9dc; --ink:#14171b; --mut:#8a9098; --line:rgba(255,255,255,.18);
+    --fb:'Zen Kaku Gothic New',sans-serif; --fn:'Oxanium',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:#fff; background:radial-gradient(ellipse at 50% 45%,#1a1e24,#07080a 75%); overflow:hidden; }
+  button { font:inherit; color:inherit; }
+  .view { position:fixed; inset:0; display:none; }
+  body[data-v="hud"] #vHud, body[data-v="tree"] #vTree { display:block; animation:fadeIn .35s both; }
+  .stars { position:absolute; inset:0; pointer-events:none; background-image:radial-gradient(1px 1px at 20% 30%,#fff8,transparent),radial-gradient(1px 1px at 70% 20%,#fff6,transparent),radial-gradient(1px 1px at 40% 80%,#fff5,transparent),radial-gradient(1px 1px at 85% 65%,#fff7,transparent),radial-gradient(1px 1px at 10% 70%,#fff5,transparent); }
+  .crosses i { position:absolute; width:14px; height:14px; opacity:.5; }
+  .crosses i::before, .crosses i::after { content:""; position:absolute; left:50%; top:50%; background:#fff; translate:-50% -50%; } .crosses i::before { width:14px; height:1px; } .crosses i::after { width:1px; height:14px; }
+
+  /* ---------- HUD layout ---------- */
+  .hud { position:absolute; inset:0; display:grid; grid-template-columns:minmax(220px,24%) 1fr minmax(240px,27%); grid-template-rows:56px minmax(0,1fr) auto; gap:0 1vw; padding:14px 22px 16px; }
+  .topbar { grid-column:1 / -1; display:flex; align-items:center; justify-content:center; gap:28px; font:700 16px var(--fn); }
+  .topbar span { display:flex; align-items:center; gap:8px; } .topbar svg { width:22px; height:22px; }
+  .sysicons { position:absolute; left:8%; top:62px; display:flex; gap:22px; z-index:3; }
+  .sysicons svg { width:30px; height:30px; }
+
+  /* left tilted cards */
+  .left { grid-column:1; grid-row:2; position:relative; display:flex; flex-direction:column; justify-content:center; gap:14px; perspective:900px; padding-top:40px; }
+  .lc { all:unset; box-sizing:border-box; cursor:pointer; position:relative; height:clamp(64px,12vh,96px); width:78%; margin-left:calc(var(--x) * 1%); display:grid; place-items:center; align-content:center; gap:4px; color:var(--ink); font:900 15px var(--fb);
+    background:linear-gradient(180deg,#f7f8f9,var(--card2)); border-radius:10px 10px 10px 2px; box-shadow:0 6px 0 rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.7); transform:rotateY(18deg) rotate(calc(var(--r) * 1deg)); transform-origin:left center; transition:transform .15s, background .15s; animation:cardIn .4s calc(var(--i) * 70ms + .1s) both; }
+  .lc::before { content:""; position:absolute; right:-36px; top:50%; width:32px; height:22px; translate:0 -50%; background:repeating-linear-gradient(180deg,var(--line) 0 1px,transparent 1px 5px); }
+  .lc svg { width:36px; height:36px; } .lc .ic { color:var(--ink); }
+  .lc.cur { background:linear-gradient(180deg,#fff,#eceef0); transform:rotateY(10deg) rotate(calc(var(--r) * 1deg)) translateX(8px); box-shadow:0 6px 0 rgba(0,0,0,.35), 0 0 0 3px var(--y); }
+  .lc.cur .ic { color:var(--ink); background:var(--y); border-radius:50%; padding:4px; }
+  .lc:focus-visible { outline:3px solid var(--y); outline-offset:3px; }
+
+  /* center radar */
+  .center { grid-column:2; grid-row:2; position:relative; display:grid; place-items:center; min-height:0; }
+  .radar { position:relative; width:min(100%,calc(100vh - 150px)); aspect-ratio:1; border-radius:50%; animation:spinIn .7s both; }
+  .radar .disc { position:absolute; inset:7%; border-radius:50%; overflow:hidden; background:radial-gradient(circle,#101317 0 55%,#07090b 75%); box-shadow:0 0 0 2px #2a2f36, inset 0 0 60px rgba(0,0,0,.8); }
+  .radar .disc::before { content:""; position:absolute; inset:0; background:radial-gradient(circle,transparent 0 24.5%,var(--line) 25% 25.3%,transparent 25.6% 49.5%,var(--line) 50% 50.3%,transparent 50.6%), radial-gradient(circle at 50% 50%,rgba(255,255,255,.12) 1px,transparent 1.5px) 0 0/22px 22px; }
+  .radar .sweep { position:absolute; inset:7%; border-radius:50%; background:conic-gradient(from 0deg,rgba(255,225,0,.0) 0 82%,rgba(255,225,0,.25) 99%,rgba(255,225,0,.6) 100%); animation:spin 6s linear infinite; }
+  .radar .ring { position:absolute; inset:2%; border-radius:50%; border:2px solid rgba(255,255,255,.55); -webkit-mask:conic-gradient(#000 0 30%,transparent 30% 34%,#000 34% 70%,transparent 70% 73%,#000 73%); mask:conic-gradient(#000 0 30%,transparent 30% 34%,#000 34% 70%,transparent 70% 73%,#000 73%); animation:spin 80s linear infinite reverse; }
+  .radar .ring2 { position:absolute; inset:4.5%; border-radius:50%; border:6px solid var(--y); -webkit-mask:conic-gradient(transparent 0 8%,#000 8% 22%,transparent 22% 58%,#000 58% 63%,transparent 63%); mask:conic-gradient(transparent 0 8%,#000 8% 22%,transparent 22% 58%,#000 58% 63%,transparent 63%); }
+  .radar .ticks { position:absolute; inset:0; border-radius:50%; background:repeating-conic-gradient(rgba(255,255,255,.35) 0 .4deg,transparent .4deg 6deg); -webkit-mask:radial-gradient(circle,transparent 0 48.6%,#000 48.8% 50%,transparent 50.2%); mask:radial-gradient(circle,transparent 0 48.6%,#000 48.8% 50%,transparent 50.2%); }
+  .tri { position:absolute; width:0; height:0; border-left:12px solid transparent; border-right:12px solid transparent; border-bottom:20px solid var(--y); translate:-50% -50%; rotate:var(--rot); filter:drop-shadow(0 0 4px rgba(255,225,0,.6)); }
+  .tri.off { border-bottom-color:transparent; filter:none; }
+  .tri.off::after { content:""; position:absolute; left:-12px; top:0; border-left:12px solid transparent; border-right:12px solid transparent; border-bottom:20px solid rgba(255,255,255,.25); clip-path:polygon(50% 10%,90% 95%,10% 95%); }
+  .tri button { all:unset; cursor:pointer; position:absolute; left:-16px; top:-4px; width:32px; height:28px; }
+  .tri.today { animation:pulse 1.2s ease-in-out infinite; }
+  .ship { position:absolute; left:14%; top:22%; width:72%; opacity:.9; animation:float 6s ease-in-out infinite; filter:drop-shadow(0 0 8px rgba(255,255,255,.25)); }
+  .beam { position:absolute; left:50%; top:9%; width:3px; height:38%; background:linear-gradient(180deg,transparent,var(--y)); transform-origin:bottom; rotate:-12deg; translate:-50% 0; box-shadow:0 0 10px var(--y); }
+  .beam::after { content:""; position:absolute; left:50%; bottom:-10px; width:22px; height:22px; translate:-50% 0; border-radius:50%; background:radial-gradient(circle,#fff,var(--y) 40%,transparent 70%); }
+  .label { position:absolute; left:50%; top:57%; translate:-50% 0; text-align:center; white-space:nowrap; }
+  .label b { display:block; font:800 clamp(16px,2.4vh,22px) var(--fb); } .label span { display:inline-flex; align-items:center; gap:6px; font:700 clamp(14px,2.1vh,19px) var(--fb); } .label span i { width:16px; height:16px; background:#3aa8e8; display:inline-block; }
+  .band { position:absolute; left:7%; right:7%; bottom:7%; height:20%; clip-path:ellipse(50% 100% at 50% 0%); }
+  .band .bg { position:absolute; inset:0; background:var(--y); clip-path:polygon(0 0,100% 0,100% 100%,0 100%); border-radius:0 0 50% 50% / 0 0 100% 100%; }
+  .bolt { all:unset; cursor:pointer; position:absolute; left:50%; bottom:13%; translate:-50% 0; width:clamp(58px,10vh,84px); aspect-ratio:1; border-radius:50%; background:var(--y); box-shadow:0 0 0 5px #fff, 0 0 0 7px var(--ink), 0 0 24px rgba(255,225,0,.7); display:grid; place-items:center; z-index:3; transition:transform .1s; }
+  .bolt svg { width:50%; } .bolt:hover, .bolt:focus-visible { transform:scale(1.07); outline:0; } .bolt:active { transform:scale(.95); }
+  .bandbtns { position:absolute; bottom:9%; left:50%; translate:-50% 0; display:flex; gap:clamp(100px,18vh,150px); z-index:3; }
+  .bandbtns button { all:unset; cursor:pointer; width:36px; height:36px; display:grid; place-items:center; background:#fff; border-radius:6px; box-shadow:0 2px 0 rgba(0,0,0,.3); }
+  .bandbtns button:hover, .bandbtns button:focus-visible { background:var(--ink); outline:0; } .bandbtns button:hover svg *, .bandbtns button:focus-visible svg * { stroke:#fff; }
+  .bandbtns svg { width:24px; height:24px; }
+
+  /* right tiles */
+  .right { grid-column:3; grid-row:2; display:flex; flex-direction:column; gap:12px; justify-content:center; perspective:900px; }
+  .news { position:relative; height:66px; background:#111; border:3px solid var(--y); border-radius:6px; overflow:hidden; transform:rotateY(-14deg); animation:slideL .4s .1s both; }
+  .news b { position:absolute; left:6px; top:-1px; z-index:2; font:800 9px var(--fn); letter-spacing:.1em; background:#e8322a; color:#fff; padding:1px 6px; }
+  .news .tk { position:absolute; left:0; top:22px; white-space:nowrap; font:700 15px var(--fb); color:#fff; padding-left:100%; animation:ticker 18s linear infinite; }
+  .news .dt { position:absolute; right:8px; top:2px; font:700 11px var(--fn); color:var(--y); }
+  .tiles { display:grid; grid-template-columns:1fr 1fr; gap:10px; transform:rotateY(-16deg); transform-origin:right center; }
+  .tl { all:unset; box-sizing:border-box; cursor:pointer; position:relative; height:clamp(56px,10.5vh,84px); display:grid; place-items:center; align-content:center; gap:2px; color:var(--ink); font:900 14px var(--fb);
+    background:linear-gradient(180deg,#f7f8f9,var(--card2)); border-radius:8px; box-shadow:0 5px 0 rgba(0,0,0,.35); animation:cardIn .35s calc(var(--i) * 40ms + .2s) both; transition:transform .12s; }
+  .tl small { font:700 11px var(--fn); color:#5a6068; } .tl svg { width:28px; height:28px; }
+  .tl.empty { background:linear-gradient(180deg,#9aa0a6,#7a8086); color:#2a2e33; } .tl.empty svg { opacity:.35; }
+  .tl.today::after { content:"TODAY"; position:absolute; right:4px; top:3px; font:800 9px var(--fn); background:var(--y); padding:0 4px; }
+  .tl.cur { box-shadow:0 5px 0 rgba(0,0,0,.35), 0 0 0 3px var(--y); transform:translateY(-3px); } .tl:focus-visible { outline:3px solid var(--y); }
+  .tpg { display:flex; justify-content:space-between; font:700 12px var(--fn); color:var(--mut); padding:0 4px; } .tpg button { all:unset; cursor:pointer; } .tpg button:hover { color:var(--y); } .tpg button:disabled { opacity:.3; }
+
+  /* player card */
+  .player { grid-column:1; grid-row:3; position:relative; display:grid; grid-template-columns:auto 1fr; gap:12px; align-items:center; padding:10px 16px 10px 10px; background:linear-gradient(90deg,rgba(20,23,27,.95),rgba(20,23,27,.75)); border:2px solid var(--y); border-radius:4px 14px 4px 4px; transform:skewX(-6deg); animation:slideR .4s .25s both; }
+  .player .av { width:64px; height:64px; background:#2a2f36; display:grid; place-items:center; border:1px solid #444; } .player .av svg { width:46px; }
+  .player .nm { font:700 15px var(--fb); color:#cfd3d8; } .player .lvrow { display:flex; justify-content:space-between; align-items:baseline; } .player .lvrow span { font:700 13px var(--fb); } .player .lvrow b { font:700 30px/1 var(--fn); }
+  .player .xb { height:5px; background:#3a3f46; margin-top:4px; } .player .xb i { display:block; height:100%; background:var(--y); transition:width .8s; } .player small { font:700 12px var(--fn); color:var(--y); }
+  .power { position:absolute; left:6px; top:-42px; width:32px; height:32px; background:#e8322a; border-radius:4px; display:grid; place-items:center; transform:skewX(6deg); }
+  .foot { grid-column:2 / 4; grid-row:3; align-self:end; text-align:right; font:500 11px var(--fb); color:var(--mut); }
+  .wordmark { position:absolute; left:50%; bottom:4px; translate:-50% 0; font:800 20px var(--fn); letter-spacing:.25em; color:#fff; opacity:.85; }
+
+  /* ---------- skill road view ---------- */
+  #vTree { background:linear-gradient(160deg,#e9ebec,#c9cdd0); color:var(--ink); overflow:hidden; }
+  #vTree::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(90deg,rgba(0,0,0,.05) 0 1px,transparent 1px 80px), repeating-linear-gradient(0deg,rgba(0,0,0,.05) 0 1px,transparent 1px 80px); transform:perspective(800px) rotateX(55deg) scale(2); transform-origin:50% 100%; }
+  .crumb { position:absolute; left:20px; top:14px; z-index:3; display:flex; align-items:center; gap:8px; font:900 15px var(--fb); } .crumb small { font:700 9px var(--fn); color:#666; display:block; }
+  .backbtn { all:unset; cursor:pointer; position:absolute; right:150px; top:14px; z-index:3; width:34px; height:34px; border-radius:50%; background:#fff; display:grid; place-items:center; box-shadow:0 2px 0 rgba(0,0,0,.25); } .backbtn:hover, .backbtn:focus-visible { background:var(--y); outline:0; }
+  .road { position:absolute; inset:0; }
+  .road svg { position:absolute; inset:0; width:100%; height:100%; }
+  .node { all:unset; cursor:pointer; position:absolute; translate:-50% -50%; width:clamp(34px,5vh,46px); aspect-ratio:1; border-radius:50%; display:grid; place-items:center; background:#7d8287; border:3px solid #fff; box-shadow:0 2px 0 rgba(0,0,0,.25); color:#fff; font:800 12px var(--fn); transition:transform .12s; animation:pop .3s calc(var(--i) * 40ms + .2s) both; }
+  .node.on { background:var(--y); color:var(--ink); border-color:#fff; }
+  .node.next { background:#fff; color:var(--ink); border-color:var(--y); box-shadow:0 0 0 4px rgba(255,225,0,.5); animation:pulse 1.4s ease-in-out infinite; }
+  .node.cur { transform:scale(1.25); outline:3px solid var(--ink); outline-offset:2px; }
+  .node svg { width:55%; }
+  .skillbox { position:absolute; left:min(26vw,320px); top:16vh; z-index:3; width:min(330px,40vw); background:linear-gradient(90deg,rgba(255,225,0,.92),rgba(255,225,0,.55)); padding:10px 14px; clip-path:polygon(0 0,100% 0,96% 100%,0 100%); animation:slideR .4s .1s both; }
+  .skillbox h3 { font:900 13px var(--fb); display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+  .sk { display:grid; grid-template-columns:34px 1fr; gap:10px; align-items:center; margin:6px 0; }
+  .sk i { width:32px; height:32px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; font-style:normal; font:800 13px var(--fb); }
+  .sk div { font:800 12px var(--fn); } .sk div span { font:700 12px var(--fb); margin-left:6px; }
+  .sk em { display:block; height:5px; background:rgba(0,0,0,.18); margin-top:3px; } .sk em::after { content:""; display:block; height:100%; width:var(--v); background:var(--ink); }
+  .tip { position:absolute; z-index:4; right:4vw; top:18vh; width:min(300px,36vw); background:#fff; border-left:6px solid var(--y); padding:12px 14px; box-shadow:0 6px 18px rgba(0,0,0,.18); }
+  .tip b { font:800 22px var(--fn); } .tip p { font:700 13px/1.6 var(--fb); margin-top:4px; color:#3a3f46; }
+  .promo { position:absolute; left:min(16vw,200px); bottom:12vh; z-index:3; width:min(420px,60vw); animation:slideU .4s .15s both; }
+  .promo .row { display:flex; align-items:baseline; gap:14px; } .promo small { font:800 12px var(--fb); color:#555; } .promo b { font:800 24px var(--fn); } .promo .big { font:300 54px/1 var(--fn); color:#555; } .promo .big sub { font-size:.35em; vertical-align:baseline; }
+  .promo .bar { height:12px; background:rgba(0,0,0,.15); margin-top:6px; clip-path:polygon(0 0,100% 0,98% 100%,0 100%); } .promo .bar i { display:block; height:100%; background:var(--y); width:var(--v); transition:width .8s; }
+  .lvup { all:unset; cursor:pointer; position:absolute; left:2vw; bottom:calc(12vh + 60px); z-index:3; display:flex; align-items:center; gap:18px; padding:8px 12px 8px 24px; background:#fff; border-radius:999px; font:900 14px var(--fb); box-shadow:0 3px 0 rgba(0,0,0,.25); }
+  .lvup span { width:24px; height:24px; border-radius:50%; background:var(--ink); color:#fff; display:grid; place-items:center; font-size:12px; } .lvup:hover, .lvup:focus-visible { background:var(--y); outline:0; }
+  .emblemL { position:absolute; left:3vw; top:22vh; width:min(22vw,260px); opacity:.85; animation:float 7s ease-in-out infinite; }
+
+  /* hints */
+  .hints { position:fixed; right:16px; bottom:10px; z-index:30; display:flex; gap:14px; font:700 11px var(--fb); color:var(--mut); }
+  .hints kbd { font:700 10px var(--fn); background:#2a2f36; color:#fff; padding:1px 5px; border-radius:3px; margin-right:3px; }
+  body[data-v="tree"] .hints { color:#555; } body[data-v="hud"] .hints { bottom:30px; }
+
+  /* ---------- editor ---------- */
+  #ed { position:fixed; inset:0; z-index:50; display:none; place-items:center; background:rgba(0,0,0,.66); padding:12px; }
+  #ed.show { display:grid; }
+  .win { width:min(620px,100%); max-height:94vh; overflow:auto; background:#14171b; border:1px solid #3a3f46; box-shadow:0 0 0 1px #000, 0 20px 50px rgba(0,0,0,.6); clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,26px 100%,0 calc(100% - 26px)); animation:pop .25s both; }
+  .win h3 { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 20px; background:var(--y); color:var(--ink); font:900 18px var(--fb); }
+  .win h3 small { font:800 12px var(--fn); letter-spacing:.15em; }
+  .win .in { padding:14px 20px 18px; display:flex; flex-direction:column; gap:10px; }
+  .lb { font:800 11px var(--fn); letter-spacing:.2em; color:var(--mut); display:flex; align-items:center; gap:8px; } .lb::after { content:""; flex:1; height:1px; background:#2e333a; }
+  .moods { display:flex; flex-wrap:wrap; gap:8px; list-style:none; padding:0; }
+  .moods button { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; padding:6px 14px 6px 8px; background:#22262c; border:1px solid #3a3f46; font:800 14px var(--fb); clip-path:polygon(0 0,calc(100% - 10px) 0,100% 10px,100% 100%,0 100%); }
+  .moods button i { width:22px; height:22px; display:grid; place-items:center; background:#3a3f46; transform:rotate(45deg); } .moods button i::after { content:""; width:8px; height:8px; background:var(--c); }
+  .moods button:hover { border-color:var(--y); } .moods button.on { background:var(--y); color:var(--ink); border-color:var(--y); } .moods button.on i { background:var(--ink); }
+  textarea { min-height:160px; resize:vertical; width:100%; background:#0d0f12; color:#eef1f4; border:1px solid #3a3f46; font:500 16px/1.8 var(--fb); padding:10px 14px; outline:0; background-image:radial-gradient(circle,rgba(255,255,255,.06) 1px,transparent 1.5px); background-size:18px 18px; }
+  textarea:focus { border-color:var(--y); box-shadow:0 0 0 1px var(--y); }
+  .acts { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .save { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; padding:8px 26px; background:var(--y); color:var(--ink); font:900 15px var(--fb); clip-path:polygon(10px 0,100% 0,calc(100% - 10px) 100%,0 100%); } .save svg { width:16px; }
+  .cl { all:unset; cursor:pointer; padding:7px 18px; border:1px solid #5a6068; font:700 14px var(--fb); } .cl:hover { border-color:#fff; }
+  .save:hover, .save:focus-visible { filter:brightness(1.1); outline:2px solid #fff; }
+  .hint { font:700 12px var(--fb); color:var(--mut); }
+  button:focus-visible, textarea:focus-visible { outline:2px solid var(--y); outline-offset:2px; }
+
+  /* ---------- sync overlay ---------- */
+  #ov { position:fixed; inset:0; z-index:70; display:grid; place-content:center; justify-items:center; text-align:center; visibility:hidden; pointer-events:none; overflow:hidden; }
+  #ov.show { visibility:visible; pointer-events:auto; cursor:pointer; animation:ovOut .4s 2.5s forwards; }
+  #ov::before { content:""; position:absolute; left:50%; top:50%; width:20vmax; height:20vmax; translate:-50% -50%; border-radius:50%; border:3px solid var(--y); opacity:0; }
+  #ov.show::before { animation:ripple 1.2s ease-out forwards; }
+  #ov .strip { position:absolute; left:0; right:0; top:50%; height:200px; translate:0 -50%; background:var(--y); transform:scaleY(0); }
+  #ov.show .strip { animation:strip .35s .1s cubic-bezier(.2,.9,.3,1) forwards; }
+  #ov b { position:relative; font:800 clamp(34px,7vw,72px)/1 var(--fn); letter-spacing:.12em; color:var(--ink); opacity:0; } #ov.show b { animation:txt .35s .3s forwards; }
+  #ov span { position:relative; font:900 16px var(--fb); color:var(--ink); margin-top:6px; opacity:0; } #ov.show span { animation:txt .3s .45s forwards; }
+  #ov em { position:relative; margin-top:12px; font:700 15px var(--fn); font-style:normal; color:var(--ink); letter-spacing:.1em; opacity:0; } #ov.show em { animation:txt .3s .6s forwards; }
+
+  @keyframes fadeIn { from { opacity:0; } }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes spinIn { from { opacity:0; transform:rotate(-30deg) scale(.9); } }
+  @keyframes cardIn { from { opacity:0; translate:-30px 0; } }
+  @keyframes slideL { from { opacity:0; translate:30px 0; } }
+  @keyframes slideR { from { opacity:0; translate:-30px 0; } }
+  @keyframes slideU { from { opacity:0; translate:0 20px; } }
+  @keyframes float { 50% { translate:0 -6px; } }
+  @keyframes pulse { 50% { opacity:.55; } }
+  @keyframes pop { from { opacity:0; scale:.7; } }
+  @keyframes ticker { to { transform:translateX(-100%); } }
+  @keyframes ripple { 0% { opacity:1; transform:scale(.2); } 100% { opacity:0; transform:scale(5); } }
+  @keyframes strip { to { transform:scaleY(1); } }
+  @keyframes txt { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+  @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  body.ready .lc, body.ready .tl, body.ready .node { animation:none; }
+  body.ready .node.next { animation:pulse 1.4s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; } }
+
+  @media (max-width:860px) {
+    .view { overflow-y:auto; overflow-x:hidden; }
+    .hud { position:relative; inset:auto; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:56px 12px 70px; min-height:100%; }
+    .topbar { justify-content:flex-start; gap:16px; font-size:14px; }
+    .sysicons { display:none; }
+    .center { order:1; } .radar { width:100%; }
+    .left { order:2; display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:0; perspective:none; }
+    .lc { width:auto; margin:0; transform:none; height:72px; } .lc.cur { transform:none; } .lc::before { display:none; }
+    .right { order:3; perspective:none; } .news, .tiles { transform:none; } .tiles { grid-template-columns:repeat(4,1fr); } .tl { height:64px; font-size:12px; }
+    .player { order:4; transform:none; } .power { display:none; }
+    .foot { order:5; text-align:center; } .wordmark { position:static; translate:none; text-align:center; order:6; }
+    .hints { left:0; right:0; bottom:0 !important; justify-content:center; padding:8px; background:rgba(10,12,14,.9); flex-wrap:wrap; gap:8px; }
+    .crumb { top:14px; } .backbtn { right:auto; left:auto; top:52px; right:12px; }
+    .emblemL { position:relative; left:auto; top:auto; display:block; width:120px; margin:70px auto 0; }
+    .skillbox { position:relative; left:auto; top:auto; width:auto; margin:10px 12px; }
+    .road { position:relative; height:680px; }
+    .label { top:44%; } .label b { font-size:15px; } .label span { font-size:13px; }
+    .bolt { width:58px; bottom:10%; } .bandbtns { gap:110px; bottom:6%; }
+    .tip { position:relative; right:auto; top:auto; width:auto; margin:0 12px; }
+    .promo { position:relative; left:auto; bottom:auto; width:auto; margin:16px 12px; }
+    .lvup { position:relative; left:auto; bottom:auto; margin:0 12px 80px; }
+  }
+</style>
+</head>
+<body data-v="hud">
+<!-- HUD -->
+<section class="view" id="vHud" aria-label="メイン画面">
+  <div class="stars"></div>
+  <div class="crosses" id="crosses"></div>
+  <div class="hud">
+    <div class="topbar">
+      <span title="総記録"><svg viewBox="0 0 24 24"><path d="M4 8l8-5 8 5v8l-8 5-8-5z" fill="none" stroke="#ffe100" stroke-width="2"/><path d="M9 12h6" stroke="#fff" stroke-width="2"/></svg><b id="tAll">0</b></span>
+      <span title="連続日数"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8" fill="none" stroke="#ff8a8a" stroke-width="2"/><path d="M12 7v5l3 3" stroke="#fff" stroke-width="2" fill="none"/></svg><b id="tSt">0</b></span>
+      <span title="今月の記録"><svg viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 9-13h-6z" fill="#fff"/></svg><b id="tMon">0/0</b></span>
+    </div>
+    <div class="sysicons" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 2l2 3 3-1 1 3 3 1-1 3 3 2-3 2 1 3-3 1-1 3-3-1-2 3-2-3-3 1-1-3-3-1 1-3-3-2 3-2-1-3 3-1 1-3 3 1z" fill="#fff"/><circle cx="12" cy="12" r="3.5" fill="#0b0d10"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M12 3l10 18H2z" fill="#fff"/><path d="M11 9h2v6h-2zM11 17h2v2h-2z" fill="#0b0d10"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M2 6h20v13H2z" fill="#fff"/><path d="M2 6l10 7 10-7" fill="none" stroke="#0b0d10" stroke-width="2"/></svg>
+    </div>
+
+    <nav class="left" id="left" aria-label="メニュー"></nav>
+
+    <div class="center">
+      <div class="radar">
+        <div class="ticks"></div><div class="ring"></div><div class="ring2"></div>
+        <div class="disc"></div><div class="sweep"></div>
+        <svg class="ship" viewBox="0 0 400 140" aria-hidden="true"><g fill="none" stroke="#e8ecf0" stroke-width="1.2">
+          <path d="M20 60l60-18h170l130 22-130 14H80z" fill="rgba(220,226,232,.12)"/><path d="M80 42v36M120 42v36M160 42v36M200 42v36M250 42v34"/>
+          <path d="M60 50l-30-30h40l30 22M60 72l-30 30h40l30-24" fill="rgba(220,226,232,.08)"/><path d="M90 52h150M90 66h150" stroke-dasharray="4 4"/>
+          <path d="M250 50l120 12M250 72l120-6"/><circle cx="110" cy="60" r="8"/><path d="M40 52h16v16H40z"/></g>
+          <g fill="#ffe100"><circle cx="372" cy="63" r="3"/></g></svg>
+        <div class="beam"></div>
+        <div id="tris"></div>
+        <div class="label"><b id="lDate"></b><span><i></i><span id="lSub"></span></span></div>
+        <div class="band"><div class="bg"></div></div>
+        <button class="bolt" id="bolt" aria-label="今日を記録"><svg viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 9-13h-6z" fill="#14171b"/></svg></button>
+        <div class="bandbtns"><button id="bTree" aria-label="能力拡張"><svg viewBox="0 0 24 24"><g fill="none" stroke="#14171b" stroke-width="2"><path d="M12 3v6M6 15v-3h12v3M12 9v3"/><rect x="9" y="2" width="6" height="5"/><rect x="3" y="15" width="6" height="5"/><rect x="15" y="15" width="6" height="5"/></g></svg></button>
+          <button id="bStat" aria-label="履歴"><svg viewBox="0 0 24 24"><g fill="none" stroke="#14171b" stroke-width="2"><path d="M3 21h18M5 17l5-5 4 3 6-8"/><path d="M16 7h4v4"/></g></svg></button></div>
+      </div>
+    </div>
+
+    <aside class="right">
+      <div class="news"><b>BREAKING NEWS</b><span class="dt" id="nDate"></span><span class="tk" id="ticker"></span></div>
+      <div class="tiles" id="tiles"></div>
+      <div class="tpg"><button id="tOlder">◀ OLDER</button><span id="tPg"></span><button id="tNewer">NEWER ▶</button></div>
+    </aside>
+
+    <div class="player">
+      <span class="power"><svg viewBox="0 0 24 24" width="18"><path d="M12 3v8M7 6a8 8 0 1 0 10 0" fill="none" stroke="#fff" stroke-width="2.5"/></svg></span>
+      <div class="av"><svg viewBox="0 0 40 40"><path d="M20 4l14 8v16l-14 8-14-8V12z" fill="none" stroke="#ffe100" stroke-width="2"/><path d="M20 12l7 4v8l-7 4-7-4v-8z" fill="#ffe100"/></svg></div>
+      <div><div class="nm">管理人</div><div class="lvrow"><span>記録レベル</span><b id="pLv">1</b></div><div class="xb"><i id="pXb"></i></div><small id="pXp">0/300</small></div>
+    </div>
+    <div class="foot">記録はこのブラウザに保存されます。 UID: DIARY-LOCAL</div>
+  </div>
+  <div class="wordmark">FIELD LOG</div>
+</section>
+
+<!-- SKILL ROAD -->
+<section class="view" id="vTree" aria-label="能力拡張">
+  <div class="crumb"><svg viewBox="0 0 24 24" width="24"><path d="M4 20l8-16 8 16z" fill="#14171b"/></svg><div><small>MANAGER</small>管理人 / 能力拡張</div></div>
+  <button class="backbtn" id="back" aria-label="戻る"><svg viewBox="0 0 24 24" width="20"><path d="M15 5l-7 7 7 7" fill="none" stroke="#14171b" stroke-width="3"/></svg></button>
+  <svg class="emblemL" viewBox="0 0 200 200" aria-hidden="true"><g fill="none" stroke="#14171b" stroke-width="2"><circle cx="100" cy="100" r="90" stroke-dasharray="3 7"/><circle cx="100" cy="100" r="70"/><path d="M100 30l60 35v70l-60 35-60-35V65z"/></g><path d="M100 60l35 20v40l-35 20-35-20V80z" fill="#ffe100" stroke="#14171b" stroke-width="2"/><path d="M100 82v36M82 100h36" stroke="#14171b" stroke-width="4"/></svg>
+  <div class="skillbox"><h3>◆ 記録スキル</h3><div id="skills"></div></div>
+  <div class="road" id="road"></div>
+  <div class="tip" id="tip"></div>
+  <div class="promo"><div class="row"><small>昇進</small><b id="prT">1/4</b><span class="big" id="prL">1<sub>/40</sub></span></div><div class="bar"><i id="prB"></i></div></div>
+  <button class="lvup" id="lvup">記録してレベルアップ <span>⌃</span></button>
+</section>
+
+<div class="hints" id="hints"></div>
+
+<div id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="win">
+  <h3><span id="eT"></span><small id="eS"></small></h3>
+  <div class="in">
+    <div class="lb">CONDITION</div><ul class="moods" id="moods"></ul>
+    <div class="lb">REPORT</div><textarea id="body" placeholder="今日はどんな一日だった？"></textarea>
+    <div class="acts"><button class="save" id="save"><svg viewBox="0 0 24 24"><path d="M13 2L5 14h6l-1 8 9-13h-6z" fill="#14171b"/></svg>記録する</button><button class="cl" id="cl">戻る</button><span class="hint">Ctrl+Enterで記録 ／ Escで戻る</span></div>
+  </div>
+</div></div>
+<div id="ov"><div class="strip"></div><b id="ovT">DATA SYNCED</b><span id="ovJ"></span><em id="ovS"></em></div>
+
+<script src="theme-switch.js" data-theme="endfield"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MC = { 最高:"#ffe100", 良い:"#5ad19a", 普通:"#7ab8ff", 微妙:"#c49aff", 最悪:"#ff5a52" };
+const DOW = ["日","月","火","水","木","金","土"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, TPER = 8;
+const ICON = {
+  write: '<path d="M4 20l1-5 11-11 4 4L9 19z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M14 6l4 4" stroke="currentColor" stroke-width="2.4"/>',
+  log:   '<path d="M5 4h14v16H5z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M8 9h8M8 13h8M8 17h5" stroke="currentColor" stroke-width="2.4"/>',
+  tree:  '<path d="M12 3l3 5h-6zM6 13l3 5H3zM18 13l3 5h-6z" fill="currentColor"/><path d="M12 8v5M7 13h10" stroke="currentColor" stroke-width="2"/>',
+  exit:  '<path d="M4 4h10v16H4z" fill="none" stroke="currentColor" stroke-width="2.4"/><path d="M12 12h9M18 8l4 4-4 4" fill="none" stroke="currentColor" stroke-width="2.4"/>'
+};
+const MICON = m => ({ 最高:'<path d="M12 2l3 7h7l-6 4 2 8-6-5-6 5 2-8-6-4h7z" fill="currentColor"/>', 良い:'<circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M8 13a4 4 0 0 0 8 0" fill="none" stroke="currentColor" stroke-width="2.4"/>', 普通:'<rect x="5" y="5" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M8 13h8" stroke="currentColor" stroke-width="2.4"/>', 微妙:'<path d="M12 3l9 16H3z" fill="none" stroke="currentColor" stroke-width="2.6"/>', 最悪:'<path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="3"/>' }[m] || '<path d="M6 12h12" stroke="currentColor" stroke-width="2.4"/>');
+const MENU = [
+  { id:"write", jp:"記録", x:16, r:-10 },
+  { id:"log", jp:"履歴", x:8, r:-3 },
+  { id:"tree", jp:"能力拡張", x:5, r:4 },
+  { id:"exit", jp:"テーマ選択", x:9, r:11 }
+];
+// skill milestones shown on the road
+const SKILLS = [
+  { n:"継続", unit:"日", get:() => streakCount(), steps:[3, 7, 14] },
+  { n:"習慣", unit:"件", get:() => Object.keys(data).length, steps:[10, 30, 100] },
+  { n:"筆力", unit:"字", get:() => Object.values(data).reduce((s, x) => s + x.text.length, 0), steps:[500, 2000, 5000] },
+  { n:"前向き", unit:"回", get:() => Object.values(data).filter(x => ["最高", "良い"].includes(x.mood)).length, steps:[5, 15, 40] }
+];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`; };
+const svg = (p, vb = "0 0 24 24") => `<svg viewBox="${vb}" aria-hidden="true">${p}</svg>`;
+
+let data = load(), view = "hud", zone = "L", li = 0, ti = 0, tpage = 0, ni = 0, selected = ymd(new Date()), mood = null, ovTimer;
+const tileDay = i => { const d = new Date(); d.setDate(d.getDate() - (tpage * TPER + i)); return ymd(d); };
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+
+function renderHud() {
+  const today = ymd(new Date()), xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, all = Object.keys(data), month = today.slice(0, 7);
+  $("tAll").textContent = all.length; $("tSt").textContent = streakCount(); $("tMon").textContent = `${all.filter(k => k.startsWith(month)).length}/${new Date().getDate()}`;
+  $("left").innerHTML = MENU.map((m, i) => `<button class="lc ${zone === "L" && i === li ? "cur" : ""}" data-l="${i}" style="--x:${m.x};--r:${m.r};--i:${i}"><span class="ic">${svg(ICON[m.id])}</span>${m.jp}</button>`).join("");
+  // last 7 days as yellow markers around the radar ring (today at top)
+  $("tris").innerHTML = Array.from({ length: 7 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); const k = ymd(d), a = (-90 + i * 40) * Math.PI / 180;
+    return `<span class="tri ${data[k] ? "" : "off"} ${i === 0 ? "today" : ""}" style="left:${50 + Math.cos(a) * 43.5}%;top:${50 + Math.sin(a) * 43.5}%;--rot:${-90 + i * 40 + 90 + 180}deg"><button data-go="${k}" aria-label="${md(k)}${data[k] ? " 記録あり" : ""}"></button></span>`; }).join("");
+  const e = data[today];
+  $("lDate").textContent = `${md(today)} の記録`;
+  $("lSub").textContent = e ? `記録済み ─ ${e.mood || "調子未設定"}` : `記録レベル ${lv} ─ 未記録`;
+  const latest = all.sort().reverse()[0];
+  $("nDate").textContent = latest ? md(latest) : ""; $("ticker").textContent = latest ? `${data[latest].mood ? "【" + data[latest].mood + "】" : ""}${data[latest].text.replace(/\s+/g, " ")}` : "まだ記録はありません。中央のボタンから最初の記録を。";
+  $("tiles").innerHTML = Array.from({ length: TPER }, (_, i) => { const k = tileDay(i), x = data[k];
+    return `<button class="tl ${x ? "" : "empty"} ${k === today ? "today" : ""} ${zone === "R" && i === ti ? "cur" : ""}" data-t="${i}" style="--i:${i}">${svg(MICON(x && x.mood))}${md(k)}<small>${x ? x.text.length + " CHR" : "NO DATA"}</small></button>`; }).join("");
+  $("tPg").textContent = `PAGE ${tpage + 1}`; $("tNewer").disabled = tpage === 0;
+  $("pLv").textContent = lv; $("pXb").style.width = `${xp % XP_PER_RANK / XP_PER_RANK * 100}%`; $("pXp").textContent = `${xp % XP_PER_RANK}/${XP_PER_RANK}`;
+}
+
+// skill road: a curved path with one node per rank; reached ranks glow yellow
+function roadPoints(n, w, h) {
+  // down from the top, a quarter turn, then right along the bottom (like the skill road)
+  const seg = t => {
+    const v = .45, a = Math.PI / 2 * .15 * 2, L1 = v, L2 = a, L3 = .4, T = L1 + L2 + L3, d = t * T;
+    if (d <= L1) return [.58, .12 + d / L1 * .45];
+    if (d <= L1 + L2) { const u = (d - L1) / L2 * Math.PI / 2; return [.73 - Math.cos(u) * .15, .57 + Math.sin(u) * .25]; }
+    return [.73 + (d - L1 - L2) / L3 * .24, .82];
+  };
+  // narrow screens: a vertical snake so nodes keep their spacing
+  const snake = t => [.5 + Math.sin(t * Math.PI * 2) * .28, .05 + t * .9];
+  return Array.from({ length: n }, (_, i) => (innerWidth <= 860 ? snake : seg)(i / (n - 1))).map(([x, y]) => [x * w, y * h]);
+}
+function renderTree() {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, mobile = innerWidth <= 860;
+  const N = 12, base = Math.max(0, lv - 4), road = $("road"), W = road.clientWidth || innerWidth, H = road.clientHeight || innerHeight;
+  const pts = roadPoints(N, W, H);
+  if (ni >= N) ni = N - 1;
+  const path = pts.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  const reached = pts.filter((_, i) => base + i + 1 <= lv);
+  const pathOn = reached.map((p, i) => `${i ? "L" : "M"}${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" ");
+  road.innerHTML = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none"><path d="${path}" fill="none" stroke="rgba(255,225,0,.85)" stroke-width="${mobile ? 60 : 110}" stroke-linecap="round" stroke-linejoin="round"/><path d="${path}" fill="none" stroke="rgba(0,0,0,.25)" stroke-width="3" stroke-dasharray="6 8"/>${pathOn ? `<path d="${pathOn}" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round"/>` : ""}</svg>` +
+    pts.map((p, i) => { const r = base + i + 1, on = r <= lv, next = r === lv + 1;
+      return `<button class="node ${on ? "on" : ""} ${next ? "next" : ""} ${i === ni ? "cur" : ""}" data-n="${i}" style="left:${p[0]}px;top:${p[1]}px;--i:${i}" aria-label="RANK ${r}">${on ? r : next ? "▲" : svg('<path d="M7 11V8a5 5 0 0 1 10 0v3" fill="none" stroke="#fff" stroke-width="2.4"/><rect x="5" y="11" width="14" height="10" fill="#fff"/>')}</button>`; }).join("");
+  const r = base + ni + 1, need = (r - 1) * XP_PER_RANK;
+  $("tip").innerHTML = `<b>RANK ${String(r).padStart(2, "0")}</b><p>${r <= lv ? "到達済み。この調子で記録を続けよう。" : `必要EXP ${need.toLocaleString()} ／ あと ${(need - xp).toLocaleString()} EXP`}</p>`;
+  $("skills").innerHTML = SKILLS.map(s => { const v = s.get(), rank = s.steps.filter(x => v >= x).length, nx = s.steps[rank] ?? s.steps[s.steps.length - 1];
+    return `<div class="sk"><i>${s.n[0]}</i><div>RANK ${rank}/3<span>${s.n} ${v.toLocaleString()}${s.unit}</span><em style="--v:${Math.min(v / nx * 100, 100)}%"></em></div></div>`; }).join("");
+  $("prT").textContent = `${Math.min(Math.floor((lv - 1) / 10) + 1, 4)}/4`;
+  $("prL").innerHTML = `${(lv - 1) % 10 + 1}<sub>/10</sub>`; $("prB").style.setProperty("--v", `${xp % XP_PER_RANK / XP_PER_RANK * 100}%`);
+}
+
+function renderHints() {
+  const H = view === "hud" ? [["←→↑↓", "選択"], ["Enter", "決定"], ["Q/E", "ページ"], ["T", "能力拡張"]] : [["←→", "ノード"], ["Enter", "記録"], ["Esc", "戻る"]];
+  $("hints").innerHTML = H.map(([k, l]) => `<span><kbd>${k}</kbd>${l}</span>`).join("");
+}
+function render() { document.body.dataset.v = view; view === "hud" ? renderHud() : renderTree(); renderHints(); }
+function go(v) { view = v; ni = 0; document.body.classList.remove("ready"); render(); setTimeout(() => document.body.classList.add("ready"), 900); }
+function runMenu(i) {
+  const id = MENU[i].id;
+  if (id === "write") return openEd(ymd(new Date()));
+  if (id === "log") { zone = "R"; ti = 0; return renderHud(); }
+  if (id === "tree") return go("tree");
+  if (id === "exit") location.href = "index.html";
+}
+
+function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
+function openEd(k) {
+  selected = k; const e = data[k]; mood = e ? e.mood : null;
+  $("eT").textContent = `${k === ymd(new Date()) ? "本日 " : ""}${md(k)} の記録`; $("eS").textContent = e ? "UPDATE" : "NEW REPORT";
+  $("moods").innerHTML = MOODS.map(m => `<li><button data-m="${m}" class="${m === mood ? "on" : ""}" style="--c:${MC[m]}"><i></i>${m}</button></li>`).join("");
+  $("body").value = e ? e.text : "";
+  $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
+}
+const closeEd = () => $("ed").classList.remove("show");
+function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  const xp0 = totalXp(), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data);
+  const xp1 = totalXp(), up = Math.floor(xp1 / XP_PER_RANK) > Math.floor(xp0 / XP_PER_RANK);
+  $("ovT").textContent = up ? "LEVEL UP" : "DATA SYNCED"; $("ovJ").textContent = up ? `記録レベルが ${Math.floor(xp1 / XP_PER_RANK) + 1} に上がりました` : isNew ? "記録を送信しました" : "記録を更新しました";
+  $("ovS").textContent = isNew ? `+${xp1 - xp0} EXP ／ STREAK ${streakCount()}` : "UPDATED";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2950);
+  closeEd(); render();
+}
+
+document.addEventListener("click", e => {
+  const lc = e.target.closest(".lc"); if (lc) { zone = "L"; li = +lc.dataset.l; renderHud(); return runMenu(li); }
+  const tl = e.target.closest(".tl"); if (tl) { zone = "R"; ti = +tl.dataset.t; return openEd(tileDay(ti)); }
+  const g = e.target.closest("[data-go]"); if (g) return openEd(g.dataset.go);
+  const nd = e.target.closest(".node"); if (nd) { ni = +nd.dataset.n; return renderTree(); }
+  const mb = e.target.closest("#moods button"); if (mb) return setMood(mood === mb.dataset.m ? null : mb.dataset.m);
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#cl") || e.target.id === "ed") return closeEd();
+  if (e.target.closest("#bolt") || e.target.closest("#lvup")) return openEd(ymd(new Date()));
+  if (e.target.closest("#bTree")) return go("tree");
+  if (e.target.closest("#bStat")) { zone = "R"; ti = 0; return renderHud(); }
+  if (e.target.closest("#back")) return go("hud");
+  if (e.target.closest("#tOlder")) { tpage++; return renderHud(); }
+  if (e.target.closest("#tNewer")) { if (tpage) { tpage--; renderHud(); } return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("mouseover", e => {
+  if ($("ed").classList.contains("show") || view !== "hud") return;
+  const lc = e.target.closest(".lc"); if (lc && !(zone === "L" && +lc.dataset.l === li)) { zone = "L"; li = +lc.dataset.l; return renderHud(); }
+  const tl = e.target.closest(".tl"); if (tl && !(zone === "R" && +tl.dataset.t === ti)) { zone = "R"; ti = +tl.dataset.t; renderHud(); }
+});
+addEventListener("resize", () => { if (view === "tree") renderTree(); });
+document.addEventListener("keydown", e => {
+  const open = $("ed").classList.contains("show"), k = e.key;
+  if ((e.ctrlKey || e.metaKey) && k === "Enter" && open) { e.preventDefault(); return save(); }
+  if (k === "Escape") { if (open) return closeEd(); if ($("ov").classList.contains("show")) return $("ov").classList.remove("show"); if (view === "tree") return go("hud"); return; }
+  if (open) {
+    if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) {
+      e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : MOODS.length - 1) : (i + dir + MOODS.length) % MOODS.length]); document.querySelector(`#moods button[data-m="${mood}"]`).focus();
+    }
+    return;
+  }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  const enter = (k === "Enter" || k === " ") && e.target.tagName !== "BUTTON";
+  if (view === "tree") {
+    if (k === "ArrowRight" || k === "ArrowUp") { e.preventDefault(); ni = Math.min(ni + 1, 11); return renderTree(); }
+    if (k === "ArrowLeft" || k === "ArrowDown") { e.preventDefault(); ni = Math.max(ni - 1, 0); return renderTree(); }
+    if (enter) { e.preventDefault(); return openEd(ymd(new Date())); }
+    if (k === "Backspace") return go("hud");
+    return;
+  }
+  if (k === "t" || k === "T") return go("tree");
+  if (k === "q" || k === "Q") { if (tpage) { tpage--; renderHud(); } return; }
+  if (k === "e" || k === "E") { tpage++; return renderHud(); }
+  if (enter) { e.preventDefault(); return zone === "L" ? runMenu(li) : openEd(tileDay(ti)); }
+  const mv = { ArrowUp:"u", ArrowDown:"d", ArrowLeft:"l", ArrowRight:"r" }[k]; if (!mv) return;
+  e.preventDefault();
+  if (zone === "L") {
+    if (mv === "u") li = Math.max(0, li - 1); else if (mv === "d") li = Math.min(MENU.length - 1, li + 1);
+    else if (mv === "r") { zone = "R"; ti = Math.min(li * 2, TPER - 2); }
+  } else {
+    const col = ti % 2;
+    if (mv === "u" && ti >= 2) ti -= 2; else if (mv === "d" && ti + 2 < TPER) ti += 2;
+    else if (mv === "r" && col === 0) ti++; else if (mv === "l") { if (col === 1) ti--; else { zone = "L"; li = Math.min(Math.floor(ti / 2), MENU.length - 1); } }
+  }
+  renderHud();
+});
+
+$("crosses").innerHTML = Array.from({ length: 12 }, (_, i) => `<i style="left:${(i * 41) % 96 + 2}%;top:${(i * 67) % 90 + 4}%"></i>`).join("");
+render();
+setTimeout(() => document.body.classList.add("ready"), 1000);
+</script>
+</body>
+</html>
