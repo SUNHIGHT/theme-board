@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shichifushigi Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Green CRT archive screen: ornamented title, tab row with L/R, numbered list, text panel with ruby + woodblock-style picture */
+  :root { --g0:#0d241d; --g1:#1c4a3b; --g2:#2c6552; --g3:#3f8068; --pale:#dff2e8; --ink:#0f2a22; --tx:#f4fff8; --red:#e0483a; --f:'Shippori Mincho B1','Hiragino Mincho ProN',serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--tx); overflow:hidden; background:#020504; display:grid; place-items:center; }
+  .bezel { position:relative; width:min(100vw, calc(100vh * 1.78)); height:min(100vh, calc(100vw / 1.78)); min-width:760px; min-height:430px; padding:1.2%; background:#000; }
+  .screen { position:relative; width:100%; height:100%; border-radius:3.4% / 6%; overflow:hidden; background:radial-gradient(ellipse at 50% 40%, #245a47, var(--g0) 85%); box-shadow:0 0 0 .5vmin #111, 0 0 5vmin rgba(60,200,150,.25); container-type:size; display:grid; grid-template-rows:auto auto 1fr; padding:1.6% 3.4% 3%; animation:flick 6s steps(1) infinite; }
+  .screen::before { content:""; position:absolute; inset:0; z-index:20; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 1px, transparent 1px 3px); mix-blend-mode:multiply; }
+  .screen::after { content:""; position:absolute; inset:0; z-index:21; pointer-events:none; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.7)); }
+  .noise { position:absolute; inset:0; z-index:19; pointer-events:none; opacity:.08; background-image:repeating-radial-gradient(circle at 17% 32%, #fff 0 .5px, transparent .5px 3px); animation:nz .4s steps(2) infinite; }
+
+  .back { all:unset; cursor:pointer; position:absolute; left:2%; top:3%; z-index:5; display:flex; align-items:center; gap:6px; background:#f2f4ee; color:#111; border-radius:0 0 12px 0; padding:0 12px 0 10px; height:7.5cqh; font:900 4.8cqh var(--f); } .back b { width:3.2cqh; height:3.2cqh; border-radius:50%; background:#111; color:#fff; font:700 1.9cqh/3.2cqh var(--f); text-align:center; margin-top:-3cqh; border:1px solid #fff; } .back:hover { background:var(--pale); }
+  .ttl { text-align:center; font:800 5.4cqh var(--f); letter-spacing:.4em; padding-left:.4em; position:relative; text-shadow:.25cqh 0 rgba(255,60,60,.6), -.25cqh 0 rgba(60,255,255,.5); } .ttl::before, .ttl::after { content:"❖"; font-size:2.4cqh; color:var(--pale); margin:0 1.4cqw; vertical-align:middle; opacity:.8; }
+  .tabs { display:flex; align-items:center; gap:.8cqw; margin-top:1.6cqh; } .lr { width:2.4cqw; height:2.4cqw; min-width:22px; min-height:22px; border-radius:50%; background:#0a0f0d; border:1px solid var(--pale); display:grid; place-items:center; font:700 1.6cqw var(--f); flex:none; cursor:pointer; } .lr:hover { background:var(--g3); }
+  .tb { all:unset; box-sizing:border-box; cursor:pointer; flex:1; text-align:center; position:relative; padding:1.3cqh .6cqw; background:var(--g2); border:2px solid #7fbfa6; border-radius:1.4cqh 1.4cqh 0 0; font:700 2.8cqh var(--f); white-space:nowrap; transition:.12s; clip-path:polygon(0 0,calc(100% - 8px) 0,100% 100%,0 100%); } .tb:hover { background:var(--g3); } .tb.on { background:#14352b; border-color:#e8fff2; box-shadow:0 0 1.2cqh rgba(180,255,220,.6); color:#fff; transform:translateY(-.4cqh); }
+  .tb i { position:absolute; right:.7cqw; top:.2cqh; color:var(--red); font-style:normal; font-size:2.4cqh; }
+
+  .main { display:grid; grid-template-columns:30% 1fr; gap:1.8cqw; min-height:0; margin-top:1cqh; }
+  .list { display:flex; flex-direction:column; gap:1cqh; overflow:auto; padding-right:.6cqw; scrollbar-width:thin; scrollbar-color:#bfeedd transparent; min-height:0; }
+  .it { all:unset; box-sizing:border-box; cursor:pointer; flex:none; display:flex; align-items:center; height:7.6cqh; background:linear-gradient(90deg,#3b7560,#2e6652); border:1px solid #6fb59a; font:800 3cqh var(--f); padding:0 1cqw; position:relative; animation:sl .35s calc(var(--i)*30ms) both; transition:.1s; }
+  .it small { position:absolute; left:.8cqw; font:700 1.6cqh var(--f); opacity:.8; } .it span { flex:1; text-align:center; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-shadow:.2cqh 0 rgba(255,60,60,.4), -.2cqh 0 rgba(60,255,255,.35); }
+  .it:hover { filter:brightness(1.18); } .it.rec span::after { content:" ◆"; color:#ffe87a; font-size:1.8cqh; }
+  .it.cur { background:linear-gradient(90deg,#f0fff8,#cfeade); color:var(--ink); border-color:#fff; box-shadow:0 0 1.4cqh rgba(220,255,240,.7); } .it.cur::before { content:""; position:absolute; left:0; top:0; bottom:0; width:.7cqw; background:#05110d; } .it.cur span { text-shadow:none; } .it.cur small { color:#333; }
+  .it:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+  .nolist { padding:2cqh; opacity:.7; font-size:2.4cqh; }
+
+  .doc { position:relative; min-height:0; background:linear-gradient(180deg,rgba(40,100,80,.78),rgba(26,70,56,.82)); border:1px solid #7fbfa6; border-top:2px solid #cfeedd; display:flex; flex-direction:column; padding:1.2cqh 1.6cqw 1.6cqh; animation:fadeB .4s both; }
+  .doc.sw { animation:sw .35s both; }
+  .dh { text-align:center; font:800 3.2cqh var(--f); padding-bottom:1cqh; border-bottom:1px solid rgba(220,255,240,.7); margin-right:3cqw; } .dh rt { font-size:1.3cqh; } .dh .dt { all:unset; }
+  .sb { position:absolute; right:1cqw; top:1.2cqh; bottom:1.6cqh; width:1.8cqw; } .sb::before { content:""; position:absolute; left:50%; top:3.4cqh; bottom:0; width:2px; background:rgba(255,255,255,.6); } .sb i { position:absolute; left:50%; top:0; transform:translateX(-50%); width:2.2cqw; height:2.2cqw; min-width:20px; min-height:20px; border-radius:50%; background:#0a0f0d; border:1px solid #fff; font:700 1.3cqw/2.2cqw var(--f); text-align:center; font-style:normal; display:grid; place-items:center; }
+  .bodyr { display:grid; grid-template-columns:1fr 26%; gap:1.6cqw; flex:1; min-height:0; margin:1cqh 3cqw 0 0; }
+  .txt { display:flex; flex-direction:column; min-height:0; }
+  .sub { font:800 2.8cqh var(--f); margin:.6cqh 0; } .sub::before { content:"■"; color:#7fe8c0; margin-right:.6cqw; }
+  .moods { display:flex; gap:.6cqw; flex-wrap:wrap; list-style:none; padding:0; margin-bottom:.8cqh; } .mb { all:unset; cursor:pointer; padding:.4cqh 1.2cqw; background:var(--g2); border:1px solid #7fbfa6; font:700 2.4cqh var(--f); } .mb:hover { background:var(--g3); } .mb.on { background:var(--pale); color:var(--ink); border-color:#fff; box-shadow:0 0 1cqh rgba(220,255,240,.6); }
+  textarea { flex:1; min-height:0; resize:none; width:100%; background:transparent; border:0; outline:0; color:#fff; font:700 3cqh/1.75 var(--f); text-shadow:.2cqh 0 rgba(255,60,60,.35), -.2cqh 0 rgba(60,255,255,.3); padding:0; } textarea::placeholder { color:rgba(255,255,255,.5); } textarea:focus { background:rgba(255,255,255,.04); }
+  .acts { display:flex; align-items:center; gap:1cqw; margin-top:.8cqh; flex-wrap:wrap; } .save { all:unset; cursor:pointer; background:var(--pale); color:var(--ink); padding:.6cqh 2.4cqw; font:800 2.8cqh var(--f); border:2px solid #fff; letter-spacing:.2em; clip-path:polygon(0 0,calc(100% - 10px) 0,100% 100%,10px 100%); } .save:hover { background:#fff; box-shadow:0 0 1.4cqh #cfe; }
+  .dte { font:700 2.2cqh var(--f); background:#14352b; color:#fff; border:1px solid #7fbfa6; padding:.2cqh .6cqw; color-scheme:dark; } .hint { font-size:2.2cqh; color:#ffe87a; }
+  .pic { position:relative; align-self:end; width:100%; aspect-ratio:.72; border:.5cqh solid #e8e2d0; background:#cfc6a4; box-shadow:0 0 1.6cqh rgba(0,0,0,.5); overflow:hidden; filter:sepia(.35) saturate(.8) contrast(1.05); transform:rotate(.6deg); } .pic svg { width:100%; height:100%; display:block; }
+  .lg { overflow:auto; display:flex; flex-direction:column; gap:1cqh; flex:1; min-height:0; margin:1cqh 3cqw 0 0; } .row { display:flex; justify-content:space-between; background:rgba(0,0,0,.25); border-left:.6cqw solid #7fe8c0; padding:1cqh 1.4cqw; font:700 2.8cqh var(--f); } .row b { font-size:3.2cqh; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:.6cqw; margin:1cqh 3cqw 0 0; } .cal div { aspect-ratio:1.5; display:grid; place-items:center; background:rgba(0,0,0,.28); border:1px solid rgba(160,230,200,.4); font:700 2.8cqh var(--f); } .cal .dow { background:none; border:0; color:#9fe8c8; aspect-ratio:auto; font-size:2.2cqh; } .cal .done { background:var(--pale); color:var(--ink); } .cal .today { outline:2px solid var(--red); } .cal [data-go] { cursor:pointer; }
+  button:focus-visible, textarea:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+
+  #ov { position:absolute; inset:0; z-index:30; display:none; place-content:center; text-align:center; background:rgba(2,10,8,.88); }
+  #ov.show { display:grid; animation:fadeB .2s both, ovOut .4s 2.4s forwards; cursor:pointer; }
+  #ov b { display:block; font:800 clamp(30px,7cqh,64px) var(--f); letter-spacing:.3em; text-shadow:.5cqh 0 rgba(255,60,60,.7), -.5cqh 0 rgba(60,255,255,.6); animation:gl .3s steps(2) 5; } #ov small { font:700 2.6cqh var(--f); letter-spacing:.4em; color:#9fe8c8; }
+  #ov .st { display:inline-block; border:.5cqh solid var(--red); color:var(--red); padding:.4cqh 2cqw; font:800 3cqh var(--f); transform:rotate(-6deg); margin-bottom:2cqh; letter-spacing:.3em; }
+  @keyframes sl { from { opacity:0; transform:translateX(-14px); } } @keyframes fadeB { from { opacity:0; } } @keyframes sw { from { opacity:.3; transform:translateX(8px); } } @keyframes ovOut { to { opacity:0; visibility:hidden; } } @keyframes flick { 0%,96%,100% { filter:none; } 97% { filter:brightness(1.15); } 98% { filter:brightness(.9); } } @keyframes nz { to { transform:translate(3px,2px); } } @keyframes gl { 50% { transform:translateX(1cqh); } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:820px) { body { overflow:auto; place-items:start center; } .bezel { min-width:0; width:100vw; height:auto; padding:6px; } .screen { height:auto; container-type:inline-size; border-radius:20px; padding:12px 10px 16px; display:block; }
+    .back { position:static; height:34px; font-size:20px; margin-bottom:6px; } .ttl { font-size:26px; } .tabs { overflow-x:auto; margin-top:8px; } .tb { flex:none; font-size:14px; padding:6px 12px; } .lr { display:none; } .main { grid-template-columns:1fr; margin-top:8px; } .list { max-height:none; overflow:visible; height:auto; } .main { display:block; } .doc { margin-top:10px; } .it { height:40px; font-size:16px; } .doc { padding:10px; } .dh { font-size:17px; margin-right:0; } .bodyr { grid-template-columns:1fr; margin-right:0; } .pic { width:46%; justify-self:end; } textarea { font-size:16px; min-height:180px; } .sub, .mb, .save, .dte, .hint, .row, .cal div { font-size:14px; } .sb { display:none; } .lg, .cal { margin-right:0; } }
+</style>
+</head>
+<body>
+<div class="bezel"><div class="screen" id="scr">
+  <div class="noise"></div>
+  <button class="back" id="back"><span>←</span><b>B</b></button>
+  <div class="ttl">資料</div>
+  <div class="tabs"><span class="lr" id="tl">L</span><div style="display:flex;flex:1;gap:.6cqw" id="tabs"></div><span class="lr" id="tr">R</span></div>
+  <div class="main"><div class="list" id="list"></div><div class="doc" id="doc"></div></div>
+  <div id="ov"><div><div class="st">NEW</div><b id="ovT"></b><small id="ovS"></small></div></div>
+</div></div>
+
+<script src="theme-switch.js" data-theme="paranoma"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const TABS = ["新着", "ALL", "好調", "普通", "不調", "調査記録"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+let data = load(), tab = 0, selected = today(), mood = null, draft = null, ovTimer, sw = true;
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+function items() {
+  const t = today(), ks = Object.keys(data);
+  let a;
+  if (tab === 0) { a = ks.filter(k => k >= shift(t, -6)); if (!a.includes(t)) a.push(t); }
+  else if (tab === 1) { a = ks.slice(); if (!a.includes(t)) a.push(t); }
+  else if (tab === 2) a = ks.filter(k => ["最高", "良い"].includes(data[k].mood));
+  else if (tab === 3) a = ks.filter(k => data[k].mood === "普通");
+  else if (tab === 4) a = ks.filter(k => ["微妙", "最悪"].includes(data[k].mood));
+  else a = [];
+  if (!a.includes(selected) && tab < 5) a.push(selected);
+  return a.sort().reverse();
+}
+const pic = (m, d) => { const hue = { "最高": "#e8c860", "良い": "#9fd0c0", "普通": "#c8c8b0", "微妙": "#9aa0b8", "最悪": "#8a7a8a" }[m] || "#d8d0b0";
+  let w = ""; for (let r = 0; r < 4; r++) for (let c = 0; c < 6; c++) { const x = c * 40 + (r % 2 ? 20 : 0), y = 150 + r * 16; w += `<g transform="translate(${x} ${y})" fill="none" stroke="#2a5a6a" stroke-width="1.6"><circle r="22"/><circle r="15"/><circle r="8"/></g>`; }
+  return `<svg viewBox="0 0 160 222"><rect width="160" height="222" fill="#d9d0ae"/><rect width="160" height="150" fill="url(#sk)"/><defs><linearGradient id="sk" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c2b3a"/><stop offset="1" stop-color="#8aa0a0"/></linearGradient></defs>
+    <circle cx="112" cy="40" r="22" fill="${hue}"/><circle cx="122" cy="34" r="19" fill="#1c2b3a" opacity=".85"/>
+    <path d="M40 140C28 110 50 90 56 66 62 90 84 104 66 138 60 148 46 150 40 140Z" fill="#f6f6ea" opacity=".9"/><path d="M52 94C58 110 54 122 50 130" stroke="#bcd" fill="none" stroke-width="2"/>
+    <rect x="0" y="146" width="160" height="76" fill="#d9d0ae"/>${w}
+    <text x="14" y="26" font-size="22" font-weight="800" fill="#e8e0c8" style="writing-mode:vertical-rl" font-family="serif">${d}</text></svg>`; };
+
+function render() {
+  $("tabs").innerHTML = TABS.map((t, i) => `<button class="tb ${i === tab ? "on" : ""}" data-t="${i}">${t}${i === 0 && !data[today()] ? "<i>*</i>" : ""}</button>`).join("");
+  const its = items();
+  $("list").innerHTML = its.length ? its.map((k, i) => `<button class="it ${k === selected ? "cur" : ""} ${data[k] ? "rec" : ""}" data-k="${k}" style="--i:${Math.min(i, 8)}"><small>${i + 1}</small><span>『${k === today() ? "今日" : dl(k)}』</span></button>`).join("") : `<div class="nolist">${tab === 5 ? "調査記録は右に表示します" : "該当する資料はありません"}</div>`;
+  const cur = $("list").querySelector(".cur"); if (cur) cur.scrollIntoView({ block: "nearest" });
+  const e = data[selected], d = new Date(selected + "T00:00:00");
+  let body;
+  if (tab === 5) {
+    const all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0);
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join(""); const n = new Date(), y = n.getFullYear(), mo = n.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    c += "<div style='visibility:hidden'></div>".repeat(first); for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); c += `<div data-go="${k}" class="${data[k] ? "done" : ""} ${k === today() ? "today" : ""}">${i}</div>`; }
+    $("doc").innerHTML = `<div class="dh">調査<ruby>記録<rt>きろく</rt></ruby>『${y}年${mo + 1}月』</div><div class="sb"><i>R</i></div><div class="lg"><div class="sub">統計</div><div class="row"><span>記録数</span><b>${all.length}</b></div><div class="row"><span>連続日数</span><b>${streakCount()}</b></div><div class="row"><span>総文字数</span><b>${ch}</b></div><div class="row"><span>経験値</span><b>${totalXp()}</b></div><div class="sub">暦</div><div class="cal" style="margin:0">${c}</div>
+      <div class="sub">その他</div><div class="acts"><button class="save" id="exp">書き出す</button><button class="save" id="imp">読み込む</button></div></div>`;
+  } else {
+    if (mood === null && e && draft === null) mood = e.mood;
+    $("doc").innerHTML = `<div class="dh"><ruby>日記<rt>にっき</rt></ruby>『${dl(selected)}』</div><div class="sb"><i>R</i></div>
+      <div class="bodyr"><div class="txt"><div class="sub">今日の調子</div><ul class="moods">${MOODS.map(m => `<li><button class="mb ${m === mood ? "on" : ""}" data-m="${m}">${m}</button></li>`).join("")}</ul>
+        <div class="sub">今日に残る記録</div><textarea id="ta" placeholder="今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+        <div class="acts"><button class="save" id="save">記録する</button><input type="date" class="dte" id="dt" value="${selected}" max="${today()}"><span class="hint">${selected === today() ? "" : "過去の日付を編集中"}</span></div></div>
+        <div class="pic">${pic(mood, d.getDate())}</div></div>`;
+  }
+  $("doc").classList.toggle("sw", sw); sw = false;
+}
+function setTab(n) { tab = (n + TABS.length) % TABS.length; const its = items(); if (its.length && !its.includes(selected)) { selected = its[0]; } mood = data[selected] ? data[selected].mood : null; draft = null; sw = true; render(); }
+function pick(k) { selected = k; mood = data[k] ? data[k].mood : null; draft = null; sw = true; if (tab === 5) tab = 1; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data); draft = null;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "資料が増えた" : "資料を更新しました"; $("ovS").textContent = isNew ? `${streakCount()}日連続` : "UPDATED";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2900);
+  render();
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest(".tb"); if (t) return setTab(+t.dataset.t);
+  const it = e.target.closest(".it"); if (it) return pick(it.dataset.k);
+  const g = e.target.closest("[data-go]"); if (g) return pick(g.dataset.go);
+  const mb = e.target.closest(".mb"); if (mb) { mood = mb.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#tl")) return setTab(tab - 1);
+  if (e.target.closest("#tr")) return setTab(tab + 1);
+  if (e.target.closest("#back")) { location.href = "index.html"; return; }
+  if (e.target.closest("#exp")) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "diary-backup.json"; a.click(); return; }
+  if (e.target.closest("#imp")) { const f = document.createElement("input"); f.type = "file"; f.accept = "application/json"; f.onchange = () => f.files[0] && f.files[0].text().then(t => { try { const o = JSON.parse(t); for (const k in o) if (o[k] && typeof o[k].text === "string") data[k] = { mood: o[k].mood || null, text: o[k].text }; store(data); render(); } catch { alert("読み込みに失敗しました"); } }); f.click(); return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; selected = e.target.value; const x = data[selected]; if (x) mood = x.mood; render(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $("ov").classList.remove("show"); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key === "q" || e.key === "Q") setTab(tab - 1); else if (e.key === "e" || e.key === "E") setTab(tab + 1);
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const its = items(), i = its.indexOf(selected), n = Math.max(0, Math.min(its.length - 1, i + (e.key === "ArrowDown" ? 1 : -1))); if (its[n]) pick(its[n]); }
+});
+render();
+</script>
+</body>
+</html>

@@ -83,6 +83,8 @@
       titles: [ { id: "jus", file: "jump_stars.html", name: "JUMP ULTIMATE STARS", sub: "コマ割りの大乱闘" } ] },
     { id: "atelier", name: "ATELIER", sub: "アトリエシリーズ",             c1: "#ffd21a", c2: "#6b3b22",
       titles: [ { id: "sophie", file: "atelier_sophie.html", name: "ATELIER SOPHIE", sub: "不思議な本の錬金術士" } ] },
+    { id: "paranoma", name: "PARANORMASIGHT", sub: "パラノマサイト",          c1: "#3f8068", c2: "#0d241d",
+      titles: [ { id: "paranoma", file: "paranormasight.html", name: "PARANORMASIGHT", sub: "本所七不思議" } ] },
     { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
       titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
@@ -99,7 +101,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
