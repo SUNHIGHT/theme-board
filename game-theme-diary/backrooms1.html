@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Level 1 Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=VT323&family=Special+Elite&family=Zen+Kaku+Gothic+New:wght@500;900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#5e5a50;--fg:#e4dfd0;--hi:#fffaf0;--acc:#f0b43a;--acc2:#b8b09a;--line:rgba(240,180,58,.45);--panel:rgba(28,26,22,.84);--sel:rgba(240,180,58,.2);--glow:rgba(240,180,58,.6);--warn:#fff;--fb:'Special Elite','Zen Kaku Gothic New',monospace;--fh:'VT323','Special Elite',monospace; }
+
+  * { box-sizing:border-box; margin:0; }
+  body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
+  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 16px 70px; }
+  header { position:relative; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:24px; animation:typeIn .8s both; }
+  .op { font-size:12px; letter-spacing:.4em; color:var(--acc); }
+  h1 { font-family:var(--fh); font-weight:700; font-size:clamp(34px,8.5vw,66px); letter-spacing:.05em; line-height:1.05; color:var(--hi); margin:4px 0; }
+  h1 small { display:block; font-size:.4em; letter-spacing:.35em; color:var(--fg); font-family:var(--fb); font-weight:400; }
+  .clock { display:flex; flex-wrap:wrap; gap:22px; font-size:15px; letter-spacing:.15em; margin-top:8px; }
+  .clock b { color:var(--acc); font-weight:400; margin-right:6px; }
+  .blink { animation:blink 1s steps(1) infinite; }
+  .panel { position:relative; background:var(--panel); border:1px solid var(--line); padding:22px 22px 18px; margin-bottom:30px; }
+  .ttl { display:inline-block; font-family:var(--fh); font-size:15px; letter-spacing:.25em; color:var(--bg); background:var(--acc); padding:2px 14px; margin:-36px 0 12px -8px; }
+  .gauge { margin-bottom:12px; }
+  .gauge b { font-weight:400; display:flex; justify-content:space-between; letter-spacing:.2em; font-size:14px; }
+  .gauge b em { font-style:normal; font-family:var(--fh); font-size:20px; color:var(--hi); }
+  .track { height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.45); }
+  .track div { height:100%; width:0; transition:width .9s cubic-bezier(.2,.9,.3,1); background:repeating-linear-gradient(90deg,var(--c) 0 8px,transparent 8px 10px); }
+  .life div { --c:var(--acc); } .stam div { --c:var(--acc2); }
+  .row3 { display:flex; gap:26px; flex-wrap:wrap; margin-top:14px; }
+  .row3 div { flex:1 1 130px; border-top:1px solid var(--line); padding-top:6px; }
+  .row3 b { display:block; font-weight:400; font-size:12px; letter-spacing:.25em; color:var(--acc); }
+  .row3 i { font-style:normal; font-family:var(--fh); font-size:38px; color:var(--hi); line-height:1.1; }
+  .moods { list-style:none; padding:0; margin-bottom:18px; }
+  .moods button { width:100%; text-align:left; font:inherit; font-size:17px; cursor:pointer; color:var(--fg); background:transparent; border:0;
+    border-bottom:1px dashed var(--line); padding:8px 8px 8px 30px; position:relative; display:flex; justify-content:space-between; transition:.1s; }
+  .moods button span { font-size:12px; letter-spacing:.2em; opacity:.7; }
+  .moods button:hover { color:var(--acc); }
+  .moods button.on { background:var(--sel); color:var(--hi); animation:fade .25s; }
+  .moods button.on::before { content:"▶"; position:absolute; left:8px; color:var(--acc); animation:blink .8s steps(1) infinite; }
+  textarea { width:100%; min-height:180px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.9; color:var(--hi);
+    background:rgba(255,255,255,.05); border:1px solid var(--line); outline:none; }
+  textarea:focus { border-color:var(--acc); box-shadow:0 0 12px var(--glow); }
+  textarea::placeholder { color:var(--fg); opacity:.45; }
+  .hint { font-size:12px; color:var(--acc); margin-top:6px; min-height:1.2em; }
+  .save { display:block; margin:14px 0 0 auto; font-family:var(--fh); font-weight:700; font-size:24px; letter-spacing:.3em; cursor:pointer;
+    color:var(--bg); background:var(--acc); border:0; padding:8px 34px; transition:.1s; }
+  .save:hover { background:var(--hi); box-shadow:0 0 18px var(--glow); }
+  .save:active { transform:scale(.95); }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--line); transition:.15s; }
+  .cal .dow { aspect-ratio:auto; border:0; color:var(--acc); font-size:12px; letter-spacing:.2em; }
+  .cal .done { color:var(--bg); font-weight:700; background:var(--acc); }
+  .cal .today { outline:2px solid var(--hi); outline-offset:2px; }
+  .cal .sel { box-shadow:0 0 0 3px var(--acc2); }
+  .cal div[data-d]:hover { background:var(--sel); transform:scale(1.12); }
+  h2 { font-family:var(--fh); font-size:22px; letter-spacing:.3em; color:var(--hi); margin:6px 0 14px; }
+  .entry { background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--acc); padding:12px 18px; margin-bottom:12px; }
+  .entry small { color:var(--acc); letter-spacing:.2em; font-size:12px; }
+  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.8; color:var(--hi); }
+  #stamp { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
+  #stamp.show { display:flex; animation:fade .2s; }
+  #stamp .bars::before, #stamp .bars::after { content:""; position:absolute; left:0; right:0; height:16vh; background:#000; z-index:1; }
+  #stamp .bars::before { top:0; animation:barT .5s ease-out; } #stamp .bars::after { bottom:0; animation:barB .5s ease-out; }
+  @keyframes barT { from { transform:translateY(-100%); } } @keyframes barB { from { transform:translateY(100%); } }
+  #stamp .box { text-align:center; position:relative; z-index:2; padding:0 16px; }
+  #bang { font-family:var(--fh); font-weight:700; font-size:clamp(110px,28vw,230px); line-height:1; color:var(--warn); text-shadow:0 0 30px var(--warn), 5px 5px 0 #000; animation:bang .45s cubic-bezier(.2,2,.4,1); }
+  @keyframes bang { from { transform:scale(.1) rotate(-25deg); opacity:0; } }
+  #stampBig { font-family:var(--fh); font-size:clamp(22px,5.5vw,40px); letter-spacing:.2em; color:var(--hi); min-height:1.4em; }
+  #stampBig::after { content:"█"; animation:blink .6s steps(1) infinite; color:var(--acc); }
+  #stampSub { margin-top:6px; letter-spacing:.3em; font-size:14px; color:var(--acc); }
+  @keyframes blink { 50% { opacity:0; } }
+  @keyframes fade { from { opacity:0; } }
+  @keyframes typeIn { from { opacity:0; transform:translateX(-30px); } }
+  @keyframes panelIn { 0% { opacity:0; transform:translateY(24px); } 40% { opacity:.4; } 55% { opacity:.1; } 70% { opacity:1; } }
+  @keyframes rise { from { opacity:0; transform:scale(.6); } }
+  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
+  main > .panel { animation:panelIn .7s both; }
+  main > .panel:nth-of-type(1) { animation-delay:.25s; } main > .panel:nth-of-type(2) { animation-delay:.45s; } main > .panel:nth-of-type(3) { animation-delay:.65s; }
+  .cal div[data-d] { animation:rise .3s calc(var(--i) * 16ms + .8s) backwards; }
+  .entry { animation:entryIn .45s calc(var(--i) * 70ms) ease-out backwards; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+
+
+  body { background:linear-gradient(180deg,#46433b,#6a665b 70%,#34322c) fixed; }
+  h1 { font-size:clamp(52px,13vw,110px); }
+  header::after { content:""; position:absolute; left:0; right:0; bottom:-2px; height:6px; background:repeating-linear-gradient(135deg,var(--acc) 0 12px,#1a1a1a 12px 24px); }
+  .ttl { color:#1a1a1a; }
+  .life div { --c:#f0b43a; } .stam div { --c:#b8b09a; }
+  .cal .done::after { border-color:var(--acc); }
+  
+  body { color:var(--fg); }
+  body::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse at 50% -10%, rgba(255,255,230,.5), transparent 55%); animation:fluor 7s steps(1) infinite; }
+  @keyframes fluor { 0%,100% { opacity:1; } 30% { opacity:.55; } 31% { opacity:1; } 62% { opacity:.7; } 64% { opacity:.95; } 90% { opacity:.5; } 91% { opacity:1; } }
+  body::after { content:""; position:fixed; inset:0; z-index:44; pointer-events:none;
+    background:repeating-linear-gradient(transparent 0 2px, rgba(0,0,0,.16) 2px 3px), radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.55) 100%); }
+  main { animation:jitter 3.5s steps(1) infinite; }
+  @keyframes jitter { 0%,100% { transform:none; } 41% { transform:translateX(2px); } 42% { transform:translateX(-3px) skewX(.6deg); } 43% { transform:none; } }
+  h1 { font-family:var(--fh); font-weight:400; letter-spacing:.06em; text-shadow:2px 0 rgba(255,0,0,.35), -2px 0 rgba(0,200,255,.35); }
+  header { border-bottom:2px solid var(--line); }
+  .panel { box-shadow:3px 3px 0 rgba(0,0,0,.25); border-radius:0; }
+  .ttl { font-family:var(--fh); }
+  .track { border-radius:0; } .track div { background:repeating-linear-gradient(90deg,var(--c) 0 6px,transparent 6px 8px); }
+  .row3 i, .gauge b em { font-family:var(--fh); font-weight:400; }
+  .save { font-family:var(--fh); font-weight:400; background:#111; color:#fff; }
+  .save:hover { background:var(--acc); color:#111; }
+  .cal .done { background:transparent; color:var(--hi); position:relative; }
+  .cal .done::after { content:""; position:absolute; inset:18%; border:3px solid #c0281c; border-radius:50%; transform:rotate(-8deg); }
+  .entry { box-shadow:2px 2px 0 rgba(0,0,0,.25); }
+  .cam { position:fixed; inset:0; z-index:46; pointer-events:none; font-family:'VT323',monospace; font-size:22px; color:#fff; text-shadow:2px 2px 0 #000, 0 0 6px rgba(0,0,0,.6); }
+  .cam span { position:absolute; padding:10px 16px; white-space:nowrap; }
+  .cam .tl { top:0; left:0; } .cam .tr { top:0; right:70px; text-align:right; } .cam .bl { bottom:0; left:0; } .cam .br { bottom:0; right:0; }
+  .cam i { color:#ff2a2a; font-style:normal; animation:blink 1s steps(1) infinite; }
+  .cam em { font-style:normal; }
+  .cam .track-bar { position:absolute; left:0; right:0; height:36px; top:-40px; background:linear-gradient(transparent, rgba(255,255,255,.14), transparent); animation:trackdown 7s linear infinite; }
+  @keyframes trackdown { to { top:105%; } }
+  @media (max-width:560px) { .cam { font-size:16px; } .cam .tr { right:0; } }
+  #stamp { background:rgba(0,0,0,.82); font-family:'VT323',monospace; } #bang { color:#fff; font-size:clamp(70px,18vw,150px); letter-spacing:.1em; text-shadow:3px 0 rgba(255,0,0,.6), -3px 0 rgba(0,200,255,.6); }
+  #stampBig { color:#fff; } #stampSub::before { content:"TAPE ─ "; }
+
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="op">THE BACKROOMS ─ LEVEL 1 ─ 居住可能地帯</div>
+    <h1>LEVEL 1<small>DIARY ─ 地下駐車場の日誌</small></h1>
+    <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>CAM</b><span>CH.01</span></span></div>
+    
+  </header>
+
+  <section class="panel">
+    <span class="ttl">SURVEY REPORT</span>
+    
+    <div class="gauge life"><b>SANITY ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
+    <div class="gauge stam"><b>LOCATION ─ 出口までの進み <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
+    <div class="row3">
+      <div><b>STATUS 状態</b><i id="lv">-</i></div>
+      <div><b>STREAK 連続</b><i id="streak">0</i></div>
+      <div><b>TOTAL 記録</b><i id="total">0</i></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <span class="ttl">MENTAL STATE 今日の精神状態</span>
+    <ul class="moods" id="moods"></ul>
+    <span class="ttl" style="margin-top:6px">LOG 記録</span>
+    <textarea id="body" placeholder="ここで見たことを記録せよ…"></textarea>
+    <div class="hint" id="hint"></div>
+    <button class="save" id="save">STOP REC</button>
+  </section>
+
+  <section class="panel">
+    <span class="ttl">LEVEL MAP</span>
+    <div class="cal" id="cal"></div>
+  </section>
+
+  <h2>TAPES ─ 過去の記録</h2>
+  <div id="list"></div>
+</main>
+<div class="cam"><span class="tl">PLAY ►</span><span class="tr"><i>●</i> REC <em id="ts"></em></span><span class="bl">SP&nbsp;<em id="tape">0:00:00</em></span><span class="br">▮▮▮▯ BATT</span><div class="track-bar"></div></div>
+<div id="stamp"><div class="bars"></div><div class="box"><div id="bang">❚❚</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
+
+<script src="theme-switch.js" data-theme="level1"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "STABLE"], ["良い", "CALM"], ["普通", "UNEASY"], ["微妙", "LOST"], ["最悪", "NO EXIT"]];
+const RANKS = ["NOCLIPPED", "WANDERER", "SCAVENGER", "M.E.G. AGENT", "SURVEYOR", "RESIDENT", "EXIT FOUND"];
+const MSG_FILED = "ENTRY LOGGED ─ 記録完了", MSG_PROMO = "EXIT FOUND ─ 出口を発見";
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const $ = id => document.getElementById(id);
+
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const countUp = (el, to) => {
+  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
+  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
+  const t0 = performance.now();
+  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+};
+
+let data = load(), selected = ymd(new Date()), mood = null, stampTimer, typeTimer;
+
+function streakCount() {
+  let n = 0, d = new Date();
+  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
+  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const cur = new Date(k + "T00:00:00");
+    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = cur;
+  }
+  return xp;
+}
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+
+function typewrite(text) {
+  clearInterval(typeTimer); let i = 0;
+  const el = $("stampBig"); el.textContent = "";
+  typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(typeTimer); }, 55);
+}
+
+function render() {
+  const sd = new Date(selected + "T00:00:00");
+  $("d").textContent = selected.replace(/-/g, ".");
+  $("dow").textContent = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
+
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount();
+  const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+  $("lv").textContent = RANKS[rk];
+  $("xp").style.width = pct + "%"; $("xpTxt").textContent = pct + "%";
+  $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
+  countUp($("streak"), st);
+  countUp($("total"), Object.keys(data).length);
+  
+
+  const e = data[selected];
+  $("body").value = e ? e.text : "";
+  mood = e ? e.mood : null;
+  $("moods").innerHTML = MOODS.map(([m, tag, c]) => `<li><button data-m="${m}" style="--r:${c||""}" class="${m===mood?"on":""}">${m}<span>${tag}</span></button></li>`).join("");
+  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
+
+  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
+  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
+  h += "<div style='visibility:hidden'></div>".repeat(first);
+  for (let d = 1; d <= last; d++) {
+    const k = ymd(new Date(y, mo, d));
+    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+  }
+  $("cal").innerHTML = h;
+
+  const keys = Object.keys(data).sort().reverse();
+  $("list").innerHTML = keys.length ? keys.map((k, i) =>
+    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
+    : `<div class="entry" style="--i:1"><p>テープは空だ。最初の記録を残せ。</p></div>`;
+}
+
+$("moods").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  mood = b.dataset.m;
+  
+  document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
+};
+$("cal").onclick = e => {
+  const c = e.target.closest("[data-d]"); if (!c) return;
+  selected = c.dataset.d; render();
+};
+$("save").onclick = () => {
+  const text = $("body").value.trim();
+  if (!text) { $("body").focus(); return; }
+  const before = rankOf(totalXp()), isNew = !data[selected];
+  data[selected] = { mood, text };
+  store(data);
+  const up = rankOf(totalXp()) > before;
+  
+  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
+  $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
+  setTimeout(() => typewrite(up ? MSG_PROMO : MSG_FILED), 450);
+  $("stampSub").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
+  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2800);
+  render();
+};
+$("stamp").onclick = () => $("stamp").classList.remove("show");
+(() => { const t0 = Date.now(), M = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"], p = n => String(n).padStart(2, "0");
+  const tick = () => { const n = new Date(), s = Math.floor((Date.now() - t0) / 1000);
+    $("ts").textContent = `${M[n.getMonth()]}. ${p(n.getDate())} ${n.getFullYear()}  ${p(n.getHours() % 12 || 12)}:${p(n.getMinutes())}:${p(n.getSeconds())} ${n.getHours() < 12 ? "AM" : "PM"}`;
+    $("tape").textContent = `${Math.floor(s / 3600)}:${p(Math.floor(s / 60) % 60)}:${p(s % 60)}`; };
+  tick(); setInterval(tick, 1000); })();
+render();
+</script>
+</body>
+</html>

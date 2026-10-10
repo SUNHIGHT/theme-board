@@ -23,6 +23,19 @@
       ] },
     { id: "eldenring", name: "ELDEN RING",     sub: "エルデンリング",           c1: "#e8c46a", c2: "#0b0905",
       titles: [ { id: "eldenring", file: "eldenring.html", name: "ELDEN RING", sub: "狭間の地" } ] },
+    { id: "resident", name: "RESIDENT EVIL",  sub: "バイオハザード",           c1: "#c9a15a", c2: "#0d0907",
+      titles: [
+        { id: "re1", file: "resident1.html", name: "RESIDENT EVIL",   sub: "洋館事件" },
+        { id: "re2", file: "resident2.html", name: "RESIDENT EVIL 2", sub: "ラクーンシティ" }
+      ] },
+    { id: "backrooms", name: "BACKROOMS",      sub: "バックルーム",             c1: "#cdbb55", c2: "#3a3414",
+      titles: [
+        { id: "level0",    file: "backrooms0.html", name: "LEVEL 0",   sub: "終わらない黄色い部屋" },
+        { id: "level1",    file: "backrooms1.html", name: "LEVEL 1",   sub: "居住可能地帯" },
+        { id: "poolrooms", file: "poolrooms.html",  name: "POOLROOMS", sub: "水の部屋" }
+      ] },
+    { id: "chrono",  name: "CHRONO TRIGGER",   sub: "クロノ・トリガー",         c1: "#ffe27a", c2: "#1b2a8a",
+      titles: [ { id: "chrono", file: "chrono.html", name: "CHRONO TRIGGER", sub: "時の旅人" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
