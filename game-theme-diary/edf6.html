@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#06121b;--fg:#8fdcf0;--hi:#e9fbff;--acc:#5ee0ff;--acc2:#46d36a;--line:rgba(94,224,255,.7);--panel:rgba(5,20,32,.9);--sel:rgba(70,211,106,.34);--glow:rgba(94,224,255,.5);--warn:#ffd23f;--fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;--fh:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; }
+  :root { --bg:#0b5a45;--fg:#8fdcf0;--hi:#e9fbff;--acc:#5ee0ff;--acc2:#46d36a;--line:rgba(94,224,255,.7);--panel:rgba(4,38,34,.9);--sel:rgba(70,211,106,.34);--glow:rgba(94,224,255,.5);--warn:#ffd23f;--fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;--fh:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; }
 
   * { box-sizing:border-box; margin:0; }
   body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
@@ -134,6 +134,23 @@
   @keyframes edf { from { transform:scale(3) rotate(-8deg); opacity:0; } }
   #stampBig { color:var(--acc); font-weight:700; } #stampSub::before { content:"EDF ─ "; }
   
+  /* v3: bright green field + heavier frames */
+  body { background:
+      radial-gradient(circle at 54px 54px, transparent 0 20px, rgba(190,255,235,.32) 20px 23px, transparent 23px 34px, rgba(190,255,235,.22) 34px 37px, transparent 37px 52px, rgba(190,255,235,.14) 52px 55px, transparent 55px),
+      radial-gradient(circle at calc(100% - 70px) calc(100% - 70px), transparent 0 30px, rgba(190,255,235,.24) 30px 33px, transparent 33px 50px, rgba(190,255,235,.16) 50px 53px, transparent 53px),
+      linear-gradient(rgba(190,255,235,.1) 1px, transparent 1px) 0 0/32px 32px,
+      linear-gradient(90deg, rgba(190,255,235,.1) 1px, transparent 1px) 0 0/32px 32px,
+      radial-gradient(ellipse at 35% 0%, #3fd6a4 0%, #1a9a76 38%, #0b5a45 75%) fixed; }
+  body::after { background:radial-gradient(ellipse at center, transparent 62%, rgba(0,40,30,.45) 100%); }
+  .panel { border:3px solid #8ff5dc; background:rgba(4,40,36,.92); box-shadow:inset 0 0 0 2px rgba(3,24,22,.95), inset 0 0 0 4px rgba(143,245,220,.45), 0 0 24px rgba(0,60,45,.5); }
+  .panel .ttl { font-size:18px; font-weight:900; padding:5px 22px; border-bottom:3px solid #5c6e72; }
+  .op { font-weight:900; border-bottom:3px solid #5c6e72; }
+  .wi { border:2px solid rgba(143,245,220,.55); } .wi div { font-size:16px; font-weight:700; }
+  .track { border-width:2px; height:18px; } .unit div { border-width:2px; font-weight:700; }
+  .moods button { font-weight:700; border-bottom:2px solid rgba(143,245,220,.35); } textarea { border-width:2px; font-weight:500; }
+  .cal div { border-width:2px; font-weight:700; } .entry { border-width:2px; border-left-width:8px; }
+  h1 { font-weight:900; }
+
 </style>
 </head>
 <body>

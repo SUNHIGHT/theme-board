@@ -121,6 +121,26 @@
   #stampBig { font-family:var(--fh); font-size:clamp(14px,3.6vw,24px); line-height:1.6; } #stampBig::after { content:"▮"; }
   #stampSub::before { content:"BONUS ─ "; }
   
+  /* side-scrolling world: panels laid out left to right, parallax scenery */
+  html { height:100%; overflow-x:auto; overflow-y:hidden; } body { height:100%; overflow:visible; }
+  body { background:#5c94fc; }
+  .clouds, .hills { position:fixed; left:0; right:0; z-index:0; pointer-events:none; }
+  .clouds { top:60px; height:34vh; background:
+      radial-gradient(ellipse 80px 26px at 80px 40px, #fff 0 98%, transparent 100%), radial-gradient(ellipse 120px 34px at 420px 100px, #fff 0 98%, transparent 100%), radial-gradient(ellipse 90px 28px at 720px 30px, #fff 0 98%, transparent 100%);
+    background-size:900px 100%; background-repeat:repeat-x; background-position:calc(var(--sx, 0) * -.35px) 0; }
+  .hills { bottom:44px; height:30vh; background:
+      radial-gradient(ellipse 200px 100% at 200px 100%, #3fa636 0 62%, transparent 63%), radial-gradient(ellipse 280px 80% at 640px 100%, #2f8f2c 0 62%, transparent 63%);
+    background-size:900px 100%; background-repeat:repeat-x; background-position:calc(var(--sx, 0) * -.6px) 0; border-bottom:0; }
+  main { display:flex; align-items:stretch; gap:90px; width:max-content; max-width:none; margin:0; height:100vh; padding:116px 80px 64px 56px; position:relative; z-index:2; }
+  header { flex:none; width:min(560px,88vw); align-self:center; animation:none; padding:0; }
+  .clock { position:fixed; top:14px; left:20px; right:160px; z-index:60; display:flex; gap:26px; margin:0; flex-wrap:wrap; }
+  .panel { flex:none; width:min(580px,88vw); height:100%; margin:0; overflow-y:auto; }
+  h2 { flex:none; align-self:center; width:220px; }
+  #list { flex:none; width:min(580px,88vw); height:100%; overflow-y:auto; padding-right:6px; }
+  main::after { content:""; flex:none; width:16px; align-self:flex-end; height:62%; margin:0 120px 0 20px; background:linear-gradient(90deg,#00a800,#00e800); border:3px solid #000; box-shadow:0 -22px 0 -4px #fff; }
+  .scrollhint { position:fixed; right:22px; bottom:60px; z-index:50; font-family:var(--fh); font-size:13px; color:#fff; text-shadow:2px 2px 0 #000; opacity:max(0, calc(1 - var(--sx, 0) / 240)); animation:blink 1s steps(1) infinite; }
+  body::after { height:44px; }
+
 </style>
 </head>
 <body>
@@ -161,7 +181,7 @@
   <h2>WORLD MAP ─ 過去の記録</h2>
   <div id="list"></div>
 </main>
-
+<div class="hills"></div><div class="clouds"></div><div class="scrollhint">SCROLL ▶</div>
 <div id="stamp"><div class="bars"></div><div class="box"><div id="bang">1UP</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
 
 <script src="theme-switch.js" data-theme="mario"></script>
@@ -283,6 +303,17 @@ $("save").onclick = () => {
 $("stamp").onclick = () => $("stamp").classList.remove("show");
 (() => { const tick = () => { const n = new Date(), s = n.getHours() * 3600 + n.getMinutes() * 60 + n.getSeconds();
   $("tm").textContent = String(Math.floor((1 - s / 86400) * 400)).padStart(3, "0"); }; tick(); setInterval(tick, 1000); })();
+(() => { const root = document.scrollingElement || document.documentElement;
+  const sx = () => document.documentElement.style.setProperty("--sx", root.scrollLeft);
+  addEventListener("scroll", sx, { passive: true }); sx();
+  addEventListener("wheel", e => {
+    if (e.ctrlKey) return;
+    const el = e.target.closest && e.target.closest(".panel, #list");
+    if (el && e.deltaY && el.scrollHeight > el.clientHeight + 1 && !(e.deltaY < 0 && el.scrollTop <= 0) && !(e.deltaY > 0 && el.scrollTop + el.clientHeight >= el.scrollHeight - 1)) return;
+    if (Math.abs(e.deltaY) >= Math.abs(e.deltaX)) { root.scrollLeft += e.deltaY; e.preventDefault(); }
+  }, { passive: false });
+  addEventListener("keydown", e => { if (e.target.matches("textarea, input")) return; if (e.key === "ArrowRight") root.scrollLeft += 160; if (e.key === "ArrowLeft") root.scrollLeft -= 160; });
+})();
 render();
 </script>
 </body>
