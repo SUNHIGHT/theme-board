@@ -52,7 +52,10 @@
     { id: "cyberpunk", name: "CYBERPUNK 2077", sub: "サイバーパンク2077",       c1: "#fcee0a", c2: "#08070b",
       titles: [ { id: "cyberpunk", file: "cyberpunk.html", name: "CYBERPUNK 2077", sub: "ナイトシティ" } ] },
     { id: "mh",     name: "MONSTER HUNTER",    sub: "モンスターハンター",       c1: "#f08a24", c2: "#241709",
-      titles: [ { id: "mh2g", file: "mh2g.html", name: "MONSTER HUNTER 2G", sub: "ドンドルマ" } ] },
+      titles: [
+        { id: "mh2g", file: "mh2g.html", name: "MONSTER HUNTER 2G", sub: "ドンドルマ" },
+        { id: "mh4g", file: "mh4g.html", name: "MONSTER HUNTER 4G", sub: "ハンターの記録データ" }
+      ] },
     { id: "splatoon", name: "SPLATOON",      sub: "スプラトゥーン",           c1: "#ff6a00", c2: "#3b2bff",
       titles: [ { id: "splatoon3", file: "splatoon3.html", name: "SPLATOON 3", sub: "バンカラ地方" } ] },
     { id: "mario",  name: "SUPER MARIO",       sub: "スーパーマリオ",           c1: "#e83800", c2: "#5c94fc",
