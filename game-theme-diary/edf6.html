@@ -6,204 +6,108 @@
 <title>Earth Defense Force Diary</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b5a45;--fg:#8fdcf0;--hi:#e9fbff;--acc:#5ee0ff;--acc2:#46d36a;--line:rgba(94,224,255,.7);--panel:rgba(4,38,34,.9);--sel:rgba(70,211,106,.34);--glow:rgba(94,224,255,.5);--warn:#ffd23f;--fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;--fh:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; }
-
+  /* Dense squad-room screen: steel-blue schematic backdrop, corner ring ornaments, blue title band, striped menu bars, info cells, class panels, black log pane */
+  :root { --bg:#0b1823; --hl:#a9d6ea; --txt:#e9f5fb; --dim:#8fb2c4; --panel:rgba(48,86,110,.5); --bar:rgba(66,118,148,.62); --green:#34b869; --org:#ff8a2a; --yel:#ffd23f; --font:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --mono:'Share Tech Mono','Zen Kaku Gothic New',monospace; }
   * { box-sizing:border-box; margin:0; }
-  body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
-  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 16px 70px; }
-  header { position:relative; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:24px; animation:typeIn .8s both; }
-  .op { font-size:12px; letter-spacing:.4em; color:var(--acc); }
-  h1 { font-family:var(--fh); font-weight:700; font-size:clamp(34px,8.5vw,66px); letter-spacing:.05em; line-height:1.05; color:var(--hi); margin:4px 0; }
-  h1 small { display:block; font-size:.4em; letter-spacing:.35em; color:var(--fg); font-family:var(--fb); font-weight:400; }
-  .clock { display:flex; flex-wrap:wrap; gap:22px; font-size:15px; letter-spacing:.15em; margin-top:8px; }
-  .clock b { color:var(--acc); font-weight:400; margin-right:6px; }
-  .blink { animation:blink 1s steps(1) infinite; }
-  .panel { position:relative; background:var(--panel); border:1px solid var(--line); padding:22px 22px 18px; margin-bottom:30px; }
-  .ttl { display:inline-block; font-family:var(--fh); font-size:15px; letter-spacing:.25em; color:var(--bg); background:var(--acc); padding:2px 14px; margin:-36px 0 12px -8px; }
-  .gauge { margin-bottom:12px; }
-  .gauge b { font-weight:400; display:flex; justify-content:space-between; letter-spacing:.2em; font-size:14px; }
-  .gauge b em { font-style:normal; font-family:var(--fh); font-size:20px; color:var(--hi); }
-  .track { height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.45); }
-  .track div { height:100%; width:0; transition:width .9s cubic-bezier(.2,.9,.3,1); background:repeating-linear-gradient(90deg,var(--c) 0 8px,transparent 8px 10px); }
-  .life div { --c:var(--acc); } .stam div { --c:var(--acc2); }
-  .row3 { display:flex; gap:26px; flex-wrap:wrap; margin-top:14px; }
-  .row3 div { flex:1 1 130px; border-top:1px solid var(--line); padding-top:6px; }
-  .row3 b { display:block; font-weight:400; font-size:12px; letter-spacing:.25em; color:var(--acc); }
-  .row3 i { font-style:normal; font-family:var(--fh); font-size:38px; color:var(--hi); line-height:1.1; }
-  .moods { list-style:none; padding:0; margin-bottom:18px; }
-  .moods button { width:100%; text-align:left; font:inherit; font-size:17px; cursor:pointer; color:var(--fg); background:transparent; border:0;
-    border-bottom:1px dashed var(--line); padding:8px 8px 8px 30px; position:relative; display:flex; justify-content:space-between; transition:.1s; }
-  .moods button span { font-size:12px; letter-spacing:.2em; opacity:.7; }
-  .moods button:hover { color:var(--acc); }
-  .moods button.on { background:var(--sel); color:var(--hi); animation:fade .25s; }
-  .moods button.on::before { content:"▶"; position:absolute; left:8px; color:var(--acc); animation:blink .8s steps(1) infinite; }
-  textarea { width:100%; min-height:180px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.9; color:var(--hi);
-    background:rgba(255,255,255,.05); border:1px solid var(--line); outline:none; }
-  textarea:focus { border-color:var(--acc); box-shadow:0 0 12px var(--glow); }
-  textarea::placeholder { color:var(--fg); opacity:.45; }
-  .hint { font-size:12px; color:var(--acc); margin-top:6px; min-height:1.2em; }
-  .save { display:block; margin:14px 0 0 auto; font-family:var(--fh); font-weight:700; font-size:24px; letter-spacing:.3em; cursor:pointer;
-    color:var(--bg); background:var(--acc); border:0; padding:8px 34px; transition:.1s; }
-  .save:hover { background:var(--hi); box-shadow:0 0 18px var(--glow); }
-  .save:active { transform:scale(.95); }
-  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--line); transition:.15s; }
-  .cal .dow { aspect-ratio:auto; border:0; color:var(--acc); font-size:12px; letter-spacing:.2em; }
-  .cal .done { color:var(--bg); font-weight:700; background:var(--acc); }
-  .cal .today { outline:2px solid var(--hi); outline-offset:2px; }
-  .cal .sel { box-shadow:0 0 0 3px var(--acc2); }
-  .cal div[data-d]:hover { background:var(--sel); transform:scale(1.12); }
-  h2 { font-family:var(--fh); font-size:22px; letter-spacing:.3em; color:var(--hi); margin:6px 0 14px; }
-  .entry { background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--acc); padding:12px 18px; margin-bottom:12px; }
-  .entry small { color:var(--acc); letter-spacing:.2em; font-size:12px; }
-  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.8; color:var(--hi); }
-  #stamp { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
-  #stamp.show { display:flex; animation:fade .2s; }
-  #stamp .bars::before, #stamp .bars::after { content:""; position:absolute; left:0; right:0; height:16vh; background:#000; z-index:1; }
-  #stamp .bars::before { top:0; animation:barT .5s ease-out; } #stamp .bars::after { bottom:0; animation:barB .5s ease-out; }
-  @keyframes barT { from { transform:translateY(-100%); } } @keyframes barB { from { transform:translateY(100%); } }
-  #stamp .box { text-align:center; position:relative; z-index:2; padding:0 16px; }
-  #bang { font-family:var(--fh); font-weight:700; font-size:clamp(110px,28vw,230px); line-height:1; color:var(--warn); text-shadow:0 0 30px var(--warn), 5px 5px 0 #000; animation:bang .45s cubic-bezier(.2,2,.4,1); }
-  @keyframes bang { from { transform:scale(.1) rotate(-25deg); opacity:0; } }
-  #stampBig { font-family:var(--fh); font-size:clamp(22px,5.5vw,40px); letter-spacing:.2em; color:var(--hi); min-height:1.4em; }
-  #stampBig::after { content:"█"; animation:blink .6s steps(1) infinite; color:var(--acc); }
-  #stampSub { margin-top:6px; letter-spacing:.3em; font-size:14px; color:var(--acc); }
-  @keyframes blink { 50% { opacity:0; } }
-  @keyframes fade { from { opacity:0; } }
-  @keyframes typeIn { from { opacity:0; transform:translateX(-30px); } }
-  @keyframes panelIn { 0% { opacity:0; transform:translateY(24px); } 40% { opacity:.4; } 55% { opacity:.1; } 70% { opacity:1; } }
-  @keyframes rise { from { opacity:0; transform:scale(.6); } }
-  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
-  main > .panel { animation:panelIn .7s both; }
-  main > .panel:nth-of-type(1) { animation-delay:.25s; } main > .panel:nth-of-type(2) { animation-delay:.45s; } main > .panel:nth-of-type(3) { animation-delay:.65s; }
-  .cal div[data-d] { animation:rise .3s calc(var(--i) * 16ms + .8s) backwards; }
-  .entry { animation:entryIn .45s calc(var(--i) * 70ms) ease-out backwards; }
+  html, body { min-height:100%; }
+  body { font-family:var(--font); color:var(--txt); overflow-x:hidden; background:
+      linear-gradient(rgba(169,214,234,.07) 1px, transparent 1px) 0 0/34px 34px, linear-gradient(90deg, rgba(169,214,234,.07) 1px, transparent 1px) 0 0/34px 34px,
+      linear-gradient(90deg, transparent 0 14%, rgba(169,214,234,.09) 14% 14.3%, transparent 14.3% 50%, rgba(169,214,234,.11) 50% 50.3%, transparent 50.3% 84%, rgba(169,214,234,.09) 84% 84.3%, transparent 84.3%),
+      radial-gradient(ellipse at 40% 20%, #25465a, #0b1823 70%) fixed; }
+  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 60%, rgba(0,8,14,.55) 100%); }
+  .scan { position:fixed; top:0; bottom:0; width:120px; z-index:0; pointer-events:none; background:linear-gradient(90deg, transparent, rgba(169,214,234,.1), transparent); animation:scan 12s linear infinite; } @keyframes scan { from { left:-140px; } to { left:100%; } }
+  .orn { position:fixed; z-index:0; pointer-events:none; width:min(24vw,230px); height:min(24vw,230px); fill:none; stroke:var(--hl); opacity:.55; } .orn.a { left:-4vw; top:-4vw; } .orn.b { right:-4vw; top:-4vw; } .orn.c { right:-5vw; bottom:-5vw; }
+  .orn .r1 { animation:spin 60s linear infinite; transform-origin:100px 100px; } .orn .r2 { animation:spin 40s linear infinite reverse; transform-origin:100px 100px; } @keyframes spin { to { transform:rotate(360deg); } }
+
+  .hud { position:relative; z-index:1; width:min(1480px,100%); margin:0 auto; padding:clamp(10px,2vw,22px) clamp(12px,2.6vw,38px) 70px; animation:fadeIn .6s both; }
+  .tbar { position:relative; display:flex; align-items:center; height:clamp(40px,6vw,56px); margin:0 clamp(40px,8vw,130px) 12px; padding:0 clamp(18px,3vw,50px); background:linear-gradient(180deg,#5f93b4,#2f6385 60%,#244f6c); border-top:2px solid #cfeaf7; border-bottom:2px solid #153447; clip-path:polygon(0 50%,22px 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,22px 100%); box-shadow:0 0 18px rgba(80,160,210,.4); }
+  .tbar h1 { font-weight:900; font-size:clamp(20px,3.4vw,32px); letter-spacing:.2em; text-shadow:0 2px 0 rgba(0,0,0,.4); } .tbar small { margin-left:18px; font-family:var(--mono); font-size:13px; letter-spacing:.2em; color:#cfe8f4; }
+  .info { display:grid; grid-template-columns:1.4fr .8fr 1.5fr 1.3fr; gap:2px; margin:0 0 10px clamp(0px,4vw,60px); font-size:clamp(11px,1.5vw,15px); }
+  .cell { display:flex; flex-direction:column; justify-content:center; min-height:46px; padding:4px 12px; background:linear-gradient(180deg,var(--bar),rgba(40,78,102,.5)); border:1px solid rgba(169,214,234,.5); } .cell small { font-family:var(--mono); font-size:11px; color:#cfe8f4; letter-spacing:.1em; background:rgba(0,0,0,.25); align-self:flex-start; padding:0 6px; margin-bottom:1px; } .cell b { font-weight:700; letter-spacing:.06em; } .cell b.hard { font-family:var(--mono); letter-spacing:.3em; font-size:1.2em; }
+
+  .grid { display:grid; grid-template-columns:minmax(230px,28%) minmax(300px,34%) minmax(260px,1fr); gap:clamp(10px,1.6vw,22px); align-items:start; }
+  /* left menu */
+  .menu { display:flex; flex-direction:column; gap:7px; padding:12px 12px 12px 22px; background:var(--panel); border:2px solid rgba(169,214,234,.55); position:relative; }
+  .menu::before { content:""; position:absolute; left:0; top:0; bottom:0; width:16px; background:repeating-linear-gradient(135deg,#d6e6ee 0 5px,#2a4a5c 5px 10px); }
+  .mi { all:unset; box-sizing:border-box; cursor:pointer; display:block; padding:7px 14px 7px 18px; font-weight:700; font-size:clamp(14px,1.9vw,19px); letter-spacing:.08em; color:var(--txt); background:linear-gradient(90deg,rgba(88,144,176,.85),rgba(60,106,136,.55)); border-bottom:2px solid rgba(255,255,255,.35); position:relative; transition:.1s; animation:slide .4s calc(var(--i) * 50ms + .2s) both; }
+  .mi::before { content:""; position:absolute; left:-6px; top:8px; bottom:8px; width:4px; background:rgba(255,255,255,.4); }
+  .mi:hover { background:linear-gradient(90deg,rgba(110,170,204,.95),rgba(76,126,156,.7)); }
+  .mi.on { background:linear-gradient(90deg,#2fa85f 0%,#5bd98a 55%,rgba(60,106,136,.4) 100%); text-shadow:0 1px 0 rgba(0,40,10,.5); } .mi.on::before { background:var(--org); width:6px; } .mi.on::after { content:"▶"; position:absolute; left:-16px; top:50%; transform:translateY(-50%); color:var(--yel); font-size:11px; }
+  .mi:focus-visible, .go:focus-visible, .sq button:focus-visible, textarea:focus-visible, .li:focus-visible, .btn:focus-visible { outline:2px solid var(--yel); outline-offset:2px; }
+
+  /* center mission panel */
+  .mid { position:relative; padding:12px 14px 14px; background:var(--panel); border:2px solid rgba(169,214,234,.55); animation:fadeIn .5s .2s both; }
+  .mid::after { content:""; position:absolute; inset:5px; border:1px solid rgba(169,214,234,.3); pointer-events:none; }
+  .mode { text-align:right; font-size:clamp(11px,1.4vw,14px); letter-spacing:.14em; color:#d6eaf4; background:rgba(0,0,0,.2); padding:2px 10px; } .mtt { font-weight:900; font-size:clamp(18px,2.6vw,26px); letter-spacing:.08em; padding:4px 8px; background:rgba(10,30,44,.55); }
+  .ml { font-size:clamp(13px,1.7vw,17px); letter-spacing:.06em; padding:3px 8px; background:rgba(10,30,44,.55); border-top:1px solid rgba(169,214,234,.3); } .ml b { color:var(--yel); font-weight:700; }
+  .desc { margin-top:8px; background:#0c1218; border:3px solid #6a7f8b; min-height:200px; position:relative; }
+  textarea { display:block; width:100%; height:clamp(160px,26vh,250px); resize:none; padding:10px 12px; font:500 clamp(14px,1.8vw,17px)/1.75 var(--font); color:#f4fbff; background:transparent; border:0; outline:none; text-shadow:0 1px 2px #000; } textarea::placeholder { color:#7f9db0; }
+  .sq { display:flex; align-items:center; gap:10px; padding:6px 10px; font-size:14px; background:rgba(0,0,0,.45); border-top:2px solid #6a7f8b; } .sq span { margin-right:auto; letter-spacing:.1em; } .sq button { all:unset; cursor:pointer; width:26px; height:26px; border:2px solid #e9f5fb; background:transparent; text-align:center; font-size:13px; line-height:22px; color:var(--yel); transition:.1s; } .sq button:hover { background:rgba(255,255,255,.22); } .sq button.on { background:#e9f5fb; color:#0c1218; } .sqn { display:flex; gap:10px; padding:2px 10px 6px; justify-content:flex-end; font-size:10px; color:var(--dim); background:rgba(0,0,0,.45); } .sqn i { width:26px; text-align:center; font-style:normal; margin-left:10px; }
+  .go { all:unset; cursor:pointer; display:block; margin:12px 0 0 auto; width:max-content; padding:8px 34px; font-weight:900; font-size:clamp(16px,2.2vw,22px); letter-spacing:.2em; background:linear-gradient(90deg,#2fa85f,#5bd98a); border:2px solid #cfeedc; text-shadow:0 1px 0 rgba(0,40,10,.5); box-shadow:0 0 14px rgba(60,200,120,.4); clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%); } .go:hover { filter:brightness(1.12); } .go:active { transform:scale(.97); } .hintx { font-size:12px; color:var(--yel); min-height:1.3em; margin-top:4px; }
+  .tbl { display:grid; grid-template-columns:1fr auto auto; gap:2px 12px; font-size:clamp(13px,1.7vw,16px); } .tbl div { padding:5px 8px; background:rgba(10,30,44,.55); } .tbl .h { color:#cfe8f4; font-size:12px; letter-spacing:.14em; background:rgba(0,0,0,.3); } .tbl .sel { background:linear-gradient(90deg,#2fa85f,rgba(60,106,136,.5)); cursor:pointer; } .tbl .q { cursor:pointer; } .tbl .q:hover { background:rgba(110,170,204,.5); }
+  .list { display:flex; flex-direction:column; gap:3px; max-height:34vh; overflow:auto; } .li { all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:7em 1fr auto; gap:10px; padding:5px 8px; font-size:14px; background:rgba(10,30,44,.55); } .li:hover { background:rgba(110,170,204,.45); } .li.on { background:linear-gradient(90deg,#2fa85f,rgba(60,106,136,.5)); } .li span:nth-child(2) { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#cfe8f4; } .li small { font-family:var(--mono); color:var(--yel); }
+  .txt { white-space:pre-wrap; line-height:1.8; font-size:15px; padding:8px 10px; background:#0c1218; border:2px solid #6a7f8b; margin-top:8px; max-height:24vh; overflow:auto; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; } .cal div { aspect-ratio:1.4; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:15px; background:rgba(10,30,44,.55); border:1px solid rgba(169,214,234,.35); } .cal .dow { aspect-ratio:auto; background:none; border:0; font-size:11px; color:var(--dim); } .cal .d { cursor:pointer; } .cal .d:hover { background:rgba(110,170,204,.5); } .cal .done { background:linear-gradient(135deg,#2fa85f,#1d7a42); } .cal .today { outline:2px solid var(--yel); outline-offset:1px; } .cal .selx { box-shadow:inset 0 0 0 2px #fff; }
+  .mh { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-family:var(--mono); font-size:18px; letter-spacing:.16em; } .btn { all:unset; cursor:pointer; padding:3px 14px; border:2px solid var(--hl); background:rgba(10,30,44,.55); } .btn:hover { background:var(--hl); color:#0b1823; }
+  .help { font-size:14px; line-height:1.9; } .help b { color:var(--yel); }
+
+  /* right: class panels (dense) */
+  .side { display:flex; flex-direction:column; gap:8px; animation:fadeIn .5s .3s both; }
+  .cp { display:grid; grid-template-columns:1fr 92px; grid-template-rows:auto 1fr; background:var(--panel); border:1px solid rgba(169,214,234,.55); font-size:clamp(11px,1.35vw,13.5px); }
+  .cp .nm { grid-column:1 / 3; display:flex; gap:8px; align-items:center; background:linear-gradient(90deg,rgba(60,106,136,.9),rgba(40,78,102,.7)); padding:3px 10px; border-bottom:1px solid rgba(169,214,234,.5); } .cp .nm b { font-weight:900; letter-spacing:.06em; } .cp .nm span { font-family:var(--mono); color:#cfe8f4; font-size:.95em; margin-left:auto; }
+  .cp .ls { padding:4px 8px; line-height:1.55; } .cp .ls div { display:flex; justify-content:space-between; gap:8px; border-bottom:1px dotted rgba(169,214,234,.25); } .cp .ls em { font-style:normal; font-family:var(--mono); color:#cfe8f4; }
+  .cp .nb { padding:4px 6px; border-left:1px solid rgba(169,214,234,.4); display:flex; flex-direction:column; gap:3px; } .cp .nb small { background:rgba(0,0,0,.3); padding:0 6px; font-size:11px; letter-spacing:.06em; } .cp .nb b { text-align:center; font-family:var(--mono); font-size:1.5em; font-weight:400; background:rgba(0,0,0,.28); }
+
+  /* log */
+  .logw { position:relative; margin-top:clamp(12px,2vw,24px); width:min(980px,100%); margin-left:clamp(0px,3vw,40px); display:grid; grid-template-columns:34px 1fr; background:#0a0f14; border:4px solid #dfeef6; border-right-width:6px; box-shadow:0 0 0 2px #3a5a6e; }
+  .logw .sl { position:relative; background:repeating-linear-gradient(135deg,#d6e6ee 0 5px,#2a4a5c 5px 10px); } .logw .sl::after { content:""; position:absolute; left:11px; top:22px; bottom:22px; width:10px; background:linear-gradient(180deg,var(--org),#a8480c); } .logw .sl i { position:absolute; left:0; right:0; font-family:var(--mono); font-size:11px; text-align:center; font-style:normal; background:#0a0f14; } .logw .sl i:first-child { top:2px; } .logw .sl i:last-child { bottom:2px; }
+  .log { padding:10px 14px; min-height:150px; max-height:28vh; overflow:auto; font-family:var(--mono); font-size:clamp(12px,1.6vw,15px); line-height:1.75; color:#cfe8f4; } .log div b { color:var(--yel); font-weight:400; } .log div i { color:var(--green); font-style:normal; }
+  .keys { position:fixed; right:clamp(14px,6vw,100px); bottom:12px; z-index:30; display:flex; gap:20px; font-size:15px; font-weight:700; letter-spacing:.1em; text-shadow:0 1px 2px #000; } .keys i { display:inline-block; width:22px; height:22px; margin-right:6px; vertical-align:-5px; border-radius:50%; border:2px solid #cfe8f4; font-style:normal; font-size:11px; text-align:center; line-height:18px; background:rgba(255,255,255,.08); }
+
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; flex-direction:column; gap:10px; background:rgba(2,10,16,.88); }
+  #ov.show { display:flex; animation:fadeIn .2s; } #bang { font-weight:900; font-size:clamp(100px,26vw,220px); letter-spacing:.04em; font-style:italic; color:#fff; text-shadow:0 0 30px #5ec8ff, 6px 6px 0 #0b3a4c; animation:edf .7s cubic-bezier(.2,2,.4,1); }
+  #ovT { font-weight:700; font-size:clamp(20px,4.4vw,34px); letter-spacing:.2em; color:#7fe0ff; } #ovS { font-family:var(--mono); font-size:clamp(13px,2.2vw,18px); letter-spacing:.3em; color:#cfe8f4; }
+  @keyframes edf { from { transform:scale(3) rotate(-8deg); opacity:0; } } @keyframes fadeIn { from { opacity:0; } } @keyframes slide { from { opacity:0; transform:translateX(-22px); } }
+  @media (max-width:980px) { .grid { grid-template-columns:1fr; } .info { grid-template-columns:1fr 1fr; margin-left:0; } .tbar { margin:0 0 12px; } .logw { margin-left:0; } .keys { display:none; } .orn { opacity:.3; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
-
-
-  body { background:
-      radial-gradient(circle at 54px 54px, transparent 0 20px, rgba(94,224,255,.22) 20px 22px, transparent 22px 34px, rgba(94,224,255,.16) 34px 36px, transparent 36px 52px, rgba(94,224,255,.1) 52px 54px, transparent 54px),
-      radial-gradient(circle at calc(100% - 70px) calc(100% - 70px), transparent 0 30px, rgba(94,224,255,.18) 30px 32px, transparent 32px 50px, rgba(94,224,255,.12) 50px 52px, transparent 52px),
-      linear-gradient(rgba(94,224,255,.06) 1px, transparent 1px) 0 0/30px 30px,
-      linear-gradient(90deg, rgba(94,224,255,.06) 1px, transparent 1px) 0 0/30px 30px,
-      radial-gradient(ellipse at 30% 0%, #0f3a4c, #06121b 65%) fixed; }
-  body::before { content:""; position:fixed; left:0; right:0; height:90px; z-index:0; pointer-events:none; background:linear-gradient(transparent, rgba(94,224,255,.09), transparent); animation:roll 8s linear infinite; }
-  @keyframes roll { from { top:-100px; } to { top:100%; } }
-  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6) 100%); }
-  main { max-width:900px; }
-  header { border-bottom:0; position:relative; }
-  .op { display:block; font-size:15px; letter-spacing:.14em; color:#0b1b24; font-weight:700; padding:3px 16px; margin:0 0 14px;
-    background:linear-gradient(#e2e8eb,#a9b6bd); clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); }
-  h1 { font-weight:900; font-size:clamp(40px,10vw,84px); letter-spacing:.08em; line-height:1.05; color:var(--hi); text-shadow:0 0 18px var(--glow), 3px 3px 0 #02080c; }
-  h1 small { text-shadow:none; font-size:.2em; letter-spacing:.3em; color:var(--acc); font-weight:700; }
-  .clock { color:var(--fg); } .clock b { color:var(--warn); font-size:12px; letter-spacing:.18em; }
-  .clock #enemy { font-weight:900; font-size:24px; color:var(--hi); text-shadow:0 0 10px var(--glow); }
-  .unit { position:absolute; right:0; top:44px; width:230px; display:flex; flex-direction:column; gap:4px; }
-  .unit div { display:flex; justify-content:space-between; padding:3px 12px; border:1px solid var(--line); background:linear-gradient(90deg,rgba(94,224,255,.2),rgba(5,20,32,.9)); }
-  .unit b { color:var(--hi); font-weight:700; } .unit span { color:var(--acc); font-weight:700; }
-  @media (max-width:640px) { .unit { position:static; width:auto; margin-top:12px; } }
-  .panel { border:1px solid var(--line); border-radius:0; padding:22px 22px 18px; clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px)); box-shadow:inset 0 0 40px rgba(94,224,255,.08); }
-  .panel .ttl { display:block; margin:0 -22px 14px !important; padding:3px 22px; background:linear-gradient(#e2e8eb,#a9b6bd); color:#0b1b24; font-size:15px; font-weight:700; letter-spacing:.14em; }
-  .panel > .ttl:first-child { margin-top:-22px !important; }
-  .panel .ttl ~ .ttl { margin-top:20px !important; }
-  .wi { display:grid; gap:2px; margin-bottom:14px; padding:8px 12px; border:1px solid rgba(94,224,255,.35); background:rgba(94,224,255,.05); }
-  .wi div { display:grid; grid-template-columns:5em 8em 1fr; gap:6px; align-items:baseline; font-size:15px; }
-  .wi i { font-style:normal; color:var(--warn); } .wi b { color:var(--hi); font-weight:500; } .wi span { color:var(--acc); }
-  .gauge b { color:var(--hi); font-weight:500; } .gauge b em { font-weight:700; color:var(--acc); }
-  .track { border-radius:0; border:1px solid var(--line); } .life div { --c:#46d36a; } .stam div { --c:#5ee0ff; }
-  .row3 { display:none; }
-  .moods li { list-style:none; }
-  .moods button { display:grid; grid-template-columns:1fr auto; border-bottom:1px solid rgba(94,224,255,.3); color:var(--fg); font-size:17px; padding:7px 10px 7px 32px; }
-  .moods button span { color:var(--warn); opacity:1; letter-spacing:.06em; font-size:14px; }
-  .moods button:hover { background:rgba(94,224,255,.1); color:var(--hi); }
-  .moods button.on { background:linear-gradient(90deg,#2f9c4e,#1f6d36); color:#fff; } .moods button.on span { color:#fff; } .moods button.on::before { color:#fff; }
-  textarea { background:rgba(2,12,20,.8); border:1px solid var(--line); color:var(--acc); font-size:16px; line-height:1.9; }
-  textarea::placeholder { color:var(--fg); opacity:.5; }
-  .save { background:linear-gradient(#37b058,#1f6d36); color:#fff; font-weight:900; font-size:26px; letter-spacing:.2em; border:1px solid #9bf0b4; clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); padding:8px 48px 8px 36px; }
-  .save:hover { background:linear-gradient(#4ac96c,#27853f); }
-  .cal div { border:1px solid rgba(94,224,255,.4); border-radius:0; color:var(--fg); background:rgba(5,20,32,.6); }
-  .cal .dow { background:none; border:0; color:var(--warn); }
-  .cal div[data-d].done { background:linear-gradient(135deg,#2f9c4e,#1f6d36); color:#fff; border-color:#9bf0b4; }
-  .cal .today { outline:2px solid var(--warn); }
-  h2 { color:var(--hi); font-size:18px; letter-spacing:.2em; background:linear-gradient(#e2e8eb,#a9b6bd); color:#0b1b24; padding:3px 16px; display:inline-block; clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%); padding-right:30px; }
-  .entry { background:rgba(5,20,32,.9); border:1px solid var(--line); border-left:6px solid var(--acc2); } .entry p { color:var(--acc); } .entry small { color:var(--warn); }
-  #stamp { background:rgba(2,10,16,.9); }
-  #bang { font-weight:900; font-size:clamp(100px,26vw,220px); letter-spacing:.04em; font-style:italic; color:var(--hi); text-shadow:0 0 30px var(--acc), 6px 6px 0 #0b3a4c; animation:edf .7s cubic-bezier(.2,2,.4,1); }
-  @keyframes edf { from { transform:scale(3) rotate(-8deg); opacity:0; } }
-  #stampBig { color:var(--acc); font-weight:700; } #stampSub::before { content:"EDF ─ "; }
-  
-  /* v3: bright green field + heavier frames */
-  body { background:
-      radial-gradient(circle at 54px 54px, transparent 0 20px, rgba(190,255,235,.32) 20px 23px, transparent 23px 34px, rgba(190,255,235,.22) 34px 37px, transparent 37px 52px, rgba(190,255,235,.14) 52px 55px, transparent 55px),
-      radial-gradient(circle at calc(100% - 70px) calc(100% - 70px), transparent 0 30px, rgba(190,255,235,.24) 30px 33px, transparent 33px 50px, rgba(190,255,235,.16) 50px 53px, transparent 53px),
-      linear-gradient(rgba(190,255,235,.1) 1px, transparent 1px) 0 0/32px 32px,
-      linear-gradient(90deg, rgba(190,255,235,.1) 1px, transparent 1px) 0 0/32px 32px,
-      radial-gradient(ellipse at 35% 0%, #3fd6a4 0%, #1a9a76 38%, #0b5a45 75%) fixed; }
-  body::after { background:radial-gradient(ellipse at center, transparent 62%, rgba(0,40,30,.45) 100%); }
-  .panel { border:3px solid #8ff5dc; background:rgba(4,40,36,.92); box-shadow:inset 0 0 0 2px rgba(3,24,22,.95), inset 0 0 0 4px rgba(143,245,220,.45), 0 0 24px rgba(0,60,45,.5); }
-  .panel .ttl { font-size:18px; font-weight:900; padding:5px 22px; border-bottom:3px solid #5c6e72; }
-  .op { font-weight:900; border-bottom:3px solid #5c6e72; }
-  .wi { border:2px solid rgba(143,245,220,.55); } .wi div { font-size:16px; font-weight:700; }
-  .track { border-width:2px; height:18px; } .unit div { border-width:2px; font-weight:700; }
-  .moods button { font-weight:700; border-bottom:2px solid rgba(143,245,220,.35); } textarea { border-width:2px; font-weight:500; }
-  .cal div { border-width:2px; font-weight:700; } .entry { border-width:2px; border-left-width:8px; }
-  h1 { font-weight:900; }
-
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <div class="op">兵科日誌選択　　日記作成</div>
-    <h1>地球防衛軍<small>EARTH DEFENSE FORCE 6 ─ 戦場日誌</small></h1>
-    <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>REMAINING ENEMY</b><span id="enemy">1000</span></span></div>
-    <div class="unit"><div><b>兵科</b><span id="cls">レンジャー</span></div><div><b>Armor</b><span id="arm">100</span></div></div>
-  </header>
+<div class="scan"></div>
+<svg class="orn a" viewBox="0 0 200 200" aria-hidden="true"><g class="r1"><circle cx="100" cy="100" r="92" stroke-width="3"/><circle cx="100" cy="100" r="70" stroke-width="1.5" stroke-dasharray="4 6"/></g><g class="r2"><circle cx="100" cy="100" r="52" stroke-width="2"/><path d="M100 8V28M100 172V192M8 100H28M172 100H192" stroke-width="3"/></g><circle cx="100" cy="100" r="22" stroke-width="2"/></svg>
+<svg class="orn b" viewBox="0 0 200 200" aria-hidden="true"><g class="r2"><circle cx="100" cy="100" r="92" stroke-width="3"/><circle cx="100" cy="100" r="70" stroke-width="1.5" stroke-dasharray="4 6"/></g><g class="r1"><circle cx="100" cy="100" r="52" stroke-width="2"/><path d="M100 8V28M100 172V192M8 100H28M172 100H192" stroke-width="3"/></g><circle cx="100" cy="100" r="22" stroke-width="2"/></svg>
+<svg class="orn c" viewBox="0 0 200 200" aria-hidden="true"><g class="r1"><circle cx="100" cy="100" r="92" stroke-width="3"/><circle cx="100" cy="100" r="64" stroke-width="1.5" stroke-dasharray="3 7"/></g><g class="r2"><circle cx="100" cy="100" r="44" stroke-width="2"/></g></svg>
 
-  <section class="panel">
-    <span class="ttl">日誌データ ─ 詳細</span>
-    <div class="wi" id="wi"></div>
-    <div class="gauge life"><b>ARMOR ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
-    <div class="gauge stam"><b>RANK ─ 次の階級まで <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
-    <div class="row3">
-      <div><b>RANK 階級</b><i id="lv">-</i></div>
-      <div><b>STREAK 連続</b><i id="streak">0</i></div>
-      <div><b>TOTAL 記録</b><i id="total">0</i></div>
-    </div>
+<div class="hud">
+  <header class="tbar"><h1>日誌ルーム</h1><small id="sub">DIARY ROOM</small></header>
+  <section class="info">
+    <div class="cell"><small>Room Name</small><b id="rn">おとじゃ小隊 日誌所</b></div>
+    <div class="cell"><small>Difficulty</small><b class="hard" id="df">NORMAL</b></div>
+    <div class="cell"><small>連続日数 / 招待限定</small><b id="i3">連続 0 日 ─ 本人のみ記録可能</b></div>
+    <div class="cell"><small>記録上限 有効</small><b id="i4">文字数 無制限 ／ 連続判定 有効</b></div>
   </section>
-
-  <section class="panel">
-    <span class="ttl">コンディション選択</span>
-    <ul class="moods" id="moods"></ul>
-    <span class="ttl" style="margin-top:6px">戦闘報告 ─ テキスト入力</span>
-    <textarea id="body" placeholder="本日の戦況を報告せよ…"></textarea>
-    <div class="hint" id="hint"></div>
-    <button class="save" id="save">出撃!</button>
-  </section>
-
-  <section class="panel">
-    <span class="ttl">作戦カレンダー</span>
-    <div class="cal" id="cal"></div>
-  </section>
-
-  <h2>戦闘記録 ─ 過去の報告</h2>
-  <div id="list"></div>
-</main>
-
-<div id="stamp"><div class="bars"></div><div class="box"><div id="bang">EDF!</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
+  <div class="grid">
+    <nav class="menu" id="menu" aria-label="メニュー"></nav>
+    <section class="mid" id="mid"></section>
+    <aside class="side" id="side"></aside>
+  </div>
+  <div class="logw"><div class="sl"><i>L1</i><i>L2</i></div><div class="log" id="log"></div></div>
+</div>
+<div class="keys"><span><i>✕</i>決定</span><span><i>△</i>切替</span></div>
+<div id="ov"><div id="bang">EDF!</div><div id="ovT"></div><div id="ovS"></div></div>
 
 <script src="theme-switch.js" data-theme="edf6"></script>
 <script>
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
-const MOODS = [["最高", "Lv 8　☆8"], ["良い", "Lv 6　☆6"], ["普通", "Lv 4　☆4"], ["微妙", "Lv 2　☆2"], ["最悪", "Lv 0　☆1"]];
-const RANKS = ["新兵", "二等兵", "一等兵", "軍曹", "曹長", "少尉", "隊長"];
-let MSG_FILED = "MISSION COMPLETE ─ ミッション完了", MSG_PROMO = "階級が上がった! ─ RANK UP";
+const MOODS = [["最高","ARMOR MAX",8],["良い","STABLE",6],["普通","DAMAGED",4],["微妙","CRITICAL",2],["最悪","DOWN",1]];
+const RANKS = ["新兵","二等兵","一等兵","軍曹","曹長","少尉","隊長"];
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const ITEMS = ["出撃準備完了!", "ミッション選択", "兵科武器選択", "ルーム設定", "戦歴確認", "ゲーム設定、操作マニュアル", "ルームから退出"];
 const $ = id => document.getElementById(id);
-
 const load = () => {
   try {
     let d = JSON.parse(localStorage.getItem(KEY));
@@ -213,115 +117,102 @@ const load = () => {
 };
 const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const moodOf = m => MOODS.find(x => x[0] === m);
 
-const countUp = (el, to) => {
-  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
-  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
-  const t0 = performance.now();
-  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
-};
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", sel = 0, recIdx = 0, calOff = 0, overlayTimer;
 
-let data = load(), selected = ymd(new Date()), mood = null, stampTimer, typeTimer;
-
-function streakCount() {
-  let n = 0, d = new Date();
-  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
-  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
-  return n;
-}
-function totalXp() {
-  let xp = 0, run = 0, prev = null;
-  for (const k of Object.keys(data).sort()) {
-    const cur = new Date(k + "T00:00:00");
-    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
-    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
-    prev = cur;
-  }
-  return xp;
-}
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function bestStreak() { let best = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; best = Math.max(best, run); prev = cur; } return best; }
+function totalXp() { let xp = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; } return xp; }
 const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
 
-function typewrite(text) {
-  clearInterval(typeTimer); let i = 0;
-  const el = $("stampBig"); el.textContent = "";
-  typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(typeTimer); }, 55);
+function renderMenu() { $("menu").innerHTML = ITEMS.map((t, i) => `<button class="mi ${i === sel ? "on" : ""}" data-i="${i}" style="--i:${i}">${t}</button>`).join(""); }
+
+function renderTop() {
+  const st = streakCount(), n = Object.keys(data).length;
+  $("df").textContent = st >= 14 ? "INFERNO" : st >= 7 ? "HARDEST" : st >= 3 ? "HARD" : "NORMAL";
+  $("i3").textContent = `連続 ${st} 日 ─ 本人のみ記録可能`; $("i4").textContent = `記録 ${n} 件 ／ 連続判定 有効`;
+}
+function renderSide() {
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length, now = new Date(), pre = ymd(now).slice(0, 7), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const keys = Object.keys(data).sort().reverse(), inMonth = keys.filter(k => k.startsWith(pre)).length, chars = keys.map(k => data[k].text.length);
+  const pct = x => (Math.round(x * 100) / 100).toFixed(2) + "%";
+  const lv = k => (moodOf(data[k].mood) || [0, 0, 0])[2];
+  const recent = keys.slice(0, 6);
+  const cp = (cls, name, who, lines, armor, rate) => `<div class="cp"><div class="nm"><b>${name}</b><span>${who}</span></div><div class="ls">${lines.map(([a, b]) => `<div><span>${a}</span><em>${b}</em></div>`).join("")}</div><div class="nb"><small>アーマー</small><b>${armor}</b><small>達成率</small><b>${rate}</b></div></div>`;
+  $("side").innerHTML =
+    cp("", "レンジャー", "おとじゃ (YOU)", recent.length ? recent.map(k => [`${fmt(k)} ${(moodOf(data[k].mood) || [0, "—"])[0]}`, "Lv" + lv(k)]) : [["記録なし", "Lv0"]], 100 + st * 10 + n * 5, pct(inMonth / dim * 100)) +
+    cp("", "ウイングダイバー", "おついち (RECORDS)", [["連続日数", st], ["最長連続", bestStreak()], ["記録数", n], ["今月の記録", `${inMonth}/${dim}`], ["階級", RANKS[rk]], ["経験値", xp]], xp, pct(rk >= RANKS.length - 1 ? 100 : (xp % XP_PER_RANK) / XP_PER_RANK * 100)) +
+    cp("", "エアレイダー", "あにじゃ (STATS)", [["平均文字数", chars.length ? Math.round(chars.reduce((a, b) => a + b, 0) / chars.length) : 0], ["最長記録", chars.length ? Math.max(...chars) : 0], ["総文字数", chars.reduce((a, b) => a + b, 0)], ["気分平均", keys.length ? (keys.reduce((a, k) => a + lv(k), 0) / keys.length).toFixed(1) : "—"]], 100 + chars.reduce((a, b) => a + b, 0) % 900, pct(Math.min(st / 30, 1) * 100));
+}
+function renderLog() {
+  const keys = Object.keys(data).sort().reverse().slice(0, 12);
+  $("log").innerHTML = keys.length ? keys.map(k => `<div><b>[${fmt(k)}]</b> <i>${esc((moodOf(data[k].mood) || [0, "—"])[1])}</i> ${esc(data[k].text.replace(/\s+/g, " ").slice(0, 70))}</div>`).join("") : `<div><b>[SYSTEM]</b> 戦歴はまだありません。出撃準備を整え、最初の日誌を送信してください。</div>`;
 }
 
-function render() {
-  const sd = new Date(selected + "T00:00:00");
-  $("d").textContent = selected.replace(/-/g, ".");
-  $("dow").textContent = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
-
-  const xp = totalXp(), rk = rankOf(xp), st = streakCount();
-  const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
-  $("lv").textContent = RANKS[rk];
-  $("xp").style.width = pct + "%"; $("xpTxt").textContent = pct + "%";
-  $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
-  countUp($("streak"), st);
-  countUp($("total"), Object.keys(data).length);
-  const _total = Object.keys(data).length, _s = n => Math.max(1, Math.min(8, n)), _md = (data[selected] || {}).mood;
-  $("wi").innerHTML = [
-    ["★", _s(1 + Math.floor(st / 4)), "連続日数", st + " 日"],
-    ["☆", _s(1 + Math.floor(_total / 6)), "記録数", _total + " 件"],
-    ["★", _s(1 + rk), "階級", RANKS[rk]],
-    ["☆", _md ? _s(8 - MOODS.findIndex(x => x[0] === _md) * 2) : 1, "今日の状態", _md || "未記録"]
-  ].map(([t, n, l, v]) => `<div><i>(${t}${n})</i><b>${l}</b><span>: ${v}</span></div>`).join("");
-  $("cls").textContent = ["レンジャー", "ウイングダイバー", "エアレイダー", "フェンサー"][_total % 4];
-  $("arm").textContent = 100 + st * 10 + _total * 5;
-  $("enemy").textContent = Math.max(0, 1000 - _total * 10);
-
-  const e = data[selected];
-  $("body").value = e ? e.text : "";
-  mood = e ? e.mood : null;
-  $("moods").innerHTML = MOODS.map(([m, tag, c]) => `<li><button data-m="${m}" style="--r:${c||""}" class="${m===mood?"on":""}">${m}<span>${tag}</span></button></li>`).join("");
-  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
-
-  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
-  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
-  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
-  h += "<div style='visibility:hidden'></div>".repeat(first);
-  for (let d = 1; d <= last; d++) {
-    const k = ymd(new Date(y, mo, d));
-    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+function renderMid() {
+  const mid = $("mid"), st = streakCount(), d = new Date(selected + "T00:00:00");
+  if (sel === 0) {
+    const m = moodOf(mood);
+    mid.innerHTML = `<div class="mode">DIARY MISSION MODE</div><div class="mtt">${d.getDate()}. 日記作戦（${DOW[d.getDay()]}）</div><div class="ml">日付： <b>${fmt(selected)}</b>　文字数： <b id="len">${draft.length}</b></div><div class="ml">連続日数： <b>${st}日</b>　（レンジャー）</div>
+      <div class="desc"><textarea id="body" placeholder="降下した敵の報告をここに。今日の出来事を記録してください…"></textarea>
+      <div class="sq"><span>気分</span>${MOODS.map(([mm]) => `<button data-m="${mm}" class="${mm === mood ? "on" : ""}" aria-label="${mm}">${mm === mood ? "■" : "□"}</button>`).join("")}</div><div class="sqn">${MOODS.map(([mm]) => `<i>${mm}</i>`).join("")}</div></div>
+      <div class="hintx" id="hx">${selected === ymd(new Date()) ? "" : "過去の日付を編集中です"}</div><button class="go" data-a="save">出撃! 送信</button>`;
+    $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; $("len").textContent = draft.length; });
+  } else if (sel === 1) {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""} ${k === selected ? "selx" : ""}" data-d="${k}">${i}</div>`; }
+    mid.innerHTML = `<div class="mode">MISSION SELECT</div><div class="mtt">ミッション選択（日付）</div><div class="mh"><button class="btn" data-cal="-1">◀</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button class="btn" data-cal="1">▶</button></div><div class="cal">${h}</div>`;
+  } else if (sel === 2) {
+    mid.innerHTML = `<div class="mode">CONDITION SELECT</div><div class="mtt">兵科武器選択（今日の気分）</div><div class="tbl"><div class="h">気分</div><div class="h">Lv</div><div class="h">☆</div>${MOODS.map(([m, t, lv]) => `<div class="q ${m === mood ? "sel" : ""}" data-m2="${m}">${m} ─ ${t}</div><div class="q ${m === mood ? "sel" : ""}" data-m2="${m}">${lv}</div><div class="q ${m === mood ? "sel" : ""}" data-m2="${m}">${"★".repeat(Math.ceil(lv / 2))}</div>`).join("")}</div><div class="hintx">選んだ気分は「出撃準備完了!」の画面に反映されます。</div>`;
+  } else if (sel === 3) {
+    mid.innerHTML = `<div class="mode">ROOM SETTINGS</div><div class="mtt">ルーム設定</div><div class="ml">テーマ ： <b>EARTH DEFENSE FORCE 6</b></div><div class="ml">他のゲームのテーマに切り替えます。</div><button class="go" data-a="theme">テーマ選択へ</button>`;
+  } else if (sel === 4) {
+    const keys = Object.keys(data).sort().reverse(); if (recIdx >= keys.length) recIdx = 0; const k = keys[recIdx];
+    mid.innerHTML = `<div class="mode">BATTLE RECORD</div><div class="mtt">戦歴確認</div>` + (keys.length ? `<div class="list">${keys.map((x, i) => `<button class="li ${i === recIdx ? "on" : ""}" data-r="${i}"><span>${fmt(x)}</span><span>${esc(data[x].text.replace(/\s+/g, " ").slice(0, 28))}</span><small>${esc((moodOf(data[x].mood) || [0, "—"])[1])}</small></button>`).join("")}</div><div class="txt">${esc(data[k].text)}</div><button class="go" data-edit="${k}">この日誌を修正</button>` : `<div class="ml">戦歴はまだありません。</div>`);
+  } else if (sel === 5) {
+    mid.innerHTML = `<div class="mode">MANUAL</div><div class="mtt">ゲーム設定、操作マニュアル</div><div class="help"><b>↑ ↓</b> メニュー選択<br><b>日記を書く</b> 「出撃準備完了!」で気分と本文を入力し、「出撃! 送信」で保存<br><b>ミッション選択</b> カレンダーで日付を選ぶ<br><b>兵科武器選択</b> 気分を選ぶ<br><b>戦歴確認</b> 過去の日誌を読み返し、修正する<br><b>Ctrl + Enter</b> 入力中に送信<br>右側の兵科パネルは、記録から自動で集計されます。</div>`;
+  } else {
+    mid.innerHTML = `<div class="mode">LEAVE ROOM</div><div class="mtt">ルームから退出</div><div class="ml">テーマ選択の最初の画面に戻ります。</div><button class="go" data-a="theme">退出する</button>`;
   }
-  $("cal").innerHTML = h;
-
-  const keys = Object.keys(data).sort().reverse();
-  $("list").innerHTML = keys.length ? keys.map((k, i) =>
-    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
-    : `<div class="entry" style="--i:1"><p>戦闘記録なし。最初の作戦に出撃せよ。</p></div>`;
 }
+function render() { renderMenu(); renderTop(); renderMid(); renderSide(); renderLog(); }
 
-$("moods").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  mood = b.dataset.m;
-  
-  document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
-};
-$("cal").onclick = e => {
-  const c = e.target.closest("[data-d]"); if (!c) return;
-  selected = c.dataset.d; render();
-};
-$("save").onclick = () => {
-  const text = $("body").value.trim();
-  if (!text) { $("body").focus(); return; }
-  const before = rankOf(totalXp()), isNew = !data[selected];
-  data[selected] = { mood, text };
-  store(data);
-  const up = rankOf(totalXp()) > before;
-  
-  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
+function overlay(up, isNew) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
   $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
-  setTimeout(() => typewrite(up ? MSG_PROMO : MSG_FILED), 450);
-  $("stampSub").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
-  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2800);
-  render();
-};
-$("stamp").onclick = () => $("stamp").classList.remove("show");
+  $("ovT").textContent = up ? "RANK UP ─ 階級が上がった" : "MISSION COMPLETE ─ ミッション完了"; $("ovS").textContent = (up ? RANKS[rankOf(totalXp())] + " ─ " : "") + (isNew ? `${streakCount()} DAYS` : "UPDATED");
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2400);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+function save() {
+  const text = draft.trim(); if (!text) { $("body").focus(); return; } if (!mood) { $("hx").textContent = "気分(□)を選んでください"; return; }
+  const before = rankOf(totalXp()), isNew = !data[selected]; data[selected] = { mood, text }; store(data); render(); overlay(rankOf(totalXp()) > before, isNew);
+}
+function openDay(k) { selected = k; loadDay(); sel = 0; render(); }
 
-render();
+$("menu").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; sel = +b.dataset.i; if (sel === 0 && selected !== ymd(new Date()) && false) {} if (sel === 6) { location.href = "index.html"; return; } renderMenu(); renderMid(); });
+$("mid").addEventListener("click", e => {
+  const a = e.target.closest("[data-a]"); if (a) { if (a.dataset.a === "save") return save(); if (a.dataset.a === "theme") { location.href = "index.html"; return; } }
+  const m = e.target.closest("[data-m]"); if (m) { mood = m.dataset.m; document.querySelectorAll(".sq button").forEach(x => { const on = x.dataset.m === mood; x.classList.toggle("on", on); x.textContent = on ? "■" : "□"; }); return; }
+  const m2 = e.target.closest("[data-m2]"); if (m2) { mood = m2.dataset.m2; return renderMid(); }
+  const r = e.target.closest("[data-r]"); if (r) { recIdx = +r.dataset.r; return renderMid(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) return openDay(ed.dataset.edit);
+  const dd = e.target.closest("[data-d]"); if (dd) return openDay(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; renderMid(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); return; }
+  if (e.key === "Escape") return $("ov").classList.remove("show");
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + ITEMS.length) % ITEMS.length; renderMenu(); renderMid(); }
+  else if (e.key === "Enter") { if (sel === 0) { const b = $("body"); if (b) b.focus(); } else if (sel === 3 || sel === 6) location.href = "index.html"; }
+});
+
+loadDay(); render();
 </script>
 </body>
 </html>
