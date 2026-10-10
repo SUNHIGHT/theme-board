@@ -116,6 +116,8 @@
       titles: [ { id: "endfield", file: "endfield.html", name: "ARKNIGHTS: ENDFIELD", sub: "管理人の記録" } ] },
     { id: "fe", name: "FIRE EMBLEM", sub: "ファイアーエムブレム",          c1: "#3a78ff", c2: "#4a2c14",
       titles: [ { id: "fe_if", file: "fe_if.html", name: "FIRE EMBLEM if", sub: "記録の戦場" } ] },
+    { id: "balatro", name: "BALATRO", sub: "バラトロ",                   c1: "#fe5f55", c2: "#2c3a3c",
+      titles: [ { id: "balatro", file: "balatro.html", name: "BALATRO", sub: "日々の手札" } ] },
     { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
       titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
@@ -133,7 +135,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション", "RPG"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"], bokunatsu: ["アドベンチャー", "シミュレーション"], endfield: ["RPG", "シミュレーション"], fe: ["RPG", "シミュレーション"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"], bokunatsu: ["アドベンチャー", "シミュレーション"], endfield: ["RPG", "シミュレーション"], fe: ["RPG", "シミュレーション"], balatro: ["シミュレーション"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;

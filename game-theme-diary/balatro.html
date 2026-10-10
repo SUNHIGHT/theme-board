@@ -1,0 +1,586 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Poker Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  /* Roguelike poker table: swirling pixel felt, left run panel (blind, score, chips x mult, counters), joker row, hand of day-cards, deck, CRT finish */
+  :root {
+    --f:'Pixelify Sans','DotGothic16',monospace; --fj:'DotGothic16','Pixelify Sans',monospace;
+    --panel:#2c3a3c; --box:#1c2627; --box2:#243031; --line:#3d4d4f; --txt:#fff;
+    --blue:#009cfd; --blued:#0870b8; --red:#fe5f55; --redd:#b8322a; --orange:#fda200; --oranged:#b46e00; --gold:#f5b143; --green:#4bc292; --greend:#2a8a62;
+    --heart:#f03464; --diamond:#f06b1f; --club:#235955; --spade:#403995;
+    --blind:#c68a13; --blindd:#7d560a;
+  }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--txt); background:#14231e; overflow:hidden; -webkit-font-smoothing:none; }
+  button { font:inherit; color:inherit; }
+  .px-shadow { text-shadow:0 3px 0 rgba(0,0,0,.45); }
+
+  /* swirl + CRT */
+  #bg { position:fixed; inset:0; width:100%; height:100%; image-rendering:pixelated; z-index:0; }
+  .crt { position:fixed; inset:0; z-index:90; pointer-events:none; background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 1px,transparent 1px 3px), radial-gradient(ellipse at 50% 50%,transparent 60%,rgba(0,0,0,.45) 100%); }
+  .shake { animation:shake .35s steps(6); }
+
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-columns:clamp(270px,25vw,360px) 1fr; }
+
+  /* ---------- left run panel ---------- */
+  .side { position:relative; display:flex; flex-direction:column; gap:10px; padding:12px 12px 14px 14px; background:var(--panel); border-right:4px solid var(--blind); box-shadow:inset -6px 0 0 rgba(0,0,0,.25); }
+  .box { background:var(--box); border-radius:10px; box-shadow:0 4px 0 rgba(0,0,0,.35); }
+  .blindHead { padding:6px 10px 8px; border-radius:10px; text-align:center; font:700 clamp(24px,2.4vw,34px)/1 var(--f); background:var(--blind); box-shadow:0 4px 0 var(--blindd); text-shadow:0 3px 0 rgba(0,0,0,.35); }
+  .blindInfo { display:grid; grid-template-columns:auto 1fr; gap:10px; align-items:center; padding:10px; background:color-mix(in srgb,var(--blind) 25%,var(--box)); border-radius:10px; box-shadow:0 4px 0 rgba(0,0,0,.35); }
+  .blindInfo .desc { grid-column:1 / -1; text-align:center; font:13px var(--fj); color:#e9eef0; background:rgba(0,0,0,.25); border-radius:6px; padding:3px 6px; }
+  .chip { position:relative; width:clamp(62px,6vw,84px); aspect-ratio:1; border-radius:50%; display:grid; place-items:center; text-align:center; font:700 clamp(12px,1.1vw,15px)/1 var(--f); color:#5a3a06;
+    background:repeating-conic-gradient(var(--blind) 0 15deg,color-mix(in srgb,var(--blind) 70%,#fff) 15deg 30deg); box-shadow:0 0 0 4px var(--blindd), 0 5px 0 4px rgba(0,0,0,.35); animation:chipSpin 9s linear infinite; }
+  .chip span { width:72%; aspect-ratio:1; border-radius:50%; display:grid; place-items:center; background:var(--blind); color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.35); animation:chipSpin 9s linear infinite reverse; }
+  .target { background:var(--box); border-radius:8px; padding:6px 8px; text-align:center; }
+  .target small { display:block; font:700 13px var(--f); color:#dfe6e8; }
+  .target b { display:flex; align-items:center; justify-content:center; gap:6px; font:700 clamp(26px,2.6vw,38px)/1.05 var(--f); color:var(--red); text-shadow:0 3px 0 rgba(0,0,0,.4); }
+  .target b i { width:.8em; height:.8em; border-radius:50%; background:radial-gradient(circle,#fff 30%,transparent 32%),repeating-conic-gradient(#fff 0 20deg,#c9d3d6 20deg 40deg); flex:none; }
+  .target em { font:700 15px var(--f); font-style:normal; color:#fff; } .target em span { color:var(--gold); letter-spacing:.05em; }
+  .rscore { display:grid; grid-template-columns:auto 1fr; align-items:center; gap:10px; padding:6px 10px; }
+  .rscore small { font:700 16px/1.05 var(--f); }
+  .rscore b { display:flex; align-items:center; justify-content:center; gap:8px; padding:4px 10px; background:var(--box2); border-radius:8px; font:700 clamp(24px,2.4vw,32px)/1 var(--f); }
+  .rscore b i { width:.75em; height:.75em; border-radius:50%; background:radial-gradient(circle,#fff 30%,transparent 32%),repeating-conic-gradient(#fff 0 20deg,#c9d3d6 20deg 40deg); }
+  .handBox { padding:10px 10px 12px; text-align:center; }
+  .handName { font:700 clamp(22px,2.2vw,30px)/1.1 var(--f); min-height:1.2em; } .handName small { font-size:.5em; margin-left:6px; color:#c9d3d6; }
+  .cm { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px; margin-top:8px; }
+  .cm .c, .cm .m { padding:6px 10px; border-radius:8px; font:700 clamp(28px,3vw,44px)/1 var(--f); text-shadow:0 3px 0 rgba(0,0,0,.35); box-shadow:0 4px 0 rgba(0,0,0,.35); transition:transform .1s; }
+  .cm .c { background:var(--blue); text-align:right; } .cm .m { background:var(--red); text-align:left; }
+  .cm .x { font:700 28px var(--f); color:var(--red); }
+  .cm .pulse { animation:pulse .18s ease-out; }
+  .grid2 { display:grid; grid-template-columns:auto 1fr 1fr; grid-template-rows:auto auto auto; gap:8px; }
+  .bigbtn { all:unset; cursor:pointer; display:grid; place-items:center; text-align:center; border-radius:10px; font:700 clamp(18px,1.7vw,24px)/1.1 var(--f); text-shadow:0 3px 0 rgba(0,0,0,.3); padding:0 12px; min-width:clamp(78px,7vw,100px); transition:transform .06s; }
+  .bigbtn.run { background:var(--red); box-shadow:0 5px 0 var(--redd); grid-row:1 / 3; }
+  .bigbtn.opt { background:var(--orange); box-shadow:0 5px 0 var(--oranged); grid-row:3; }
+  .bigbtn:active { transform:translateY(4px); box-shadow:0 1px 0 rgba(0,0,0,.4); }
+  .bigbtn:hover, .bigbtn:focus-visible { filter:brightness(1.08); outline:0; }
+  .stat { padding:4px 6px 6px; text-align:center; } .stat small { display:block; font:700 14px var(--f); }
+  .stat b { display:block; margin-top:2px; padding:2px 0; background:var(--box2); border-radius:6px; font:700 clamp(24px,2.4vw,34px)/1.1 var(--f); text-shadow:0 3px 0 rgba(0,0,0,.35); } .stat b small { display:inline; font-size:.5em; color:#dfe6e8; }
+  .money { grid-column:2 / 4; display:grid; place-items:center; padding:4px; } .money b { width:100%; text-align:center; background:var(--box2); border-radius:6px; font:700 clamp(30px,3vw,44px)/1.25 var(--f); color:var(--gold); text-shadow:0 3px 0 rgba(0,0,0,.35); }
+
+  /* ---------- main table ---------- */
+  .table { position:relative; display:grid; grid-template-rows:auto 1fr auto; min-width:0; padding:12px 18px 28px; }
+  .topRow { display:grid; grid-template-columns:1fr auto; gap:18px; align-items:start; }
+  .slotArea { position:relative; display:flex; gap:12px; padding:8px; min-height:calc(var(--cw) * 1.4 + 16px); background:rgba(0,0,0,.18); border-radius:12px; }
+  .slotArea .cnt { position:absolute; left:6px; bottom:-20px; font:700 14px var(--f); color:#e6ecee; }
+  .slotArea.cons .cnt { left:auto; right:6px; }
+  .slotArea.cons { margin-top:44px; }
+  :root { --cw:clamp(64px,6.6vw,104px); }
+  .center { position:relative; display:grid; place-items:center; min-height:0; }
+  .handRow { position:relative; display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:14px; }
+  .handArea { position:relative; display:flex; justify-content:center; align-items:flex-end; padding:22px 10px 8px; min-height:calc(var(--cw) * 1.4 + 40px); background:rgba(0,0,0,.18); border-radius:12px; }
+  .handArea .cnt { position:absolute; left:50%; bottom:-22px; translate:-50% 0; font:700 14px var(--f); }
+  .actions { display:flex; flex-direction:column; gap:8px; }
+  .abtn { all:unset; cursor:pointer; text-align:center; padding:8px 14px; border-radius:10px; font:700 clamp(15px,1.3vw,19px)/1.1 var(--f); text-shadow:0 2px 0 rgba(0,0,0,.3); transition:transform .06s; white-space:nowrap; }
+  .abtn.play { background:var(--blue); box-shadow:0 5px 0 var(--blued); } .abtn.disc { background:var(--red); box-shadow:0 5px 0 var(--redd); } .abtn.sort { background:var(--orange); box-shadow:0 5px 0 var(--oranged); font-size:13px; padding:6px 10px; }
+  .abtn:active { transform:translateY(4px); box-shadow:none; } .abtn:hover, .abtn:focus-visible { filter:brightness(1.1); outline:0; } .abtn:disabled { opacity:.45; cursor:default; }
+  .abtn small { display:block; font:11px var(--fj); opacity:.9; }
+  .deck { all:unset; cursor:pointer; position:relative; justify-self:end; width:calc(var(--cw) * 1.05); text-align:center; }
+  .deck .stack { position:relative; aspect-ratio:5/7; }
+  .deck .stack i { position:absolute; inset:0; border-radius:8px; background:var(--back); box-shadow:0 0 0 3px #fff inset, 0 3px 0 rgba(0,0,0,.35); }
+  .deck .stack i:nth-child(1) { translate:6px 6px; } .deck .stack i:nth-child(2) { translate:3px 3px; }
+  .deck small { display:block; margin-top:8px; font:700 14px var(--f); } .deck:hover .stack, .deck:focus-visible .stack { transform:translateY(-4px); } .deck:focus-visible { outline:0; } .deck:focus-visible small { color:var(--gold); }
+  :root { --back:radial-gradient(circle at 50% 50%,transparent 0 22%,rgba(255,255,255,.18) 23% 26%,transparent 27%) 0 0/22px 22px, repeating-linear-gradient(45deg,#c0312b 0 4px,#e2463e 4px 8px); }
+
+  /* ---------- cards ---------- */
+  .card { all:unset; box-sizing:border-box; position:relative; flex:none; width:var(--cw); aspect-ratio:5/7; border-radius:8px; cursor:pointer; transform-style:preserve-3d;
+    transform:translateY(var(--lift,0)) rotate(var(--rot,0deg)) perspective(600px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform .12s ease-out, box-shadow .12s; }
+  .card .face { position:absolute; inset:0; border-radius:8px; overflow:hidden; background:#f5f5f5; box-shadow:0 0 0 2px #d8d8d8 inset, 0 4px 0 rgba(0,0,0,.35); color:var(--suit); }
+  .card .rk { position:absolute; left:6%; top:3%; font:700 calc(var(--cw) * .2)/1 var(--f); text-align:center; }
+  .card .rk i { display:block; font-style:normal; font-size:.8em; margin-top:-2px; }
+  .card .rk.b { left:auto; top:auto; right:6%; bottom:3%; rotate:180deg; }
+  .card .pip { position:absolute; left:50%; top:50%; translate:-50% -55%; font:700 calc(var(--cw) * .5)/1 var(--f); }
+  .card .dw { position:absolute; left:0; right:0; bottom:9%; text-align:center; font:calc(var(--cw) * .12) var(--fj); color:#8a8a8a; }
+  .card.stone .face { background:repeating-radial-gradient(circle at 30% 40%,#8f9496 0 3px,#7b8083 3px 6px), #888; color:#4a4e50; box-shadow:0 0 0 2px #5a5e60 inset, 0 4px 0 rgba(0,0,0,.35); }
+  .card.stone .pip { color:#5d6264; text-shadow:0 2px 0 #b0b4b6; }
+  .card.back .face { background:var(--back); box-shadow:0 0 0 3px #fff inset, 0 4px 0 rgba(0,0,0,.35); }
+  .card.back .tag { position:absolute; left:50%; top:50%; translate:-50% -50%; padding:2px 6px; border-radius:6px; background:#fff; color:#c0312b; font:700 calc(var(--cw) * .2)/1 var(--f); box-shadow:0 2px 0 rgba(0,0,0,.35); text-align:center; }
+  .card.back .tag small { display:block; font:calc(var(--cw) * .11) var(--fj); color:#555; }
+  .card.today.back .tag { background:var(--gold); color:#3a2400; animation:pulse 1.2s ease-in-out infinite; }
+  .card.sel { --lift:-26px; } .card.cur .face { box-shadow:0 0 0 2px #d8d8d8 inset, 0 0 0 3px var(--gold), 0 4px 0 rgba(0,0,0,.35); }
+  .card:focus-visible { outline:none; } .card:focus-visible .face { box-shadow:0 0 0 3px var(--gold), 0 4px 0 rgba(0,0,0,.35); }
+  .card .shine { position:absolute; inset:0; border-radius:8px; pointer-events:none; background:radial-gradient(circle at var(--mx,50%) var(--my,30%),rgba(255,255,255,.45),transparent 45%); opacity:0; transition:opacity .15s; mix-blend-mode:soft-light; }
+  .card:hover .shine { opacity:1; }
+  /* editions */
+  .card.foil .face::after, .card.holo .face::after, .card.poly .face::after { content:""; position:absolute; inset:0; pointer-events:none; mix-blend-mode:color-dodge; background-size:250% 250%; animation:edition 4s linear infinite; }
+  .card.foil .face::after { background-image:linear-gradient(115deg,transparent 30%,rgba(120,200,255,.55) 45%,rgba(255,255,255,.7) 50%,rgba(120,200,255,.55) 55%,transparent 70%); }
+  .card.holo .face::after { background-image:repeating-linear-gradient(45deg,rgba(255,80,120,.35) 0 6px,rgba(80,200,255,.35) 6px 12px); opacity:.8; }
+  .card.poly .face::after { background-image:linear-gradient(120deg,#ff5f9e66,#ffd14a66,#5fffa966,#5fb4ff66,#c45fff66,#ff5f9e66); }
+  .hand .card { margin-left:calc(var(--cw) * -.18); } .hand .card:first-child { margin-left:0; }
+  .hand { display:flex; align-items:flex-end; }
+  .hand .card.deal { animation:deal .35s calc(var(--i) * 45ms) cubic-bezier(.2,.9,.3,1.2) both; }
+
+  /* jokers */
+  .joker { --suit:#222; }
+  .joker .face { background:var(--jb); box-shadow:0 0 0 3px #fff inset, 0 4px 0 rgba(0,0,0,.35); }
+  .joker .jt { position:absolute; left:6%; top:5%; writing-mode:vertical-rl; text-orientation:upright; font:700 calc(var(--cw) * .13)/1 var(--f); letter-spacing:-.05em; color:#1b1b1b; background:rgba(255,255,255,.85); padding:2px 1px; border-radius:3px; }
+  .joker .jt.b { left:auto; top:auto; right:6%; bottom:5%; rotate:180deg; }
+  .joker .art { position:absolute; left:20%; right:14%; top:16%; bottom:16%; display:grid; place-items:center; } .joker .art svg { width:100%; image-rendering:pixelated; }
+  .joker.locked .face { background:var(--back); } .joker.locked .jt, .joker.locked .art { display:none; }
+  .joker.locked .q { position:absolute; inset:0; display:grid; place-items:center; font:700 calc(var(--cw) * .4) var(--f); color:#fff; text-shadow:0 3px 0 rgba(0,0,0,.4); }
+  .joker:not(.locked) .q { display:none; }
+  .joker.wiggle { animation:wiggle .5s ease-in-out; }
+  .cons .card .face { background:linear-gradient(180deg,#2a3a6a,#16224a); box-shadow:0 0 0 3px #c9b37a inset, 0 4px 0 rgba(0,0,0,.35); color:#fff; }
+  .cons .card .ct { position:absolute; left:0; right:0; top:7%; text-align:center; font:700 calc(var(--cw) * .12) var(--f); color:#e8d9a8; letter-spacing:.06em; }
+  .cons .card .cv { position:absolute; left:0; right:0; top:34%; text-align:center; font:700 calc(var(--cw) * .32)/1 var(--f); text-shadow:0 3px 0 rgba(0,0,0,.4); }
+  .cons .card .cl { position:absolute; left:8%; right:8%; bottom:8%; text-align:center; padding:2px 0; border-radius:4px; background:#e8d9a8; color:#2a2410; font:calc(var(--cw) * .11) var(--fj); }
+  .cons .card.planet .face { background:radial-gradient(circle at 50% 46%,#e8a96a 0 18%,transparent 19%),radial-gradient(circle at 50% 50%,#13324e,#0a1a2e); box-shadow:0 0 0 3px #7ab8d8 inset, 0 4px 0 rgba(0,0,0,.35); }
+
+  /* center: played card + text */
+  .stage { display:flex; align-items:center; justify-content:center; gap:28px; width:100%; }
+  .stage .big { --cw:clamp(110px,11vw,170px); pointer-events:none; }
+  .stage .big.pop { animation:pop .35s cubic-bezier(.3,1.6,.5,1); }
+  .tipbox { max-width:min(420px,42vw); padding:6px; border-radius:12px; background:#3a4a4c; box-shadow:0 5px 0 rgba(0,0,0,.4); }
+  .tipbox h4 { text-align:center; font:700 22px var(--f); padding:2px 0 6px; }
+  .tipbox .in { background:#fff; color:#2a2a2a; border-radius:8px; padding:10px 12px; font:15px/1.7 var(--fj); white-space:pre-wrap; word-break:break-all; max-height:28vh; overflow:auto; }
+  .tipbox .in .hl { color:var(--blue); } .tipbox .in .hm { color:var(--red); }
+  .tipbox .tags { display:flex; justify-content:center; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .tipbox .tags span { padding:2px 10px; border-radius:6px; font:700 13px var(--f); background:var(--c); text-shadow:0 2px 0 rgba(0,0,0,.3); }
+  .popup { position:absolute; z-index:20; font:700 clamp(30px,3.2vw,48px)/1 var(--f); text-shadow:0 4px 0 rgba(0,0,0,.45); pointer-events:none; animation:float 1s ease-out forwards; }
+  .popup.c { color:#fff; background:var(--blue); padding:2px 10px; border-radius:8px; } .popup.m { color:#fff; background:var(--red); padding:2px 10px; border-radius:8px; }
+  .banner { position:absolute; left:50%; top:16%; translate:-50% 0; z-index:21; font:700 clamp(30px,4vw,60px)/1 var(--f); padding:8px 26px; border-radius:12px; background:var(--panel); box-shadow:0 0 0 4px var(--gold), 0 6px 0 rgba(0,0,0,.45); white-space:nowrap; animation:bannerIn .4s cubic-bezier(.3,1.6,.5,1) both; }
+  .banner small { display:block; text-align:center; font:16px var(--fj); color:var(--gold); margin-top:4px; }
+
+  /* hover tooltip */
+  #tip { position:fixed; z-index:60; pointer-events:none; display:none; width:220px; padding:5px; border-radius:10px; background:#3a4a4c; box-shadow:0 5px 0 rgba(0,0,0,.45); }
+  #tip.show { display:block; animation:tipIn .12s both; }
+  #tip h5 { text-align:center; font:700 18px var(--f); padding:2px 0 5px; }
+  #tip .in { background:#fff; color:#2a2a2a; border-radius:7px; padding:7px 9px; font:13px/1.55 var(--fj); text-align:center; }
+  #tip .tg { display:flex; justify-content:center; gap:5px; margin-top:5px; flex-wrap:wrap; } #tip .tg span { padding:1px 8px; border-radius:5px; font:700 12px var(--f); background:var(--c); }
+
+  /* ---------- modal panels (editor / run info / deck) ---------- */
+  .modal { position:fixed; inset:0; z-index:50; display:none; place-items:center; padding:12px; background:rgba(5,10,10,.6); }
+  .modal.show { display:grid; }
+  .mwin { width:min(640px,100%); max-height:94vh; overflow:auto; padding:8px; border-radius:16px; background:var(--panel); box-shadow:0 0 0 4px var(--line), 0 8px 0 rgba(0,0,0,.5); animation:pop .25s cubic-bezier(.3,1.5,.5,1) both; }
+  .mwin h3 { display:flex; align-items:center; justify-content:center; gap:10px; padding:6px 10px 10px; font:700 28px var(--f); text-shadow:0 3px 0 rgba(0,0,0,.35); }
+  .mwin h3 small { font:14px var(--fj); color:#c9d3d6; }
+  .mbody { background:var(--box); border-radius:12px; padding:12px; display:flex; flex-direction:column; gap:10px; }
+  .lb { font:700 14px var(--f); color:#c9d3d6; letter-spacing:.06em; }
+  .suits { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; list-style:none; padding:0; }
+  .suits button { all:unset; box-sizing:border-box; display:block; width:100%; cursor:pointer; text-align:center; padding:6px 0 7px; border-radius:10px; background:#f5f5f5; color:var(--s); box-shadow:0 4px 0 rgba(0,0,0,.4); transition:transform .08s; }
+  .suits button b { display:block; font:700 30px/1 var(--f); } .suits button small { display:block; font:12px var(--fj); color:#555; }
+  .suits button.stone { background:repeating-radial-gradient(circle at 30% 40%,#8f9496 0 3px,#7b8083 3px 6px); color:#4a4e50; } .suits button.stone small { color:#2a2e30; }
+  .suits button:hover { transform:translateY(-3px); } .suits button.on { transform:translateY(-8px); box-shadow:0 0 0 3px var(--gold), 0 6px 0 rgba(0,0,0,.4); }
+  .suits button:focus-visible { outline:3px solid var(--gold); }
+  textarea { min-height:150px; resize:vertical; width:100%; background:#f5f5f5; color:#222; border:0; border-radius:10px; box-shadow:inset 0 3px 0 rgba(0,0,0,.15); font:16px/1.8 var(--fj); padding:10px 14px; outline:0; }
+  textarea:focus { box-shadow:inset 0 3px 0 rgba(0,0,0,.15), 0 0 0 3px var(--blue); }
+  .preview { display:flex; justify-content:center; gap:8px; align-items:center; font:700 22px var(--f); }
+  .preview span { padding:3px 12px; border-radius:8px; box-shadow:0 3px 0 rgba(0,0,0,.35); } .preview .c { background:var(--blue); } .preview .m { background:var(--red); } .preview .x { color:var(--red); }
+  .preview em { font:13px var(--fj); font-style:normal; color:#c9d3d6; margin-left:6px; }
+  .mact { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+  .mact .abtn { min-width:130px; }
+  .hint { text-align:center; font:12px var(--fj); color:#9aa8ab; }
+  button:focus-visible, textarea:focus-visible { outline:3px solid var(--gold); outline-offset:2px; }
+  .runtbl { width:100%; border-collapse:separate; border-spacing:0 5px; font:700 15px var(--f); }
+  .runtbl td { padding:5px 10px; background:var(--box2); } .runtbl td:first-child { border-radius:8px 0 0 8px; } .runtbl td:last-child { border-radius:0 8px 8px 0; text-align:right; }
+  .runtbl .lv { color:#fff; background:var(--c,#555); border-radius:6px; padding:1px 8px; font-size:12px; margin-right:8px; }
+  .runtbl .v { color:var(--gold); }
+  .deckgrid { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; container-type:inline-size; }
+  .deckgrid .card { --cw:calc((100cqw - 36px) / 7); }
+  .deckgrid .card.fut { opacity:.4; }
+  #deckM .mwin { width:min(520px,100%); }
+  .deckgrid .dh { text-align:center; font:700 12px var(--f); color:#c9d3d6; }
+  .deckhd { display:flex; justify-content:space-between; align-items:center; font:700 18px var(--f); }
+  .deckhd button { all:unset; cursor:pointer; padding:2px 12px; border-radius:8px; background:var(--orange); box-shadow:0 3px 0 var(--oranged); } .deckhd button:focus-visible { outline:3px solid var(--gold); }
+
+  .keys { position:absolute; left:50%; top:0; translate:-50% 0; z-index:3; white-space:nowrap; font:12px var(--fj); color:#d8e2e4; text-shadow:0 1px 2px #000; text-align:right; line-height:1.6; opacity:.85; }
+
+  @keyframes chipSpin { to { transform:rotate(360deg); } }
+  @keyframes pulse { 50% { transform:scale(1.12); } }
+  @keyframes shake { 20% { transform:translate(-4px,2px); } 40% { transform:translate(4px,-2px); } 60% { transform:translate(-3px,-1px); } 80% { transform:translate(3px,1px); } }
+  @keyframes edition { to { background-position:250% 250%; } }
+  @keyframes deal { from { opacity:0; transform:translate(40vw,10vh) rotate(25deg); } }
+  @keyframes wiggle { 25% { rotate:-8deg; } 75% { rotate:8deg; } }
+  @keyframes pop { from { opacity:0; transform:scale(.7); } }
+  @keyframes float { 0% { opacity:0; transform:translateY(10px) scale(.6); } 20% { opacity:1; transform:translateY(-6px) scale(1.15); } 100% { opacity:0; transform:translateY(-60px) scale(1); } }
+  @keyframes bannerIn { from { opacity:0; transform:scale(1.6) rotate(-6deg); } }
+  @keyframes tipIn { from { opacity:0; transform:translateY(6px); } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition:none !important; } }
+
+  @media (max-width:860px) {
+    body { overflow-y:auto; overflow-x:hidden; }
+    :root { --cw:clamp(44px,12.5vw,64px); }
+    .app { height:auto; min-height:100%; grid-template-columns:minmax(0,1fr); }
+    .side { border-right:0; border-bottom:4px solid var(--blind); display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:56px 10px 12px; }
+    .blindHead { grid-column:1 / -1; font-size:24px; } .blindInfo { grid-column:1 / -1; grid-template-columns:auto 1fr; } .chip { width:56px; }
+    .rscore { grid-column:1 / -1; } .handBox { grid-column:1 / -1; } .grid2 { grid-column:1 / -1; grid-template-columns:auto 1fr 1fr 1.2fr; grid-template-rows:auto auto; }
+    .bigbtn.run { grid-row:1; } .bigbtn.opt { grid-row:2; } .money { grid-column:4; grid-row:1 / 3; }
+    .table { padding:10px 8px 18px; gap:20px; }
+    .topRow { grid-template-columns:1fr; gap:24px; } .slotArea { gap:6px; overflow:hidden; } .slotArea.cons { justify-self:end; }
+    .stage { flex-direction:column; gap:12px; } .stage .big { --cw:110px; } .tipbox { max-width:100%; width:100%; }
+    .handRow { grid-template-columns:1fr; } .actions { flex-direction:row; justify-content:center; align-items:center; flex-wrap:wrap; }
+    .slotArea.cons { margin-top:0; } .deck { justify-self:center; width:70px; }
+    .handArea { padding:28px 4px 8px; } .hand .card { margin-left:calc(var(--cw) * -.12); }
+    .keys { display:none; }
+  }
+</style>
+</head>
+<body>
+<canvas id="bg" width="192" height="108" aria-hidden="true"></canvas>
+<div class="crt" aria-hidden="true"></div>
+
+<div class="app" id="app">
+  <aside class="side" aria-label="ランの情報">
+    <div class="blindHead" id="bName">Small Blind</div>
+    <div class="blindInfo">
+      <div class="chip"><span id="bChip">SMALL<br>BLIND</span></div>
+      <div class="target"><small>Score at least</small><b><i></i><span id="bTarget">0</span></b><em>to earn <span id="bReward">$$$</span></em></div>
+      <div class="desc" id="bDesc"></div>
+    </div>
+    <div class="box rscore"><small>Round<br>score</small><b><i></i><span id="rScore">0</span></b></div>
+    <div class="box handBox"><div class="handName" id="hName">High Card<small>lvl.1</small></div>
+      <div class="cm"><div class="c" id="hChips">0</div><div class="x">X</div><div class="m" id="hMult">0</div></div></div>
+    <div class="grid2">
+      <button class="bigbtn run" id="runInfo">Run<br>Info</button>
+      <div class="box stat"><small>Hands</small><b id="sHands" style="color:var(--blue)">0</b></div>
+      <div class="box stat"><small>Discards</small><b id="sDisc" style="color:var(--red)">0</b></div>
+      <div class="box money"><b id="sMoney">$0</b></div>
+      <button class="bigbtn opt" id="options">Options</button>
+      <div class="box stat"><small>Ante</small><b id="sAnte" style="color:var(--orange)">1<small>/8</small></b></div>
+      <div class="box stat"><small>Round</small><b id="sRound" style="color:var(--orange)">1</b></div>
+    </div>
+  </aside>
+
+  <main class="table">
+    <div class="topRow">
+      <div class="slotArea" id="jokers"><span class="cnt" id="jCnt">0/5</span></div>
+      <div class="slotArea cons" id="cons"><span class="cnt">2/2</span></div>
+    </div>
+    <div class="center" id="center"><div class="keys">←→ カード ／ Enter 記録 ／ Q・E 8日送り ／ S 並び替え ／ R ラン情報 ／ D デッキ</div><div class="stage" id="stage"></div></div>
+    <div class="handRow">
+      <div class="actions"><button class="abtn play" id="play">記録する<small>Play Hand</small></button><button class="abtn disc" id="discard">前の8日<small>Discard</small></button></div>
+      <div class="handArea"><div class="hand" id="hand"></div><span class="cnt" id="hCnt">0/8</span></div>
+      <div class="actions"><button class="abtn sort" id="sortRank">日付順</button><button class="abtn sort" id="sortSuit">調子順</button>
+        <button class="deck" id="deck" aria-label="デッキ（月の記録）を見る"><div class="stack"><i></i><i></i><i></i></div><small id="dCnt">0/0</small></button></div>
+    </div>
+  </main>
+</div>
+<div id="tip"><h5 id="tipT"></h5><div class="in" id="tipB"></div><div class="tg" id="tipG"></div></div>
+
+<div class="modal" id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="mwin">
+  <h3><span id="eT"></span><small id="eS"></small></h3>
+  <div class="mbody">
+    <div class="lb">SUIT ─ 今日の調子</div><ul class="suits" id="suits"></ul>
+    <div class="lb">HAND ─ 日記</div><textarea id="body" placeholder="今日はどんな一日だった？"></textarea>
+    <div class="preview" id="preview"></div>
+    <div class="mact"><button class="abtn play" id="save">記録する<small>Play Hand ─ Ctrl+Enter</small></button><button class="abtn disc" id="cl">やめる<small>Esc</small></button></div>
+  </div>
+</div></div>
+<div class="modal" id="run" role="dialog" aria-modal="true" aria-label="ラン情報"><div class="mwin">
+  <h3>Run Info<small>これまでの記録</small></h3>
+  <div class="mbody"><table class="runtbl" id="runTbl"></table><div class="mact"><button class="abtn disc" data-close>Back</button></div></div>
+</div></div>
+<div class="modal" id="deckM" role="dialog" aria-modal="true" aria-label="デッキ"><div class="mwin">
+  <h3>Deck<small>月の記録</small></h3>
+  <div class="mbody"><div class="deckhd"><button id="dPrev">◀</button><span id="dMonth"></span><button id="dNext">▶</button></div><div class="deckgrid" id="deckGrid"></div><div class="mact"><button class="abtn disc" data-close>Back</button></div></div>
+</div></div>
+
+<script src="theme-switch.js" data-theme="balatro"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+// moods are suits; the worst day is a stone card
+const SUIT = { 最高:{ s:"♥", c:"var(--heart)", n:"Hearts" }, 良い:{ s:"♦", c:"var(--diamond)", n:"Diamonds" }, 普通:{ s:"♣", c:"var(--club)", n:"Clubs" }, 微妙:{ s:"♠", c:"var(--spade)", n:"Spades" }, 最悪:{ s:"◆", c:"#5d6264", n:"Stone", stone:true } };
+const DOW = ["日","月","火","水","木","金","土"], DOWE = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, HAND = 8;
+// blind of the day: weekday decides small / big / boss, like an ante's three blinds
+const BOSSES = [
+  { n:"The Eye", c:"#4a6fd8", d:"#2a438a", desc:"同じ調子を続けずに書いてみよう", pal:[[22,44,92],[44,78,150],[80,120,200],[12,24,56]] },
+  { n:"The Hook", c:"#b83a3a", d:"#6e1e1e", desc:"100文字以上で手を伸ばそう", pal:[[90,22,30],[150,44,52],[200,90,80],[50,12,18]] },
+  { n:"The Wall", c:"#7a4ab8", d:"#4a2a76", desc:"目標スコアが高い日。じっくり書こう", pal:[[52,26,90],[96,52,150],[150,96,200],[28,14,52]] }
+];
+const SMALL = { n:"Small Blind", c:"#2f74c0", d:"#1a4a80", desc:"小さな一歩でいい。一行から", pal:[[18,58,96],[30,92,140],[70,140,190],[10,32,58]] };
+const BIG = { n:"Big Blind", c:"#c68a13", d:"#7d560a", desc:"少し長めに書くと高得点", pal:[[34,82,62],[52,112,86],[90,150,116],[20,50,38]] };
+function blindOf(d) { const w = d.getDay(); if (w === 1 || w === 2) return { ...SMALL, chip:"SMALL<br>BLIND", reward:"$$$" }; if (w === 3 || w === 4) return { ...BIG, chip:"BIG<br>BLIND", reward:"$$$$" };
+  const b = BOSSES[Math.floor((d - new Date(d.getFullYear(), 0, 1)) / 6048e5) % BOSSES.length]; return { ...b, chip:"BOSS", reward:"$$$$$" }; }
+// milestones shown as jokers (no faces — just symbols)
+const JOKERS = [
+  { n:"三日坊主返上", d:"3日連続で記録する", ok:s => s.best >= 3, rar:["Common", "var(--blue)"], bg:"linear-gradient(180deg,#ffb35c,#f06b1f)", art:'<path d="M12 2c3 5 7 7 7 13a7 7 0 0 1-14 0c0-3 2-5 3-7 1 3 2 4 4 4-2-4-1-7 0-10z" fill="#fff3a8" stroke="#3a1a00" stroke-width="1.5"/><path d="M12 12c2 2 3 3 3 5a3 3 0 0 1-6 0c0-2 1-3 3-5z" fill="#ff5f55"/>' },
+  { n:"週刊ジョーカー", d:"7日連続で記録する", ok:s => s.best >= 7, rar:["Uncommon", "var(--green)"], bg:"linear-gradient(180deg,#7fd0ff,#2f74c0)", art:'<rect x="3" y="5" width="18" height="16" rx="2" fill="#fff" stroke="#14233a" stroke-width="1.5"/><rect x="3" y="5" width="18" height="5" fill="#fe5f55" stroke="#14233a" stroke-width="1.5"/><path d="M7 3v4M17 3v4" stroke="#14233a" stroke-width="2"/><path d="M7 14h2M11 14h2M15 14h2M7 17h2M11 17h2" stroke="#14233a" stroke-width="2"/>' },
+  { n:"筆まめ", d:"総文字数 2000 字", ok:s => s.chars >= 2000, rar:["Uncommon", "var(--green)"], bg:"linear-gradient(180deg,#d8f5a8,#4bc292)", art:'<path d="M4 20l2-6L17 3l4 4L10 18z" fill="#ffd84a" stroke="#1e3a1e" stroke-width="1.5"/><path d="M15 5l4 4" stroke="#1e3a1e" stroke-width="1.5"/><path d="M4 20l2-6 4 4z" fill="#f5e6c8" stroke="#1e3a1e" stroke-width="1.5"/>' },
+  { n:"常連客", d:"記録 30 回", ok:s => s.total >= 30, rar:["Rare", "var(--red)"], bg:"linear-gradient(180deg,#f3c9ff,#9a5ad8)", art:'<rect x="4" y="13" width="16" height="4" fill="#ffd84a" stroke="#2a1440" stroke-width="1.5"/><rect x="5" y="9" width="14" height="4" fill="#5fb4ff" stroke="#2a1440" stroke-width="1.5"/><rect x="6" y="5" width="12" height="4" fill="#fe5f55" stroke="#2a1440" stroke-width="1.5"/><rect x="3" y="17" width="18" height="3" fill="#4bc292" stroke="#2a1440" stroke-width="1.5"/>' },
+  { n:"晴れの日", d:"最高・良いの日が 10 日", ok:s => s.good >= 10, rar:["Rare", "var(--red)"], bg:"linear-gradient(180deg,#fff3a8,#fda200)", art:'<circle cx="12" cy="12" r="5" fill="#fff" stroke="#3a2400" stroke-width="1.5"/><g stroke="#fff" stroke-width="2.4" stroke-linecap="square"><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></g>' }
+];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`; };
+const fmt = n => Math.round(n).toLocaleString("en-US");
+const sleep = ms => new Promise(r => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms));
+
+let data = load(), page = 0, cur = HAND - 1, sortMode = "rank", mood = null, selected = null, busy = false, deckMonth = new Date(), shownScore = null;
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+function bestStreak() { let best = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const c = new Date(k + "T00:00:00"); run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1; best = Math.max(best, run); prev = c; } return best; }
+const rank = () => Math.floor(totalXp() / XP_PER_RANK) + 1;
+// a day's score: chips (characters) x mult (streak on that day)
+const chipsOf = k => data[k] ? data[k].text.length : 0;
+const multOf = k => data[k] ? Math.max(1, streakAt(k)) : 0;
+const weekKeys = () => { const now = new Date(), mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return ymd(d); }); };
+const weekScore = () => weekKeys().reduce((s, k) => s + chipsOf(k) * multOf(k), 0);
+const targetFor = () => 300 + rank() * 200;
+const editionOf = k => { const e = data[k]; if (!e) return ""; if (e.mood === "最高" && e.text.length >= 100) return "poly"; if (streakAt(k) >= 7) return "holo"; if (e.text.length >= 200) return "foil"; return ""; };
+const EDN = { foil:["Foil", "var(--blue)", "200字以上の長文"], holo:["Holographic", "var(--red)", "7日以上の連続中"], poly:["Polychrome", "#c45fff", "最高の日に100字以上"] };
+
+// poker hand of the week: suits = moods, ranks = consecutive dates
+function weekHand() {
+  const ks = weekKeys().filter(k => data[k]), cnt = {};
+  ks.forEach(k => { const m = data[k].mood || "─"; cnt[m] = (cnt[m] || 0) + 1; });
+  const c = Object.values(cnt).sort((a, b) => b - a), streak = (() => { let best = 0, run = 0; weekKeys().forEach(k => { run = data[k] ? run + 1 : 0; best = Math.max(best, run); }); return best; })();
+  const flush = c[0] >= 5, straight = streak >= 5;
+  if (ks.length === 7 && c[0] === 7) return ["Flush Five", 8]; if (straight && flush) return ["Straight Flush", 7]; if (c[0] >= 5) return ["Five of a Kind", 6];
+  if (c[0] === 4) return ["Four of a Kind", 5]; if (c[0] === 3 && c[1] >= 2) return ["Full House", 4]; if (straight) return ["Straight", 4]; if (c[0] === 3) return ["Three of a Kind", 3];
+  if (c[0] === 2 && c[1] === 2) return ["Two Pair", 2]; if (c[0] === 2) return ["Pair", 1]; return [ks.length ? "High Card" : "─", 1];
+}
+
+function handKeys() {
+  const ks = Array.from({ length: HAND }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - (page * HAND + (HAND - 1 - i))); return ymd(d); });
+  if (sortMode === "suit") { const o = k => data[k] ? MOODS.indexOf(data[k].mood) + (data[k].mood ? 0 : 5) : 9; return ks.slice().sort((a, b) => o(a) - o(b) || a.localeCompare(b)); }
+  return ks;
+}
+
+function cardHTML(k, opts = {}) {
+  const e = data[k], d = new Date(k + "T00:00:00"), today = ymd(new Date()), cls = [opts.extra || ""];
+  if (!e) return `<button class="card back ${k === today ? "today" : ""} ${cls.join(" ")}" data-k="${k}" style="${opts.style || ""}" aria-label="${md(k)} 未記録"><span class="face"><span class="tag">${k === today ? "TODAY" : d.getDate()}<small>${DOW[d.getDay()]}</small></span></span><span class="shine"></span></button>`;
+  const s = SUIT[e.mood] || { s:"✎", c:"#444", n:"Blank" };
+  if (s.stone) cls.push("stone");
+  cls.push(editionOf(k));
+  return `<button class="card ${cls.join(" ")}" data-k="${k}" style="--suit:${s.c};${opts.style || ""}" aria-label="${md(k)} ${e.mood || ""}"><span class="face">
+    <span class="rk">${d.getDate()}<i>${s.stone ? "" : s.s}</i></span><span class="pip">${s.s}</span><span class="dw">${DOWE[d.getDay()]}</span><span class="rk b">${d.getDate()}<i>${s.stone ? "" : s.s}</i></span>
+  </span><span class="shine"></span></button>`;
+}
+
+function render(deal = false) {
+  const today = new Date(), tk = ymd(today), b = blindOf(today), xp = totalXp(), r = rank(), all = Object.keys(data);
+  document.documentElement.style.setProperty("--blind", b.c); document.documentElement.style.setProperty("--blindd", b.d);
+  palette = b.pal;
+  $("bName").textContent = b.n; $("bChip").innerHTML = b.chip; $("bTarget").textContent = fmt(targetFor() * (b.chip === "BOSS" && b.n === "The Wall" ? 1.5 : 1)); $("bReward").textContent = b.reward; $("bDesc").textContent = b.desc;
+  const ws = weekScore(); if (shownScore === null) $("rScore").textContent = fmt(ws);
+  const [hn, hl] = weekHand(); $("hName").innerHTML = `${hn}<small>lvl.${hl}</small>`;
+  const wk = weekKeys();
+  $("sHands").textContent = wk.filter(k => data[k]).length; $("sDisc").textContent = wk.filter(k => k <= tk && !data[k]).length;
+  $("sMoney").textContent = `$${Math.floor(xp / 50)}`; $("sAnte").innerHTML = `${(r - 1) % 8 + 1}<small>/8</small>`; $("sRound").textContent = all.length;
+
+  // jokers + consumables
+  const st = { best:bestStreak(), chars:Object.values(data).reduce((s, x) => s + x.text.length, 0), total:all.length, good:all.filter(k => ["最高", "良い"].includes(data[k].mood)).length };
+  const unlocked = JOKERS.filter(j => j.ok(st)).length;
+  $("jokers").innerHTML = JOKERS.map((j, i) => `<button class="card joker ${j.ok(st) ? "" : "locked"}" data-j="${i}" style="--jb:${j.bg}"><span class="face"><span class="jt">JOKER</span><span class="art"><svg viewBox="0 0 24 24" shape-rendering="crispEdges">${j.art}</svg></span><span class="jt b">JOKER</span><span class="q">?</span></span><span class="shine"></span></button>`).join("") + `<span class="cnt">${unlocked}/5</span>`;
+  const mon = all.filter(k => k.startsWith(tk.slice(0, 7))).length;
+  $("cons").innerHTML = `<button class="card planet" data-c="0"><span class="face"><span class="ct">PLANET</span><span class="cv">${mon}</span><span class="cl">今月の記録</span></span><span class="shine"></span></button>
+    <button class="card" data-c="1"><span class="face"><span class="ct">XVII STAR</span><span class="cv">${st.best}</span><span class="cl">最長連続</span></span><span class="shine"></span></button><span class="cnt">2/2</span>`;
+
+  // hand
+  const ks = handKeys(); if (cur >= ks.length) cur = ks.length - 1;
+  $("hand").innerHTML = ks.map((k, i) => cardHTML(k, { extra:`${i === cur ? "sel cur" : ""} ${deal ? "deal" : ""}`, style:`--i:${i};--rot:${(i - (ks.length - 1) / 2) * 1.6}deg` })).join("");
+  $("hCnt").textContent = `${ks.filter(k => data[k]).length}/${HAND}`;
+  $("discard").disabled = false; $("play").disabled = ks[cur] > tk;
+  const yearDays = Math.floor((today - new Date(today.getFullYear(), 0, 1)) / 864e5) + 1;
+  $("dCnt").textContent = `${all.filter(k => k.startsWith(String(today.getFullYear()))).length}/${yearDays}`;
+  renderStage(ks[cur]);
+}
+
+function renderStage(k) {
+  if (!k) return;
+  const e = data[k], ed = editionOf(k), today = ymd(new Date());
+  $("hChips").textContent = fmt(chipsOf(k)); $("hMult").textContent = fmt(multOf(k));
+  const tags = [];
+  if (e && e.mood) tags.push(`<span style="--c:${SUIT[e.mood].c}">${SUIT[e.mood].n}</span>`);
+  if (ed) tags.push(`<span style="--c:${EDN[ed][1]}">${EDN[ed][0]}</span>`);
+  $("stage").innerHTML = cardHTML(k, { extra:"big" }) + `<div class="tipbox"><h4>${k === today ? "Today" : md(k)}</h4><div class="in">${e ? esc(e.text) : (k > today ? "まだ来ていない日。" : "まだ記録がない。\n「記録する」でこの日を出そう。")}${e ? `\n\n<span class="hl">+${fmt(chipsOf(k))} Chips</span>　<span class="hm">x${multOf(k)} Mult</span>` : ""}</div>${tags.length ? `<div class="tags">${tags.join("")}</div>` : ""}</div>`;
+}
+
+// ---------- swirling felt (low-res canvas, palette per blind) ----------
+let palette = BIG.pal;
+const cv = $("bg"), g = cv.getContext("2d"), img = g.createImageData(cv.width, cv.height);
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function swirl(t) {
+  const W = cv.width, H = cv.height, p = palette, D = img.data;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const nx = x / W - .5, ny = y / H - .5, r = Math.hypot(nx, ny), a = Math.atan2(ny, nx);
+    let v = Math.sin(a * 3 + r * 14 - t * .6) + Math.sin(nx * 9 + Math.sin(ny * 7 + t * .4) * 2 + t * .3) + Math.sin(ny * 11 - t * .5 + Math.cos(nx * 5));
+    v = (v + 3) / 6; const band = Math.min(3, Math.floor(v * 4)), f = v * 4 - band, c0 = p[[3, 0, 1, 2][band]], c1 = p[[0, 1, 2, 2][band]];
+    const i = (y * W + x) * 4; D[i] = c0[0] + (c1[0] - c0[0]) * f; D[i + 1] = c0[1] + (c1[1] - c0[1]) * f; D[i + 2] = c0[2] + (c1[2] - c0[2]) * f; D[i + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+}
+let last = 0;
+function loop(ts) { if (ts - last > 50) { swirl(ts / 1000); last = ts; } if (!reduced) requestAnimationFrame(loop); }
+
+// ---------- tooltip + tilt ----------
+function showTip(el, ev) {
+  let t = "", b = "", tg = "";
+  if (el.dataset.k) { const k = el.dataset.k, e = data[k], ed = editionOf(k);
+    t = md(k); b = e ? `${esc(e.text.slice(0, 60))}${e.text.length > 60 ? "…" : ""}<br><b style="color:var(--blue)">+${chipsOf(k)} Chips</b> <b style="color:var(--red)">x${multOf(k)} Mult</b>` : (k > ymd(new Date()) ? "まだ来ていない日" : "未記録。クリックで記録");
+    if (e && e.mood) tg += `<span style="--c:${SUIT[e.mood].c}">${SUIT[e.mood].n}</span>`; if (ed) tg += `<span style="--c:${EDN[ed][1]}">${EDN[ed][0]}</span>`; if (ed) b += `<br><small>${EDN[ed][2]}</small>`; }
+  else if (el.dataset.j) { const j = JOKERS[+el.dataset.j], ok = !el.classList.contains("locked"); t = ok ? j.n : "???"; b = ok ? j.d : `解放条件：${j.d}`; tg = `<span style="--c:${j.rar[1]}">${j.rar[0]}</span>`; }
+  else if (el.dataset.c) { t = el.dataset.c === "0" ? "Planet" : "The Star"; b = el.dataset.c === "0" ? "今月記録した日数" : "これまでの最長連続記録"; tg = `<span style="--c:${el.dataset.c === "0" ? "#4a8ad8" : "#a87ad8"}">${el.dataset.c === "0" ? "Planet" : "Tarot"}</span>`; }
+  else return;
+  $("tipT").textContent = t; $("tipB").innerHTML = b; $("tipG").innerHTML = tg;
+  const r = el.getBoundingClientRect(), tip = $("tip"); tip.classList.add("show");
+  const w = 220, x = Math.min(Math.max(8, r.left + r.width / 2 - w / 2), innerWidth - w - 8); let y = r.top - tip.offsetHeight - 10; if (y < 8) y = r.bottom + 10;
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+}
+document.addEventListener("mousemove", e => {
+  const c = e.target.closest(".card"); if (!c || c.closest(".modal")) return;
+  const r = c.getBoundingClientRect(), px = (e.clientX - r.left) / r.width, py = (e.clientY - r.top) / r.height;
+  c.style.setProperty("--ry", `${(px - .5) * 18}deg`); c.style.setProperty("--rx", `${(.5 - py) * 18}deg`); c.style.setProperty("--mx", `${px * 100}%`); c.style.setProperty("--my", `${py * 100}%`);
+});
+document.addEventListener("mouseover", e => {
+  const c = e.target.closest(".card"); if (!c || c.closest(".modal")) return;
+  showTip(c, e);
+  const kids = [...$("hand").children], i = kids.indexOf(c);
+  if (i >= 0 && i !== cur && !busy) {
+    cur = i; kids.forEach((x, j) => { x.classList.toggle("sel", j === i); x.classList.toggle("cur", j === i); });
+    renderStage(handKeys()[cur]); $("play").disabled = handKeys()[cur] > ymd(new Date());
+  }
+});
+document.addEventListener("mouseout", e => { const c = e.target.closest(".card"); if (c && !c.contains(e.relatedTarget)) { $("tip").classList.remove("show"); c.style.removeProperty("--rx"); c.style.removeProperty("--ry"); } });
+
+// ---------- editor ----------
+function setMood(m) { mood = m; document.querySelectorAll("#suits button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); updPreview(); }
+function updPreview() {
+  const len = $("body").value.trim().length, k = selected, prevDay = new Date(k + "T00:00:00"); prevDay.setDate(prevDay.getDate() - 1);
+  const mult = Math.max(1, (data[k] ? streakAt(k) : streakAt(ymd(prevDay)) + 1));
+  $("preview").innerHTML = `<span class="c">${fmt(len)}</span><span class="x">X</span><span class="m">${mult}</span><em>= ${fmt(len * mult)} pts</em>`;
+}
+function openEd(k) {
+  if (!k || k > ymd(new Date()) || busy) return;
+  selected = k; const e = data[k]; mood = e ? e.mood : null;
+  $("eT").textContent = k === ymd(new Date()) ? "Today" : md(k); $("eS").textContent = e ? "書き直し" : "新しい手札";
+  $("suits").innerHTML = MOODS.map(m => `<li><button data-m="${m}" class="${SUIT[m].stone ? "stone" : ""} ${m === mood ? "on" : ""}" style="--s:${SUIT[m].c}"><b>${SUIT[m].s}</b><small>${m}</small></button></li>`).join("");
+  $("body").value = e ? e.text : ""; updPreview();
+  $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
+}
+const closeModals = () => document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
+
+function popup(text, cls, el, dx = 0, dy = 0) {
+  const r = el.getBoundingClientRect(), c = $("center").getBoundingClientRect(), p = document.createElement("div");
+  p.className = `popup ${cls}`; p.textContent = text; p.style.left = `${r.left - c.left + r.width / 2 - 30 + dx}px`; p.style.top = `${r.top - c.top - 30 + dy}px`;
+  $("center").appendChild(p); setTimeout(() => p.remove(), 1100);
+}
+async function countTo(el, from, to, ms) {
+  const t0 = performance.now(); el.classList.remove("pulse"); void el.offsetWidth; el.classList.add("pulse");
+  return new Promise(res => { const step = t => { const p = Math.min((t - t0) / ms, 1); el.textContent = fmt(from + (to - from) * p); if (p < 1 && !reduced) requestAnimationFrame(step); else { el.textContent = fmt(to); res(); } }; requestAnimationFrame(step); });
+}
+async function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  if (busy) return; busy = true;
+  const k = selected, xp0 = totalXp(), r0 = rank(), ws0 = weekScore(), target = targetFor(), isNew = !data[k], st0 = { best:bestStreak(), chars:Object.values(data).reduce((s, x) => s + x.text.length, 0), total:Object.keys(data).length, good:Object.values(data).filter(x => ["最高", "良い"].includes(x.mood)).length };
+  data[k] = { mood, text }; store(data); closeModals();
+  shownScore = ws0; $("rScore").textContent = fmt(ws0);
+  // jump the hand to the saved day so the played card is on stage
+  page = Math.floor((new Date(ymd(new Date()) + "T00:00:00") - new Date(k + "T00:00:00")) / 864e5 / HAND);
+  cur = Math.max(0, handKeys().indexOf(k)); render(); $("rScore").textContent = fmt(ws0);
+  const big = $("stage").querySelector(".big"); big.classList.add("pop");
+  $("hChips").textContent = "0"; $("hMult").textContent = "0";
+  await sleep(250);
+  // chips count up in steps, popups over the card
+  const chips = chipsOf(k), mult = multOf(k), steps = Math.min(5, Math.max(1, Math.ceil(chips / 40)));
+  for (let i = 1; i <= steps; i++) { const v = Math.round(chips * i / steps); popup(`+${v - Math.round(chips * (i - 1) / steps)}`, "c", big, (i % 2 ? -1 : 1) * 30, -i * 6); await countTo($("hChips"), Math.round(chips * (i - 1) / steps), v, 160); await sleep(110); }
+  popup(`+${mult} Mult`, "m", big, 40, 20); await countTo($("hMult"), 0, mult, 260); await sleep(250);
+  // jokers that trigger this hand
+  const st1 = { best:bestStreak(), chars:Object.values(data).reduce((s, x) => s + x.text.length, 0), total:Object.keys(data).length, good:Object.values(data).filter(x => ["最高", "良い"].includes(x.mood)).length };
+  JOKERS.forEach((j, i) => { if (j.ok(st1)) { const el = $("jokers").children[i]; el.classList.remove("wiggle"); void el.offsetWidth; el.classList.add("wiggle"); } });
+  await sleep(200);
+  const ws1 = weekScore(); document.getElementById("app").classList.remove("shake"); void document.getElementById("app").offsetWidth; document.getElementById("app").classList.add("shake");
+  await countTo($("rScore"), ws0, ws1, 700); shownScore = null;
+  const newJ = JOKERS.filter(j => j.ok(st1) && !j.ok(st0)), xp1 = totalXp(), up = rank() > r0;
+  let bn = null;
+  if (newJ.length) bn = [`JOKER GET!`, `${newJ.map(j => j.n).join("・")} を手に入れた`];
+  else if (up) bn = ["ANTE UP!", `ランク ${rank()} に上がった`];
+  else if (ws0 < target && ws1 >= target) bn = ["Blind Defeated", `今週の目標達成！ ${blindOf(new Date()).reward}`];
+  else if (isNew) bn = [`+${fmt(xp1 - xp0)} EXP`, `${streakCount()}日連続 ／ ${fmt(chips * mult)} pts`];
+  else bn = ["Rewritten", "日記を書き直した"];
+  const el = document.createElement("div"); el.className = "banner"; el.innerHTML = `${bn[0]}<small>${bn[1]}</small>`; $("center").appendChild(el);
+  await sleep(1800); el.remove(); busy = false; render();
+}
+
+// ---------- run info / deck ----------
+function openRun() {
+  const all = Object.keys(data), chars = Object.values(data).reduce((s, x) => s + x.text.length, 0), [hn, hl] = weekHand();
+  const rows = [["今週の役", `${hn}`, "#4a8ad8", `lvl.${hl}`], ["ランク", rank(), "var(--orange)", "Ante"], ["記録した日", all.length, "var(--blue)", "Hands"], ["連続（現在 / 最長）", `${streakCount()} / ${bestStreak()}`, "var(--red)", "Mult"], ["総文字数", fmt(chars), "var(--blue)", "Chips"], ["今週のスコア", fmt(weekScore()), "var(--green)", "Score"]]
+    .concat(MOODS.map(m => [`${SUIT[m].s} ${m}`, all.filter(k => data[k].mood === m).length, SUIT[m].c, SUIT[m].n]));
+  $("runTbl").innerHTML = rows.map(([l, v, c, t]) => `<tr><td><span class="lv" style="--c:${c}">${t}</span>${l}</td><td class="v">${v}</td></tr>`).join("");
+  $("run").classList.add("show"); $("run").querySelector("[data-close]").focus();
+}
+function openDeck() {
+  const y = deckMonth.getFullYear(), m = deckMonth.getMonth(), first = new Date(y, m, 1), days = new Date(y, m + 1, 0).getDate();
+  $("dMonth").textContent = `${y} / ${String(m + 1).padStart(2, "0")}`;
+  let h = DOW.map(d => `<span class="dh">${d}</span>`).join("") + "<span></span>".repeat(first.getDay());
+  const tk = ymd(new Date());
+  for (let i = 1; i <= days; i++) { const dk = ymd(new Date(y, m, i)); h += cardHTML(dk, { extra: dk > tk ? "fut" : "" }); }
+  $("deckGrid").innerHTML = h; $("deckM").classList.add("show");
+}
+
+document.addEventListener("click", e => {
+  if (busy) return;
+  const inDeck = e.target.closest("#deckGrid .card"); if (inDeck) { closeModals(); return openEd(inDeck.dataset.k); }
+  const hc = e.target.closest("#hand .card"); if (hc) { cur = [...$("hand").children].indexOf(hc); return openEd(hc.dataset.k); }
+  const sb = e.target.closest("#suits button"); if (sb) return setMood(mood === sb.dataset.m ? null : sb.dataset.m);
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#cl") || e.target.closest("[data-close]") || e.target.classList.contains("modal")) return closeModals();
+  if (e.target.closest("#play")) return openEd(handKeys()[cur]);
+  if (e.target.closest("#discard")) { page++; cur = HAND - 1; return render(true); }
+  if (e.target.closest("#sortRank")) { sortMode = "rank"; return render(); }
+  if (e.target.closest("#sortSuit")) { sortMode = "suit"; return render(); }
+  if (e.target.closest("#runInfo")) return openRun();
+  if (e.target.closest("#options")) { location.href = "index.html"; return; }
+  if (e.target.closest("#deck")) { deckMonth = new Date(); return openDeck(); }
+  if (e.target.closest("#dPrev")) { deckMonth.setMonth(deckMonth.getMonth() - 1); return openDeck(); }
+  if (e.target.closest("#dNext")) { deckMonth.setMonth(deckMonth.getMonth() + 1); return openDeck(); }
+});
+$("body").addEventListener("input", updPreview);
+document.addEventListener("keydown", e => {
+  const k = e.key, edOpen = $("ed").classList.contains("show"), anyModal = document.querySelector(".modal.show");
+  if (busy) return;
+  if (edOpen && (e.ctrlKey || e.metaKey) && k === "Enter") { e.preventDefault(); return save(); }
+  if (k === "Escape") { if (anyModal) return closeModals(); if (page) { page = 0; cur = HAND - 1; return render(true); } return; }
+  if (edOpen) {
+    if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) {
+      e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : MOODS.length - 1) : (i + dir + MOODS.length) % MOODS.length]); document.querySelector(`#suits button[data-m="${mood}"]`).focus();
+    }
+    return;
+  }
+  if (anyModal) { if ($("deckM").classList.contains("show")) { if (k === "ArrowLeft") { deckMonth.setMonth(deckMonth.getMonth() - 1); openDeck(); } if (k === "ArrowRight") { deckMonth.setMonth(deckMonth.getMonth() + 1); openDeck(); } } return; }
+  if (k === "ArrowLeft" && cur > 0) { e.preventDefault(); cur--; return render(); }
+  if (k === "ArrowRight" && cur < HAND - 1) { e.preventDefault(); cur++; return render(); }
+  if ((k === "Enter" || k === " " || k === "ArrowUp") && e.target.tagName !== "BUTTON") { e.preventDefault(); return openEd(handKeys()[cur]); }
+  if (k === "q" || k === "Q") { page++; cur = HAND - 1; return render(true); }
+  if ((k === "e" || k === "E") && page) { page--; cur = HAND - 1; return render(true); }
+  if (k === "s" || k === "S") { sortMode = sortMode === "rank" ? "suit" : "rank"; return render(); }
+  if (k === "r" || k === "R") return openRun();
+  if (k === "d" || k === "D") { deckMonth = new Date(); return openDeck(); }
+});
+
+render(true);
+swirl(0); if (!reduced) requestAnimationFrame(loop);
+</script>
+</body>
+</html>
