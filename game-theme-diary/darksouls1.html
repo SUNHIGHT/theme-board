@@ -6,165 +6,118 @@
 <title>Lordran Diary</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Shippori+Mincho+B1:wght@500;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b0a08;--fg:#b3aa94;--hi:#f1e7cc;--acc:#d9822b;--acc2:#8f8567;--ember:#ff9a3c;--line:rgba(217,130,43,.4);--panel:rgba(16,14,10,.82);--sel:rgba(217,130,43,.16);--glow:rgba(217,130,43,.45);--warn:#d9822b;--fb:'Shippori Mincho B1','Cinzel',serif;--fh:'Cinzel','Shippori Mincho B1',serif; }
-
+  /* Dark Souls 1 system-menu look: worn black leather page with a torn edge, white serif text, rust-red selection, ruled brown lines */
+  :root { --ink:#f3efe6; --dim:#8d857a; --rust:#8a3512; --rust2:#b24a1c; --thread:rgba(168,112,56,.62); --gold:#e0b45a; --font:'Shippori Mincho B1','Hiragino Mincho ProN',serif; --head:'Cinzel','Shippori Mincho B1',serif; }
   * { box-sizing:border-box; margin:0; }
-  body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
-  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 16px 70px; }
-  header { position:relative; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:24px; animation:typeIn .8s both; }
-  .op { font-size:12px; letter-spacing:.4em; color:var(--acc); }
-  h1 { font-family:var(--fh); font-weight:700; font-size:clamp(34px,8.5vw,66px); letter-spacing:.05em; line-height:1.05; color:var(--hi); margin:4px 0; }
-  h1 small { display:block; font-size:.4em; letter-spacing:.35em; color:var(--fg); font-family:var(--fb); font-weight:400; }
-  .clock { display:flex; flex-wrap:wrap; gap:22px; font-size:15px; letter-spacing:.15em; margin-top:8px; }
-  .clock b { color:var(--acc); font-weight:400; margin-right:6px; }
-  .blink { animation:blink 1s steps(1) infinite; }
-  .panel { position:relative; background:var(--panel); border:1px solid var(--line); padding:22px 22px 18px; margin-bottom:30px; }
-  .ttl { display:inline-block; font-family:var(--fh); font-size:15px; letter-spacing:.25em; color:var(--bg); background:var(--acc); padding:2px 14px; margin:-36px 0 12px -8px; }
-  .gauge { margin-bottom:12px; }
-  .gauge b { font-weight:400; display:flex; justify-content:space-between; letter-spacing:.2em; font-size:14px; }
-  .gauge b em { font-style:normal; font-family:var(--fh); font-size:20px; color:var(--hi); }
-  .track { height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.45); }
-  .track div { height:100%; width:0; transition:width .9s cubic-bezier(.2,.9,.3,1); background:repeating-linear-gradient(90deg,var(--c) 0 8px,transparent 8px 10px); }
-  .life div { --c:var(--acc); } .stam div { --c:var(--acc2); }
-  .row3 { display:flex; gap:26px; flex-wrap:wrap; margin-top:14px; }
-  .row3 div { flex:1 1 130px; border-top:1px solid var(--line); padding-top:6px; }
-  .row3 b { display:block; font-weight:400; font-size:12px; letter-spacing:.25em; color:var(--acc); }
-  .row3 i { font-style:normal; font-family:var(--fh); font-size:38px; color:var(--hi); line-height:1.1; }
-  .moods { list-style:none; padding:0; margin-bottom:18px; }
-  .moods button { width:100%; text-align:left; font:inherit; font-size:17px; cursor:pointer; color:var(--fg); background:transparent; border:0;
-    border-bottom:1px dashed var(--line); padding:8px 8px 8px 30px; position:relative; display:flex; justify-content:space-between; transition:.1s; }
-  .moods button span { font-size:12px; letter-spacing:.2em; opacity:.7; }
-  .moods button:hover { color:var(--acc); }
-  .moods button.on { background:var(--sel); color:var(--hi); animation:fade .25s; }
-  .moods button.on::before { content:"▶"; position:absolute; left:8px; color:var(--acc); animation:blink .8s steps(1) infinite; }
-  textarea { width:100%; min-height:180px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.9; color:var(--hi);
-    background:rgba(255,255,255,.05); border:1px solid var(--line); outline:none; }
-  textarea:focus { border-color:var(--acc); box-shadow:0 0 12px var(--glow); }
-  textarea::placeholder { color:var(--fg); opacity:.45; }
-  .hint { font-size:12px; color:var(--acc); margin-top:6px; min-height:1.2em; }
-  .save { display:block; margin:14px 0 0 auto; font-family:var(--fh); font-weight:700; font-size:24px; letter-spacing:.3em; cursor:pointer;
-    color:var(--bg); background:var(--acc); border:0; padding:8px 34px; transition:.1s; }
-  .save:hover { background:var(--hi); box-shadow:0 0 18px var(--glow); }
-  .save:active { transform:scale(.95); }
-  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--line); transition:.15s; }
-  .cal .dow { aspect-ratio:auto; border:0; color:var(--acc); font-size:12px; letter-spacing:.2em; }
-  .cal .done { color:var(--bg); font-weight:700; background:var(--acc); }
-  .cal .today { outline:2px solid var(--hi); outline-offset:2px; }
-  .cal .sel { box-shadow:0 0 0 3px var(--acc2); }
-  .cal div[data-d]:hover { background:var(--sel); transform:scale(1.12); }
-  h2 { font-family:var(--fh); font-size:22px; letter-spacing:.3em; color:var(--hi); margin:6px 0 14px; }
-  .entry { background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--acc); padding:12px 18px; margin-bottom:12px; }
-  .entry small { color:var(--acc); letter-spacing:.2em; font-size:12px; }
-  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.8; color:var(--hi); }
-  #stamp { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
-  #stamp.show { display:flex; animation:fade .2s; }
-  #stamp .bars::before, #stamp .bars::after { content:""; position:absolute; left:0; right:0; height:16vh; background:#000; z-index:1; }
-  #stamp .bars::before { top:0; animation:barT .5s ease-out; } #stamp .bars::after { bottom:0; animation:barB .5s ease-out; }
-  @keyframes barT { from { transform:translateY(-100%); } } @keyframes barB { from { transform:translateY(100%); } }
-  #stamp .box { text-align:center; position:relative; z-index:2; padding:0 16px; }
-  #bang { font-family:var(--fh); font-weight:700; font-size:clamp(110px,28vw,230px); line-height:1; color:var(--warn); text-shadow:0 0 30px var(--warn), 5px 5px 0 #000; animation:bang .45s cubic-bezier(.2,2,.4,1); }
-  @keyframes bang { from { transform:scale(.1) rotate(-25deg); opacity:0; } }
-  #stampBig { font-family:var(--fh); font-size:clamp(22px,5.5vw,40px); letter-spacing:.2em; color:var(--hi); min-height:1.4em; }
-  #stampBig::after { content:"█"; animation:blink .6s steps(1) infinite; color:var(--acc); }
-  #stampSub { margin-top:6px; letter-spacing:.3em; font-size:14px; color:var(--acc); }
-  @keyframes blink { 50% { opacity:0; } }
-  @keyframes fade { from { opacity:0; } }
-  @keyframes typeIn { from { opacity:0; transform:translateX(-30px); } }
-  @keyframes panelIn { 0% { opacity:0; transform:translateY(24px); } 40% { opacity:.4; } 55% { opacity:.1; } 70% { opacity:1; } }
-  @keyframes rise { from { opacity:0; transform:scale(.6); } }
-  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
-  main > .panel { animation:panelIn .7s both; }
-  main > .panel:nth-of-type(1) { animation-delay:.25s; } main > .panel:nth-of-type(2) { animation-delay:.45s; } main > .panel:nth-of-type(3) { animation-delay:.65s; }
-  .cal div[data-d] { animation:rise .3s calc(var(--i) * 16ms + .8s) backwards; }
-  .entry { animation:entryIn .45s calc(var(--i) * 70ms) ease-out backwards; }
+  html, body { min-height:100%; }
+  body { background:#000; color:var(--ink); font-family:var(--font); display:flex; flex-direction:column; align-items:center; padding:clamp(10px,2.4vw,34px) clamp(10px,2.4vw,40px) 0; min-height:100vh; }
+
+  .frame { position:relative; width:min(1280px,100%); padding:clamp(18px,3.4vw,46px) clamp(16px,3.6vw,56px) clamp(14px,2.4vw,30px); animation:fadeIn .8s both;
+    background:
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='260' height='260'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.55' numOctaves='3' seed='4' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .3 -.1'/></filter><rect width='260' height='260' filter='url(%23n)'/></svg>"),
+      url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='600' height='600'><filter id='b'><feTurbulence type='fractalNoise' baseFrequency='.012' numOctaves='3' seed='9' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .22  0 0 0 0 .2  0 0 0 0 .19  0 0 0 .55 -.22'/></filter><rect width='600' height='600' filter='url(%23b)'/></svg>"),
+      linear-gradient(180deg,#171513,#0d0c0b); background-color:#0e0d0c; }
+  .inner { position:relative; }
+  .inner::before { content:""; position:absolute; inset:-14px -22px; pointer-events:none; border:1px solid rgba(140,92,46,.28);
+    -webkit-mask-image:linear-gradient(90deg, transparent, #000 8%, transparent 20%, #000 34%, #000 52%, transparent 58%, #000 70%, transparent 76%, #000 90%, transparent);
+            mask-image:linear-gradient(90deg, transparent, #000 8%, transparent 20%, #000 34%, #000 52%, transparent 58%, #000 70%, transparent 76%, #000 90%, transparent); }
+  .curl { position:absolute; width:46px; height:46px; border:1px solid rgba(110,100,90,.45); border-radius:50%; opacity:.6; pointer-events:none; }
+  .curl.a { left:-6px; top:-6px; border-right-color:transparent; border-bottom-color:transparent; } .curl.b { right:-6px; top:-6px; border-left-color:transparent; border-bottom-color:transparent; }
+  .curl.c { left:-6px; bottom:-6px; border-right-color:transparent; border-top-color:transparent; } .curl.d { right:-6px; bottom:-6px; border-left-color:transparent; border-top-color:transparent; }
+
+  .hd { display:flex; align-items:flex-start; gap:18px; margin-bottom:18px; animation:slide .6s .1s both; }
+  .book { flex:none; width:clamp(64px,8vw,104px); aspect-ratio:1; border:1px solid #6a4a22; background:linear-gradient(135deg,#2a1d0e,#120c05); padding:6px; box-shadow:inset 0 0 12px #000; }
+  .tt { flex:1; min-width:0; }
+  .tt h1 { font-weight:800; font-size:clamp(26px,4.4vw,48px); letter-spacing:.14em; line-height:1.15; text-shadow:0 0 1px #000, 2px 2px 3px rgba(0,0,0,.9); border-bottom:1px solid var(--thread); padding-bottom:4px; }
+  .tt p { font-weight:700; font-size:clamp(16px,2.4vw,27px); letter-spacing:.12em; color:var(--ink); margin-top:6px; border-bottom:1px solid var(--thread); padding-bottom:4px; text-shadow:2px 2px 3px rgba(0,0,0,.9); }
+  .souls { position:absolute; right:0; top:2px; font-family:var(--head); font-size:13px; letter-spacing:.16em; color:var(--gold); text-align:right; }
+  .souls b { display:block; font-family:var(--font); font-weight:500; font-size:11px; color:var(--dim); }
+
+  .cats { display:flex; align-items:center; gap:10px; padding:10px 14px; margin-bottom:12px; background:linear-gradient(180deg,#27231f,#1a1714); border:1px solid #3a342d; border-radius:3px; box-shadow:inset 0 0 16px rgba(0,0,0,.7); animation:slide .6s .2s both; }
+  .arr { all:unset; cursor:pointer; flex:none; color:#8a5a2c; font-size:34px; line-height:1; padding:0 6px; transition:.12s; } .arr:hover { color:var(--rust2); }
+  .tiles { display:flex; gap:12px; flex:1; overflow-x:auto; padding:4px 2px; }
+  .tile { all:unset; box-sizing:border-box; cursor:pointer; flex:none; width:clamp(64px,9vw,104px); height:clamp(54px,7vw,82px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; background:#141210; border:1px solid #3a342d; color:#9b9286; font-size:clamp(20px,3vw,32px); transition:.12s; }
+  .tile small { font-size:11px; letter-spacing:.1em; } .tile:hover { color:var(--ink); border-color:#6a5a44; }
+  .tile.on { color:var(--ink); border-color:#a0702f; box-shadow:0 0 0 1px #a0702f, inset 0 0 14px rgba(160,100,40,.35); background:linear-gradient(180deg,#2a1d12,#16100a); }
+
+  .rows { position:relative; min-height:clamp(300px,46vh,460px); padding:2px 0; border:1px solid rgba(138,90,44,.5); background:repeating-linear-gradient(transparent 0 43px, var(--thread) 43px 44px); animation:fadeIn .5s .3s both; }
+  .r { display:grid; grid-template-columns:clamp(70px,12%,140px) minmax(120px,40%) 1fr; align-items:center; height:44px; font-size:clamp(15px,2.2vw,24px); letter-spacing:.1em; cursor:pointer; padding-right:12px; }
+  .r .lab { padding-left:clamp(10px,2vw,26px); color:var(--ink); } .r .nm { padding:0 12px; height:100%; display:flex; align-items:center; text-shadow:2px 2px 2px rgba(0,0,0,.8); }
+  .r .val { text-align:center; color:var(--ink); } .r .val i { font-style:normal; color:#7a5a38; margin:0 clamp(10px,3vw,40px); }
+  .r.sel .nm { background:linear-gradient(90deg,var(--rust),#7a2f0f 85%,transparent); }
+  .r:hover:not(.sel) .nm { background:rgba(138,53,18,.28); }
+  .r.pv .nm { color:var(--ink); } .r.pv .val { text-align:left; color:#cfc7b8; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; padding-left:8px; }
+  .r.bd { display:block; height:auto; cursor:default; }
+  textarea { display:block; width:100%; height:calc(44px * 8); resize:none; border:0; outline:none; background:transparent; color:var(--ink); font:500 clamp(16px,2.2vw,22px)/44px var(--font); letter-spacing:.08em; padding:0 18px; text-shadow:2px 2px 2px rgba(0,0,0,.8); }
+  textarea::placeholder { color:#6f675c; }
+  textarea:focus { background:rgba(138,53,18,.08); }
+  .text { white-space:pre-wrap; font:500 clamp(16px,2.2vw,22px)/44px var(--font); letter-spacing:.08em; padding:0 18px; min-height:calc(44px * 7); }
+  .empty { padding:14px 22px; color:var(--dim); font-size:18px; line-height:44px; }
+
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); padding:8px 14px 14px; gap:0; background:none; }
+  .cal div { height:clamp(38px,6vh,52px); display:flex; align-items:center; justify-content:center; border:1px solid rgba(138,90,44,.35); font-size:18px; position:relative; }
+  .cal .dow { height:30px; border:0; color:var(--dim); font-size:13px; letter-spacing:.2em; } .cal .d { cursor:pointer; } .cal .d:hover { background:rgba(138,53,18,.3); }
+  .cal .done::after { content:""; position:absolute; right:6px; top:6px; width:7px; height:7px; border-radius:50%; background:var(--rust2); box-shadow:0 0 8px var(--rust2); } .cal .today { color:var(--gold); border-color:var(--gold); }
+  .cal .selx { background:var(--rust); }
+  .mhd { display:flex; justify-content:center; align-items:center; gap:28px; height:44px; font-size:22px; letter-spacing:.2em; } .mhd button { all:unset; cursor:pointer; color:#8a5a2c; font-size:28px; } .mhd button:hover { color:var(--rust2); }
+
+  .btns { display:flex; justify-content:center; gap:clamp(60px,18vw,260px); margin-top:14px; min-height:54px; animation:fadeIn .5s .4s both; }
+  .bt { all:unset; cursor:pointer; position:relative; font-weight:800; font-size:clamp(20px,3vw,34px); letter-spacing:.2em; padding:4px 36px 8px; text-shadow:2px 2px 3px rgba(0,0,0,.9); transition:.12s; }
+  .bt::after { content:""; position:absolute; left:0; right:0; bottom:0; height:1px; background:linear-gradient(90deg,transparent,var(--thread) 20%,var(--thread) 80%,transparent); }
+  .bt:hover { color:var(--rust2); text-shadow:0 0 14px rgba(178,74,28,.7); }
+  .bt:focus-visible, .tile:focus-visible, .arr:focus-visible, 
+
+  .keys { width:min(1280px,100%); padding:16px clamp(16px,3.6vw,56px) 24px; display:flex; flex-wrap:wrap; gap:6px 22px; font-weight:700; font-size:clamp(13px,1.9vw,22px); letter-spacing:.08em; color:#d8d2c6; text-shadow:2px 2px 3px #000; animation:fadeIn .6s .5s both; }
+  .keys span { white-space:nowrap; } .keys i { display:inline-block; min-width:1.5em; padding:0 .3em; margin-right:.3em; text-align:center; border:1px solid #8a8176; border-radius:50%; font-style:normal; font-size:.8em; color:#cfc7b8; }
+
+  /* death / bonfire overlay */
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.78); }
+  #ov.show { display:flex; animation:fadeIn .4s; }
+  #ov .band { width:100%; padding:46px 0; text-align:center; background:linear-gradient(90deg,transparent,rgba(0,0,0,.96) 18%,rgba(0,0,0,.96) 82%,transparent); }
+  #ovT { font-family:var(--head); font-size:clamp(34px,9vw,92px); letter-spacing:.34em; color:var(--gold); text-shadow:0 0 36px rgba(224,180,90,.6); animation:stretch 3.2s ease-out both; }
+  #ov.dead #ovT { color:#8b1a10; text-shadow:0 0 36px rgba(139,26,16,.7); font-family:'Shippori Mincho B1',serif; }
+  #ovS { margin-top:10px; font-size:14px; letter-spacing:.3em; color:var(--dim); animation:fadeIn 1s .8s both; }
+  @keyframes stretch { from { letter-spacing:.08em; opacity:.15; } to { letter-spacing:.34em; opacity:1; } }
+  @keyframes fadeIn { from { opacity:0; } } @keyframes slide { from { opacity:0; transform:translateY(-12px); } }
+  @media (max-width:640px) { .r { grid-template-columns:64px 1fr; } .r .val { grid-column:1 / -1; text-align:right; padding:0 12px; height:0; overflow:visible; } .r.pv .val { display:none; } .btns { gap:30px; } }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
-
-
-  body { background:radial-gradient(ellipse at 50% 100%, #2a1a0a 0%, transparent 60%), linear-gradient(180deg,#14110c,#0b0a08) fixed; }
-  
-  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 40%, rgba(0,0,0,.82) 100%); }
-  body::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; background-size:320px 420px; animation:embers 16s linear infinite;
-    background-image:radial-gradient(2px 2px at 40px 380px,var(--ember),transparent),radial-gradient(1.5px 1.5px at 150px 300px,var(--ember),transparent),radial-gradient(2px 2px at 250px 400px,var(--ember),transparent),radial-gradient(1px 1px at 90px 180px,var(--ember),transparent),radial-gradient(1.5px 1.5px at 290px 120px,var(--ember),transparent); }
-  @keyframes embers { to { background-position:20px -420px; } }
-  h1 { font-weight:700; letter-spacing:.18em; text-shadow:0 0 24px var(--glow); }
-  h1 small { letter-spacing:.3em; font-weight:500; }
-  header { border-bottom:0; }
-  header::after { content:"◆"; display:block; text-align:center; color:var(--acc); font-size:12px; margin-top:12px; background:linear-gradient(90deg,transparent,var(--line) 20%,var(--line) 45%,transparent 45%,transparent 55%,var(--line) 55%,var(--line) 80%,transparent) center/100% 1px no-repeat; }
-  .panel { border:1px solid var(--line); box-shadow:inset 0 0 0 4px var(--bg), inset 0 0 0 5px var(--line); }
-  .ttl { background:transparent; color:var(--acc); letter-spacing:.3em; padding-left:0; margin-left:0; font-weight:700; }
-  .life div { --c:#b3261e; } .stam div { --c:#3f8f4f; }
-  .track { border-radius:0; border-color:var(--line); }
-  .track div { background:var(--c); box-shadow:0 0 10px var(--c); }
-  .row3 i, .gauge b em { font-weight:700; }
-  .row3 i { font-size:30px; }
-  .save { background:transparent; color:var(--acc); border:1px solid var(--acc); letter-spacing:.35em; font-weight:700; }
-  .save:hover { background:var(--acc); color:var(--bg); }
-  .cal div { border-color:var(--line); }
-  .cal .done { background:radial-gradient(circle,var(--hi) 0 10%,var(--acc) 45%,transparent 75%); color:#1a0e04; box-shadow:0 0 16px var(--glow); }
-  .entry { border-left-width:3px; }
-  #stamp { background:rgba(0,0,0,.9); }
-  #bang { display:none; }
-  #stampBig { font-size:clamp(30px,8vw,76px); letter-spacing:.3em; color:var(--hi); text-shadow:0 0 30px var(--acc); animation:stretch 3s ease-out forwards; }
-  #stampBig::after { content:none; }
-  @keyframes stretch { from { letter-spacing:.1em; opacity:.2; } to { letter-spacing:.35em; opacity:1; } }
-  #stamp .box { padding:34px 0; width:100%; background:linear-gradient(90deg,transparent,rgba(0,0,0,.95) 20%,rgba(0,0,0,.95) 80%,transparent); }
-
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <div class="op">BONFIRE ─ FIRELINK SHRINE ─ ロードラン</div>
-    <h1>LORDRAN<small>DIARY ─ 不死の日誌</small></h1>
-    <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>SOULS</b><span id="souls">0</span></span></div>
-    
-  </header>
-
-  <section class="panel">
-    <span class="ttl">ATTRIBUTES</span>
-    
-    <div class="gauge life"><b>HP ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
-    <div class="gauge stam"><b>STAMINA ─ 次のレベルまで <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
-    <div class="row3">
-      <div><b>COVENANT 階級</b><i id="lv">-</i></div>
-      <div><b>STREAK 連続</b><i id="streak">0</i></div>
-      <div><b>TOTAL 記録</b><i id="total">0</i></div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <span class="ttl">HUMANITY 今日の心境</span>
-    <ul class="moods" id="moods"></ul>
-    <span class="ttl" style="margin-top:6px">MESSAGE 書き残す</span>
-    <textarea id="body" placeholder="今日あったことを書き残そう…"></textarea>
-    <div class="hint" id="hint"></div>
-    <button class="save" id="save">REST</button>
-  </section>
-
-  <section class="panel">
-    <span class="ttl">BONFIRE CALENDAR</span>
-    <div class="cal" id="cal"></div>
-  </section>
-
-  <h2>ADVENTURE LOG ─ 過去の記録</h2>
-  <div id="list"></div>
+<main class="frame" id="frame">
+  <div class="inner">
+    <i class="curl a"></i><i class="curl b"></i><i class="curl c"></i><i class="curl d"></i>
+    <header class="hd">
+      <div class="book"><svg viewBox="0 0 100 100" width="100%" height="100%" aria-hidden="true"><defs><linearGradient id="gb" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd24a"/><stop offset="1" stop-color="#b8780e"/></linearGradient></defs>
+        <path d="M8 22 L50 30 L50 86 L8 78 Z" fill="url(#gb)" stroke="#5a3a08" stroke-width="2"/><path d="M92 22 L50 30 L50 86 L92 78 Z" fill="#f0b838" stroke="#5a3a08" stroke-width="2"/><path d="M16 36 L44 41 M16 48 L44 53 M16 60 L44 65 M58 41 L84 36 M58 53 L84 48 M58 65 L84 60" stroke="#7a4e0a" stroke-width="2" opacity=".7"/><path d="M62 14 L86 8 L70 34 Z" fill="#fff1a8" stroke="#7a4e0a" stroke-width="1.5"/></svg></div>
+      <div class="tt"><h1 id="ttl"></h1><p id="sub"></p></div>
+      <div class="souls"><b>ソウル</b><span id="souls">0</span></div>
+    </header>
+    <nav class="cats"><button class="arr" id="pl" aria-label="前のカテゴリ">‹</button><div class="tiles" id="tiles"></div><button class="arr" id="nx" aria-label="次のカテゴリ">›</button></nav>
+    <section class="rows" id="rows"></section>
+    <div class="btns" id="btns"></div>
+  </div>
 </main>
-
-<div id="stamp"><div class="bars"></div><div class="box"><div id="bang"></div><div id="stampBig"></div><div id="stampSub"></div></div></div>
+<div class="keys"><span><i>↑↓</i>:選択</span><span><i>←→</i>:変更</span><span><i>PgUp</i>PgDn:カテゴリ変更</span><span><i>↵</i>:決定</span><span><i>esc</i>:戻る</span></div>
+<div id="ov"><div class="band"><div id="ovT"></div><div id="ovS"></div></div></div>
 
 <script src="theme-switch.js" data-theme="darksouls1"></script>
 <script>
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
-const MOODS = [["最高", "PRAISE THE SUN"], ["良い", "BONFIRE LIT"], ["普通", "ASHEN"], ["微妙", "HOLLOWING"], ["最悪", "YOU DIED"]];
-const RANKS = ["UNDEAD", "HOLLOW", "KNIGHT", "SUNLIGHT WARRIOR", "DARKMOON", "FIRST FLAME", "LORD"];
-const MSG_FILED = "BONFIRE LIT", MSG_PROMO = "HUMANITY RESTORED";
+const MOODS = [["最高","太陽万歳！"],["良い","篝火の安らぎ"],["普通","灰色の日"],["微妙","亡者化の兆し"],["最悪","死んでしまった"]];
+const RANKS = ["亡者","呪われた者","騎士","太陽の戦士","闇月の剣","最初の火","薪の王"];
+const CATS = [
+  { icon: "✎", name: "記す",   title: "日記を記す",     sub: "今日の出来事を篝火のもとに記してください" },
+  { icon: "☰", name: "記録",   title: "冒険の記録",     sub: "これまでの記録を読み返してください" },
+  { icon: "▦", name: "暦",     title: "暦",             sub: "日付を選ぶと、その日の記録を開きます" },
+  { icon: "☉", name: "状態",   title: "状態",           sub: "あなたの現在の状態です" }
+];
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
 const $ = id => document.getElementById(id);
-
 const load = () => {
   try {
     let d = JSON.parse(localStorage.getItem(KEY));
@@ -174,104 +127,127 @@ const load = () => {
 };
 const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const addDays = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
 
-const countUp = (el, to) => {
-  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
-  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
-  const t0 = performance.now();
-  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
-};
+let data = load(), selected = ymd(new Date()), mood = null, draft = "";
+let cat = 0, row = 0, recIdx = 0, detail = false, calOff = 0, overlayTimer;
 
-let data = load(), selected = ymd(new Date()), mood = null, stampTimer, typeTimer;
-
-function streakCount() {
-  let n = 0, d = new Date();
-  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
-  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
-  return n;
-}
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
 function totalXp() {
   let xp = 0, run = 0, prev = null;
-  for (const k of Object.keys(data).sort()) {
-    const cur = new Date(k + "T00:00:00");
-    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
-    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
-    prev = cur;
-  }
+  for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; }
   return xp;
 }
 const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+const moodLabel = m => (MOODS.find(x => x[0] === m) || ["", "—"])[1];
 
-function typewrite(text) {
-  clearInterval(typeTimer); let i = 0;
-  const el = $("stampBig"); el.textContent = "";
-  typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(typeTimer); }, 55);
+// torn, ragged page edge
+(function () {
+  let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const pts = [], N = 46;
+  for (let i = 0; i <= N; i++) pts.push(`${(i / N * 100).toFixed(2)}% ${(rnd() * 7).toFixed(1)}px`);
+  for (let i = 1; i <= 26; i++) pts.push(`calc(100% - ${(rnd() * 7).toFixed(1)}px) ${(i / 26 * 100).toFixed(2)}%`);
+  for (let i = N; i >= 0; i--) pts.push(`${(i / N * 100).toFixed(2)}% calc(100% - ${(rnd() * 7).toFixed(1)}px)`);
+  for (let i = 26; i >= 1; i--) pts.push(`${(rnd() * 7).toFixed(1)}px ${(i / 26 * 100).toFixed(2)}%`);
+  $("frame").style.clipPath = `polygon(${pts.join(",")})`;
+})();
+
+function renderHead() {
+  $("ttl").textContent = CATS[cat].title; $("sub").textContent = CATS[cat].sub;
+  $("souls").textContent = (totalXp() * 12).toLocaleString();
+  $("tiles").innerHTML = CATS.map((c, i) => `<button class="tile ${i === cat ? "on" : ""}" data-cat="${i}">${c.icon}<small>${c.name}</small></button>`).join("");
 }
+const R = (cls, lab, nm, val, i, extra = "") => `<div class="r ${cls} ${i === row ? "sel" : ""}" data-row="${i}" ${extra}><span class="lab">${lab}</span><span class="nm">${nm}</span><span class="val">${val}</span></div>`;
 
 function render() {
-  const sd = new Date(selected + "T00:00:00");
-  $("d").textContent = selected.replace(/-/g, ".");
-  $("dow").textContent = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
-
-  const xp = totalXp(), rk = rankOf(xp), st = streakCount();
-  const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
-  $("lv").textContent = RANKS[rk];
-  $("xp").style.width = pct + "%"; $("xpTxt").textContent = pct + "%";
-  $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
-  countUp($("streak"), st);
-  countUp($("total"), Object.keys(data).length);
-  $("souls").textContent = (xp * 12).toLocaleString();
-
-  const e = data[selected];
-  $("body").value = e ? e.text : "";
-  mood = e ? e.mood : null;
-  $("moods").innerHTML = MOODS.map(([m, tag, c]) => `<li><button data-m="${m}" style="--r:${c||""}" class="${m===mood?"on":""}">${m}<span>${tag}</span></button></li>`).join("");
-  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
-
-  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
-  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
-  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
-  h += "<div style='visibility:hidden'></div>".repeat(first);
-  for (let d = 1; d <= last; d++) {
-    const k = ymd(new Date(y, mo, d));
-    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+  renderHead();
+  const rows = $("rows"), btns = $("btns"), xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length;
+  if (cat === 0) {
+    const d = new Date(selected + "T00:00:00");
+    rows.innerHTML = R("", "記す", "日付", `<i>‹</i>${fmt(selected)}（${DOW[d.getDay()]}）<i>›</i>`, 0) + R("", "", "気分", `<i>‹</i>${moodLabel(mood)}<i>›</i>`, 1) + R("", "", "本文", "", 2) +
+      `<div class="r bd"><textarea id="body" placeholder="ここに記してください…"></textarea></div>`;
+    $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; }); $("body").addEventListener("focus", () => { row = 2; syncSel(); });
+    btns.innerHTML = `<button class="bt" data-b="save">決定</button><button class="bt" data-b="clear">初期化</button>`;
+  } else if (cat === 1) {
+    const keys = Object.keys(data).sort().reverse(); if (recIdx >= keys.length) recIdx = Math.max(0, keys.length - 1);
+    if (!keys.length) { rows.innerHTML = `<div class="empty">記録はまだありません。「記す」で最初の一行を残してください。</div>`; btns.innerHTML = ""; }
+    else if (detail) {
+      const k = keys[recIdx];
+      rows.innerHTML = R("", "記録", fmt(k), moodLabel(data[k].mood), 0).replace('class="r  sel"', 'class="r sel"') + `<div class="r bd"><div class="text">${esc(data[k].text)}</div></div>`;
+      btns.innerHTML = `<button class="bt" data-b="edit" data-k="${k}">編集</button><button class="bt" data-b="back">戻る</button>`;
+    } else {
+      rows.innerHTML = keys.map((k, i) => `<div class="r pv ${i === recIdx ? "sel" : ""}" data-rec="${i}"><span class="lab">${i === 0 ? "記録" : ""}</span><span class="nm">${fmt(k)}</span><span class="val">${esc(moodLabel(data[k].mood))} ─ ${esc(data[k].text.replace(/\s+/g, " ").slice(0, 40))}</span></div>`).join("");
+      btns.innerHTML = "";
+    }
+  } else if (cat === 2) {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(d => `<div class="dow">${d}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""} ${k === selected ? "selx" : ""}" data-d="${k}">${d}</div>`; }
+    rows.innerHTML = `<div class="mhd"><button data-cal="-1">‹</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button data-cal="1">›</button></div><div class="cal">${h}</div>`;
+    btns.innerHTML = "";
+  } else {
+    const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+    rows.innerHTML = R("", "状態", "階級", RANKS[rk], 0).replace('sel', '') + R("", "", "連続日数", `${st} 日`, 1).replace('sel', '') + R("", "", "記録数", `${n} 件`, 2).replace('sel', '') + R("", "", "次の階級まで", `${pct} %`, 3).replace('sel', '') + R("", "", "ソウル", (xp * 12).toLocaleString(), 4).replace('sel', '');
+    btns.innerHTML = "";
   }
-  $("cal").innerHTML = h;
-
-  const keys = Object.keys(data).sort().reverse();
-  $("list").innerHTML = keys.length ? keys.map((k, i) =>
-    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
-    : `<div class="entry" style="--i:1"><p>まだ何も書き残されていない。最初の篝火を灯そう。</p></div>`;
 }
+function syncSel() { document.querySelectorAll("#rows [data-row]").forEach(e => e.classList.toggle("sel", +e.dataset.row === row)); }
 
-$("moods").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  mood = b.dataset.m;
-  document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
-};
-$("cal").onclick = e => {
-  const c = e.target.closest("[data-d]"); if (!c) return;
-  selected = c.dataset.d; render();
-};
-$("save").onclick = () => {
+function overlay(dead, up, isNew) {
+  const ov = $("ov"); ov.classList.remove("show", "dead"); void ov.offsetWidth; ov.classList.add("show"); if (dead) ov.classList.add("dead");
+  $("ovT").textContent = dead ? "死んだ" : up ? "HUMANITY RESTORED" : "BONFIRE LIT";
+  $("ovS").textContent = (up ? RANKS[rankOf(totalXp())] + " ─ " : "") + (isNew ? streakCount() + " 日連続" : "更新しました");
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 3400);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+
+function save() {
   const text = $("body").value.trim();
   if (!text) { $("body").focus(); return; }
   const before = rankOf(totalXp()), isNew = !data[selected];
-  data[selected] = { mood, text };
-  store(data);
-  const up = rankOf(totalXp()) > before;
-  
-  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
-  $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
-  setTimeout(() => typewrite(up ? MSG_PROMO : MSG_FILED), 450);
-  $("stampSub").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
-  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2800);
-  render();
-};
-$("stamp").onclick = () => $("stamp").classList.remove("show");
-render();
+  data[selected] = { mood, text }; draft = text; store(data);
+  overlay(mood === "最悪", rankOf(totalXp()) > before, isNew); renderHead();
+}
+function setCat(i) { cat = (i + CATS.length) % CATS.length; row = 0; detail = false; if (cat === 0) loadDay(); render(); }
+function openDay(k) { selected = k; loadDay(); cat = 0; row = 0; detail = false; render(); }
+function shiftMood(d) { const i = MOODS.findIndex(x => x[0] === mood); mood = MOODS[((i < 0 ? (d > 0 ? -1 : 0) : i) + d + MOODS.length) % MOODS.length][0]; render(); }
+
+// ---- events ----
+$("tiles").addEventListener("click", e => { const b = e.target.closest("[data-cat]"); if (b) setCat(+b.dataset.cat); });
+$("pl").onclick = () => setCat(cat - 1); $("nx").onclick = () => setCat(cat + 1);
+$("rows").addEventListener("click", e => {
+  const dd = e.target.closest("[data-d]"); if (dd) return openDay(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; return render(); }
+  const rc = e.target.closest("[data-rec]"); if (rc) { recIdx = +rc.dataset.rec; detail = true; return render(); }
+  const r = e.target.closest("[data-row]"); if (!r || cat !== 0) return; row = +r.dataset.row; syncSel();
+  const half = e.target.closest(".val") && e.offsetX < e.target.closest(".val").clientWidth / 2 ? -1 : 1;
+  if (row === 0 && e.target.closest(".val")) { selected = addDays(selected, half); loadDay(); render(); }
+  else if (row === 1 && e.target.closest(".val")) shiftMood(half);
+  else if (row === 2) $("body").focus();
+});
+$("btns").addEventListener("click", e => {
+  const b = e.target.closest("[data-b]"); if (!b) return;
+  if (b.dataset.b === "save") save(); else if (b.dataset.b === "clear") { draft = ""; mood = null; render(); }
+  else if (b.dataset.b === "edit") openDay(b.dataset.k); else if (b.dataset.b === "back") { detail = false; render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); return; }
+  if (e.key === "PageDown" || e.key === "e") return setCat(cat + 1); if (e.key === "PageUp" || e.key === "q") return setCat(cat - 1);
+  if (cat === 0) {
+    if (e.key === "ArrowDown") { e.preventDefault(); row = Math.min(2, row + 1); syncSel(); } else if (e.key === "ArrowUp") { e.preventDefault(); row = Math.max(0, row - 1); syncSel(); }
+    else if (e.key === "ArrowLeft" || e.key === "ArrowRight") { const d = e.key === "ArrowRight" ? 1 : -1; if (row === 0) { selected = addDays(selected, d); loadDay(); render(); } else if (row === 1) shiftMood(d); }
+    else if (e.key === "Enter" && row === 2) { e.preventDefault(); $("body").focus(); }
+  } else if (cat === 1) {
+    const n = Object.keys(data).length;
+    if (!detail && e.key === "ArrowDown" && n) { e.preventDefault(); recIdx = (recIdx + 1) % n; render(); } else if (!detail && e.key === "ArrowUp" && n) { e.preventDefault(); recIdx = (recIdx - 1 + n) % n; render(); }
+    else if (e.key === "Enter" && n && !detail) { detail = true; render(); } else if (e.key === "Escape") { detail = false; render(); }
+  } else if (cat === 2) { if (e.key === "ArrowLeft") { calOff--; render(); } else if (e.key === "ArrowRight") { calOff++; render(); } }
+});
+
+loadDay(); render();
 </script>
 </body>
 </html>
