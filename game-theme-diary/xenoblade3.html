@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aionios Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Character screen: left menu, orange glow section lines (CLASS / SKILL / ARTS / GEM / ACCESSORY), party icons top-right, stat table, bottom guide */
+  :root { --or:#ff8240; --or2:#ffb070; --glow:rgba(255,120,60,.55); --pu:#2b1163; --tx:#ffe3d0; --dim:#c9a3c8; --fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --fr:'Rajdhani','Zen Kaku Gothic New',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:var(--tx); overflow:hidden; background:radial-gradient(ellipse at 30% 60%, #6a22b8 0%, transparent 55%), radial-gradient(ellipse at 80% 20%, #c0309a 0%, transparent 45%), linear-gradient(160deg,#1c0b4a,#3a1380 55%,#220a52); }
+  .stars { position:fixed; inset:0; pointer-events:none; opacity:.7; background-image:radial-gradient(1.5px 1.5px at 20% 30%,#fff 50%,transparent),radial-gradient(1px 1px at 70% 60%,#fff 50%,transparent),radial-gradient(2px 2px at 45% 80%,#ffd 50%,transparent),radial-gradient(1px 1px at 88% 14%,#fff 50%,transparent),radial-gradient(1.5px 1.5px at 8% 76%,#fff 50%,transparent),radial-gradient(1px 1px at 58% 12%,#fff 50%,transparent); animation:twk 4s ease-in-out infinite alternate; }
+  .arcs { position:fixed; inset:0; pointer-events:none; } .arcs svg { width:100%; height:100%; } .arcs ellipse { fill:none; stroke:var(--or); stroke-width:1.4; opacity:.35; vector-effect:non-scaling-stroke; animation:spin 40s linear infinite; transform-origin:50% 50%; } .arcs ellipse:nth-child(2) { animation-duration:70s; animation-direction:reverse; opacity:.22; }
+  .ghost { position:fixed; left:5%; top:14%; font:700 min(30vw,300px)/1 var(--fr); color:transparent; -webkit-text-stroke:2px rgba(255,140,80,.22); pointer-events:none; letter-spacing:-.04em; }
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto 1fr auto; }
+
+  .top { display:flex; justify-content:space-between; align-items:flex-start; padding:50px 26px 0 24px; animation:fade .5s both; }
+  .top h1 { margin-top:-38px; font-weight:900; font-size:26px; letter-spacing:.06em; text-shadow:0 0 12px var(--glow); padding-top:4px; }
+  .party { display:flex; gap:6px; align-items:center; } .party kbd { font:700 13px var(--fr); width:20px; height:20px; display:grid; place-items:center; border:1px solid var(--or2); color:var(--or2); border-radius:4px; margin:0 6px; cursor:pointer; }
+  .pi { all:unset; cursor:pointer; position:relative; width:46px; height:52px; display:grid; place-items:center; background:linear-gradient(160deg,#4a2a8a,#1d0f4a); border:1.5px solid rgba(255,170,120,.4); font:700 13px/1.05 var(--fr); text-align:center; opacity:.75; transition:.15s; }
+  .pi b { display:block; font-size:17px; } .pi.on { opacity:1; width:52px; height:58px; border:2.5px solid #fff; box-shadow:0 0 14px var(--or), inset 0 0 12px rgba(255,130,60,.5); } .pi.done::after { content:""; position:absolute; right:3px; bottom:3px; width:9px; height:9px; background:var(--or); transform:rotate(45deg); box-shadow:0 0 6px var(--or); } .pi:hover { opacity:1; }
+
+  .main { display:grid; grid-template-columns:200px 1fr; min-height:0; }
+  .menu { display:flex; flex-direction:column; padding:18px 0 0 24px; gap:2px; }
+  .mi { all:unset; cursor:pointer; padding:7px 14px; font-weight:900; font-size:20px; letter-spacing:.08em; color:#fff; position:relative; animation:fade .4s calc(var(--i)*60ms + .1s) both; transition:.12s; }
+  .mi:hover { color:var(--or2); } .mi.on { color:#fff; text-shadow:0 0 12px var(--or); background:linear-gradient(90deg,rgba(255,130,60,.35),transparent); border-left:4px solid var(--or); padding-left:16px; margin-left:-4px; }
+  .stat { margin-top:auto; margin-bottom:12px; background:rgba(14,6,40,.72); border:1px solid rgba(255,170,120,.3); padding:6px 10px; font-weight:700; font-size:12px; width:210px; }
+  .stat div { display:flex; justify-content:space-between; align-items:center; padding:2px 0; color:#f0d6e8; border-bottom:1px solid rgba(255,255,255,.05); } .stat div::before { content:"■"; color:var(--or); font-size:9px; margin-right:6px; } .stat span { flex:1; } .stat b { font:700 15px var(--fr); }
+  .left { display:flex; flex-direction:column; min-height:0; }
+
+  .body { position:relative; min-height:0; overflow:auto; padding:6px 30px 6px 20px; display:grid; grid-template-columns:minmax(0,1.3fr) minmax(0,1fr); gap:0 36px; align-content:start; animation:fade .4s .2s both; }
+  .body.one { grid-template-columns:1fr; }
+  .ph { grid-column:1/-1; display:flex; align-items:baseline; gap:30px; flex-wrap:wrap; }
+  .ph .nm { font-weight:900; font-size:30px; letter-spacing:.06em; text-shadow:0 0 12px rgba(255,255,255,.3); } .ph .lvl { font:700 28px var(--fr); } .ph .lvl small { font-size:15px; margin-right:4px; } .ph .hp { margin-left:auto; font:700 17px var(--fr); letter-spacing:.06em; } .ph .hp i { font-style:normal; margin-left:22px; }
+  .xpb { grid-column:1/-1; display:flex; align-items:center; gap:12px; font:600 13px var(--fr); color:var(--dim); margin:2px 0 4px; } .xpb .tr { flex:1; height:4px; background:rgba(255,255,255,.18); } .xpb .tr div { height:100%; background:linear-gradient(90deg,#3dd6a8,#ffb070); box-shadow:0 0 8px #3dd6a8; transition:width .8s; }
+  .sec { display:flex; align-items:center; gap:10px; margin:12px 0 8px; font-weight:900; font-size:14px; letter-spacing:.12em; color:var(--or2); text-shadow:0 0 8px var(--glow); } .sec::after { content:""; flex:1; height:1.5px; background:linear-gradient(90deg,var(--or),transparent); box-shadow:0 0 6px var(--or); } .sec em { font:700 11px var(--fr); background:var(--or); color:#fff; padding:0 6px; letter-spacing:.1em; font-style:normal; animation:blink 1.4s steps(2) infinite; }
+  .col { min-width:0; } .col.wide { grid-column:1/-1; }
+
+  .cls { display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  .emb { width:96px; height:96px; flex:none; position:relative; display:grid; place-items:center; background:radial-gradient(circle, #6b1a2a 0, #2a0a2a 70%); border:2px solid var(--or); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); box-shadow:0 0 18px var(--or); } .emb b { font:700 38px var(--fr); text-shadow:0 0 12px var(--or); } .emb small { position:absolute; bottom:6px; font:700 10px var(--fr); letter-spacing:.2em; color:var(--or2); }
+  .cn { font-weight:900; } .cn small { display:block; font-size:12px; color:var(--dim); letter-spacing:.2em; } .cn b { font-size:20px; letter-spacing:.1em; }
+  .orbs { display:flex; gap:12px; margin-top:8px; } .orb { all:unset; cursor:pointer; width:42px; height:42px; border-radius:50%; display:grid; place-items:center; font:700 17px var(--fr); background:radial-gradient(circle at 35% 30%,#6a3ab8,#240a58); border:2px solid #fff; color:#fff; transition:.15s; position:relative; }
+  .orb span { position:absolute; top:46px; left:50%; transform:translateX(-50%); font:600 9px var(--fb); letter-spacing:.1em; white-space:nowrap; color:var(--dim); }
+  .orb:hover { box-shadow:0 0 12px var(--or); } .orb.on { background:radial-gradient(circle at 35% 30%,#ffb070,#d83a1a); border-color:#fff; box-shadow:0 0 18px var(--or); transform:scale(1.12); }
+  .sk { display:flex; gap:8px; flex-wrap:wrap; } .skb { all:unset; cursor:pointer; width:42px; height:42px; display:grid; place-items:center; background:#1c0e48; border:1.5px solid var(--or2); font:700 13px/1 var(--fr); text-align:center; color:var(--or2); position:relative; } .skb.on { background:linear-gradient(160deg,#ff9a52,#c83a1a); color:#fff; box-shadow:0 0 10px var(--or); } .skb.cur { outline:2px solid #fff; outline-offset:2px; } .skb small { display:block; font-size:9px; opacity:.8; }
+  .arts { display:grid; grid-template-columns:42px 1fr; gap:10px; align-items:start; } .dm { width:38px; height:38px; margin:8px 2px; transform:rotate(45deg); background:linear-gradient(135deg,#ff9a52,#c83a1a); border:2px solid #fff; box-shadow:0 0 12px var(--or); }
+  textarea { width:100%; min-height:150px; resize:vertical; background:rgba(14,6,40,.65); border:1.5px solid rgba(255,170,120,.5); color:#fff; font:500 16px/1.8 var(--fb); padding:8px 12px; outline:0; background-image:repeating-linear-gradient(transparent 0 28px, rgba(255,150,100,.14) 28px 29px); } textarea:focus { border-color:#fff; box-shadow:0 0 14px var(--glow); }
+  .go { display:flex; align-items:center; gap:14px; margin-top:8px; flex-wrap:wrap; } .save { all:unset; cursor:pointer; padding:6px 40px; font-weight:900; font-size:17px; letter-spacing:.2em; background:linear-gradient(180deg,#ff9a52,#d8501a); box-shadow:0 0 14px var(--glow); border:1.5px solid #fff; clip-path:polygon(12px 0,100% 0,calc(100% - 12px) 100%,0 100%); transition:.12s; } .save:hover { filter:brightness(1.15); transform:scale(1.04); }
+  .hint { font-size:12px; color:#ffe58a; }
+
+  .gem, .acc { display:flex; flex-direction:column; gap:7px; }
+  .gm { display:flex; align-items:center; gap:12px; padding:6px 12px; border:1px solid rgba(255,170,120,.3); background:rgba(14,6,40,.55); font-weight:700; font-size:14px; } .gm .i { width:34px; height:34px; display:grid; place-items:center; flex:none; font:700 16px var(--fr); } .gm.un .i { background:linear-gradient(135deg,#ffb84a,#d85a0a); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); color:#fff; box-shadow:0 0 10px var(--or); } .gm.lk { color:var(--dim); } .gm.lk .i { border:1.5px solid var(--or); color:var(--or); border-radius:50%; } .gm.lk b { font:600 14px var(--fr); }
+  .ac { all:unset; cursor:pointer; display:flex; align-items:center; gap:10px; padding:9px 14px; border:1px solid rgba(255,170,120,.4); background:rgba(14,6,40,.6); font-weight:700; font-size:14px; transition:.12s; position:relative; animation:fade .3s calc(var(--i)*60ms) both; } .ac small { margin-left:auto; font:600 12px var(--fr); color:var(--dim); } .ac:hover { background:rgba(255,130,60,.2); }
+  .ac.on { background:linear-gradient(90deg,#e0561e,#8a2a6a); border-color:#fff; box-shadow:0 0 12px var(--glow); font-weight:900; } .ac .tx { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:60%; } .ac.empty { color:var(--dim); }
+
+  .log { display:flex; flex-direction:column; gap:6px; } .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; max-width:560px; } .cal div { aspect-ratio:1.3; display:grid; place-items:center; font:700 20px var(--fr); background:rgba(14,6,40,.6); border:1px solid rgba(255,170,120,.3); } .cal .dow { background:none; border:0; font-size:12px; color:var(--or2); letter-spacing:.2em; aspect-ratio:auto; } .cal .done { background:linear-gradient(160deg,#ff9a52,#c83a1a); } .cal .today { outline:2px solid #fff; } .cal [data-go] { cursor:pointer; }
+
+  .foot { display:flex; justify-content:flex-end; gap:20px; align-items:center; padding:6px 24px 10px; background:linear-gradient(180deg,transparent,rgba(10,3,34,.85)); font-weight:700; font-size:13px; flex-wrap:wrap; }
+  .foot span { display:flex; align-items:center; gap:6px; } .foot kbd { min-width:20px; height:20px; padding:0 4px; display:grid; place-items:center; border:1.5px solid var(--or2); color:var(--or2); border-radius:10px; font:700 11px var(--fr); }
+  button:focus-visible, textarea:focus-visible { outline:2px solid #fff; outline-offset:2px; }
+
+  #ov { position:fixed; inset:0; z-index:60; pointer-events:none; visibility:hidden; display:grid; place-content:center; text-align:center; background:radial-gradient(ellipse at center, rgba(120,40,190,.92), rgba(20,6,60,.97)); }
+  #ov.show { visibility:visible; pointer-events:auto; cursor:pointer; animation:fade .3s both, ovOut .4s 2.5s forwards; }
+  #ov .ring { width:150px; height:150px; margin:0 auto 14px; border:3px solid var(--or); border-radius:50%; box-shadow:0 0 30px var(--or), inset 0 0 30px var(--or); display:grid; place-items:center; font:700 56px var(--fr); animation:ring 1s cubic-bezier(.2,.9,.3,1) both; }
+  #ov b { display:block; font-weight:900; font-size:clamp(34px,8vw,70px); letter-spacing:.14em; text-shadow:0 0 24px var(--or); animation:rise .5s .3s both; } #ov small { font:700 16px var(--fr); letter-spacing:.4em; color:var(--or2); animation:rise .5s .45s both; }
+  @keyframes fade { from { opacity:0; transform:translateY(8px); } } @keyframes twk { to { opacity:.35; } } @keyframes blink { 50% { opacity:.5; } } @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes ring { from { transform:scale(.2) rotate(-180deg); opacity:0; } } @keyframes rise { from { opacity:0; transform:translateY(16px); } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:860px) {
+    body { overflow-y:auto; overflow-x:hidden; } .app { height:auto; min-height:100%; } .top { flex-direction:column; gap:8px; padding:50px 12px 0; } .top h1 { margin-top:0; } .party { flex-wrap:wrap; } .main { grid-template-columns:1fr; }
+    .menu { flex-direction:row; flex-wrap:wrap; padding:10px 12px 0; } .mi { font-size:16px; padding:6px 10px; } .mi.on { border-left:0; border-bottom:3px solid var(--or); margin:0; padding-left:10px; } .stat { display:none; }
+    .body { grid-template-columns:1fr; padding:6px 14px; } .ph { gap:12px; } .ph .hp { margin-left:0; } .foot { padding:8px 12px 80px; justify-content:center; }
+  }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="arcs"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><ellipse cx="50" cy="55" rx="62" ry="30"/><ellipse cx="55" cy="50" rx="48" ry="42"/></svg></div>
+<div class="ghost" id="ghost">10</div>
+<div class="app">
+  <div class="top"><h1>キャラクター</h1><div class="party"><kbd id="pl">L</kbd><div class="party" id="party"></div><kbd id="pr">R</kbd></div></div>
+  <div class="main">
+    <div class="left">
+      <div class="menu" id="menu"></div>
+      <div class="stat" id="stat"></div>
+    </div>
+    <div class="body" id="body"></div>
+  </div>
+  <div class="foot"><span><kbd>↑↓</kbd>項目</span><span><kbd>L</kbd><kbd>R</kbd>日付</span><span><kbd>1-5</kbd>調子</span><span><kbd>Y</kbd>Ctrl+⏎ 決定</span><span><kbd>B</kbd>Esc 戻る</span></div>
+</div>
+<div id="ov"><div><div class="ring" id="ovR">◆</div><b id="ovT"></b><small id="ovS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="xb3"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "EXCELLENT", "S"], ["良い", "GOOD", "A"], ["普通", "NORMAL", "B"], ["微妙", "TIRED", "C"], ["最悪", "SLUMP", "D"]];
+const CLS = { "最高": "リーダー 暁光士", "良い": "ディフェンダー 疾風士", "普通": "ヒーラー 旅人", "微妙": "アタッカー 微睡士", "最悪": "ディフェンダー 灰燼士" };
+const MENU = [["クラス", "日記を書く"], ["アーツ", "記録の履歴"], ["スキル", "カレンダー"]];
+const MS = [[3, "3日連続"], [7, "7日連続"], [14, "14日連続"], [30, "30日連続"]];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const ago = k => Math.round((new Date(ymd(new Date()) + "T00:00:00") - new Date(k + "T00:00:00")) / 864e5);
+
+let data = load(), view = 0, selected = ymd(new Date()), mood = null, draft = null, ovTimer;
+function streakAt(k) { let n = 0; let c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = ymd(new Date()); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+
+function render() {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, st = streakCount(), all = Object.keys(data), now = new Date();
+  const sd = new Date(selected + "T00:00:00"), e = data[selected];
+  const chars = Object.values(data).reduce((s, x) => s + x.text.length, 0), month = ymd(now).slice(0, 7);
+  const good = all.filter(k => ["最高", "良い"].includes(data[k].mood)).length;
+
+  $("ghost").textContent = sd.getDate();
+  const off = ago(selected), s0 = off > 6 ? off - 6 : 0;
+  $("party").innerHTML = Array.from({ length: 7 }, (_, i) => { const k = shift(ymd(now), -(s0 + 6 - i)), d = new Date(k + "T00:00:00");
+    return `<button class="pi ${k === selected ? "on" : ""} ${data[k] ? "done" : ""}" data-k="${k}" title="${k}"><span><b>${d.getDate()}</b>${DOW[d.getDay()]}</span></button>`; }).join("");
+  $("menu").innerHTML = MENU.map(([n, s], i) => `<button class="mi ${i === view ? "on" : ""}" data-v="${i}" style="--i:${i}" title="${s}">${n}</button>`).join("");
+  $("stat").innerHTML = [["記録数", all.length], ["連続日数", st], ["総文字数", chars], ["今月", all.filter(k => k.startsWith(month)).length], ["好調な日", good], ["経験値", xp], ["ランク", lv]].map(([n, v]) => `<div><span>${n}</span><b>${v}</b></div>`).join("");
+
+  const into = xp % XP_PER_RANK;
+  const head = `<div class="ph"><span class="nm">${sd.getMonth()+1}/${sd.getDate()}（${DOW[sd.getDay()]}）</span><span class="lvl"><small>Level</small>${lv}</span><span class="hp">HP ${st}<i>SP ${e ? e.text.length : 0}</i></span></div>
+    <div class="xpb"><span>Next</span><div class="tr"><div style="width:${into / XP_PER_RANK * 100}%"></div></div><span>${into} / ${XP_PER_RANK}</span></div>`;
+  let h = head;
+  if (view === 0) {
+    if (mood === null && e && draft === null) mood = e.mood;
+    const sun = new Date(sd); sun.setDate(sd.getDate() - sd.getDay());
+    const week = Array.from({ length: 7 }, (_, i) => { const k = ymd(new Date(sun.getTime() + i * 864e5)); return `<button class="skb ${data[k] ? "on" : ""} ${k === selected ? "cur" : ""}" data-k="${k}"><span>${DOW[i]}<small>${new Date(k + "T00:00:00").getDate()}</small></span></button>`; }).join("");
+    const rec = [0, 1, 2].map(i => { const k = shift(selected, -i); const en = data[k];
+      return `<button class="ac ${i === 0 ? "on" : ""} ${en ? "" : "empty"}" data-k="${k}" style="--i:${i}"><span>${new Date(k + "T00:00:00").getMonth()+1}/${new Date(k + "T00:00:00").getDate()}</span><span class="tx">${en ? esc(en.text.replace(/\s+/g, " ")) : "未記録"}</span><small>${en ? esc(en.mood || "-") : "Lv??"}</small></button>`; }).join("");
+    const gems = MS.map(([n, t]) => st >= n ? `<div class="gm un"><span class="i">${n}</span>${t} 達成</div>` : `<div class="gm lk"><span class="i">🔒</span><b>Lv ${n}</b>　${t}</div>`).join("");
+    h += `<div class="col wide"><div class="sec">CLASS${e ? "" : "<em>NEW</em>"}</div>
+      <div class="cls"><div class="emb"><b>${lv}</b><small>RANK</small></div><div class="cn"><small>${mood ? "CLASS" : "NO CLASS"}</small><b>${mood ? CLS[mood] : "調子を選んでください"}</b>
+      <div class="orbs" id="orbs">${MOODS.map(([m, t, l]) => `<button class="orb ${m === mood ? "on" : ""}" data-m="${m}">${l}<span>${m}</span></button>`).join("")}</div></div></div></div>
+      <div class="col"><div class="sec">SKILL ─ 今週</div><div class="sk">${week}</div>
+        <div class="sec">ARTS ─ 日記</div><div class="arts"><i class="dm"></i><div><textarea id="ta" placeholder="今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+        <div class="go"><button class="save" id="save">決定</button><span class="hint">${selected === ymd(now) ? "" : "過去の日付を編集中"}</span></div></div></div></div>
+      <div class="col"><div class="sec">GEM ─ 連続日数</div><div class="gem">${gems}</div><div class="sec">ACCESSORY ─ 直近の記録</div><div class="acc">${rec}</div></div>`;
+  } else if (view === 1) {
+    const keys = all.sort().reverse();
+    h += `<div class="col wide"><div class="sec">ARTS ─ ${keys.length} ENTRIES</div><div class="log">${keys.length ? keys.map((k, i) => `<button class="ac ${k === selected ? "on" : ""}" data-k="${k}" data-go style="--i:${Math.min(i, 12)}"><span>${k.replace(/-/g, ".")}</span><span class="tx" style="max-width:70%">${esc(data[k].text.replace(/\s+/g, " "))}</span><small>${esc(data[k].mood || "-")} ／ ${data[k].text.length}字</small></button>`).join("") : `<div class="ac empty">まだ記録がありません。</div>`}</div></div>`;
+  } else {
+    const y = now.getFullYear(), mo = now.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden'></div>".repeat(first);
+    for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); c += `<div data-k="${k}" data-go class="${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}">${i}</div>`; }
+    h += `<div class="col wide"><div class="sec">SKILL ─ ${y}.${String(mo + 1).padStart(2, "0")}</div><div class="cal">${c}</div></div>`;
+  }
+  $("body").className = "body" + (view ? " one" : ""); $("body").innerHTML = h;
+}
+function pick(k, v) { selected = k; mood = null; draft = null; if (v !== undefined) view = v; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data); draft = null;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovR").textContent = Math.floor(totalXp() / XP_PER_RANK) + 1; $("ovT").textContent = up ? "LEVEL UP" : "記録完了"; $("ovS").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 3000);
+  render();
+}
+document.addEventListener("click", e => {
+  const mv = e.target.closest(".mi"); if (mv) { view = +mv.dataset.v; return render(); }
+  const g = e.target.closest("[data-go]"); if (g) return pick(g.dataset.k, 0);
+  const k = e.target.closest("[data-k]"); if (k) return pick(k.dataset.k);
+  const ob = e.target.closest(".orb"); if (ob) { mood = ob.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#pl")) return pick(shift(selected, -1));
+  if (e.target.closest("#pr")) return pick(shift(selected, 1));
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $("ov").classList.remove("show"); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key === "ArrowDown") { e.preventDefault(); view = (view + 1) % 3; render(); } else if (e.key === "ArrowUp") { e.preventDefault(); view = (view + 2) % 3; render(); }
+  else if (e.key === "q" || e.key === "Q" || e.key === "ArrowLeft") pick(shift(selected, -1));
+  else if (e.key === "e" || e.key === "E" || e.key === "ArrowRight") pick(shift(selected, 1));
+  else if (view === 0 && /^[1-5]$/.test(e.key)) { mood = MOODS[+e.key - 1][0]; draft = $("ta").value; render(); }
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earth Defense Force Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  /* Dense squad-room screen: steel-blue schematic backdrop, corner ring ornaments, blue title band, striped menu bars, info cells, class panels, black log pane */
+  :root { --bg:#0b1823; --hl:#a9d6ea; --txt:#e9f5fb; --dim:#8fb2c4; --panel:rgba(48,86,110,.5); --bar:rgba(66,118,148,.62); --green:#34b869; --org:#ff8a2a; --yel:#ffd23f; --font:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --mono:'Share Tech Mono','Zen Kaku Gothic New',monospace; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { min-height:100%; }
+  body { font-family:var(--font); color:var(--txt); overflow-x:hidden; background:
+      linear-gradient(rgba(169,214,234,.07) 1px, transparent 1px) 0 0/34px 34px, linear-gradient(90deg, rgba(169,214,234,.07) 1px, transparent 1px) 0 0/34px 34px,
+      linear-gradient(90deg, transparent 0 14%, rgba(169,214,234,.09) 14% 14.3%, transparent 14.3% 50%, rgba(169,214,234,.11) 50% 50.3%, transparent 50.3% 84%, rgba(169,214,234,.09) 84% 84.3%, transparent 84.3%),
+      radial-gradient(ellipse at 40% 20%, #25465a, #0b1823 70%) fixed; }
+  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 60%, rgba(0,8,14,.55) 100%); }
+  .scan { position:fixed; top:0; bottom:0; width:120px; z-index:0; pointer-events:none; background:linear-gradient(90deg, transparent, rgba(169,214,234,.1), transparent); animation:scan 12s linear infinite; } @keyframes scan { from { left:-140px; } to { left:100%; } }
+  .orn { position:fixed; z-index:0; pointer-events:none; width:min(24vw,230px); height:min(24vw,230px); fill:none; stroke:var(--hl); opacity:.55; } .orn.a { left:-4vw; top:-4vw; } .orn.b { right:-4vw; top:-4vw; } .orn.c { right:-5vw; bottom:-5vw; }
+  .orn .r1 { animation:spin 60s linear infinite; transform-origin:100px 100px; } .orn .r2 { animation:spin 40s linear infinite reverse; transform-origin:100px 100px; } @keyframes spin { to { transform:rotate(360deg); } }
+
+  .hud { position:relative; z-index:1; width:min(1480px,100%); margin:0 auto; padding:clamp(10px,2vw,22px) clamp(12px,2.6vw,38px) 70px; animation:fadeIn .6s both; }
+  .tbar { position:relative; display:flex; align-items:center; height:clamp(40px,6vw,56px); margin:0 clamp(40px,8vw,130px) 12px; padding:0 clamp(18px,3vw,50px); background:linear-gradient(180deg,#5f93b4,#2f6385 60%,#244f6c); border-top:2px solid #cfeaf7; border-bottom:2px solid #153447; clip-path:polygon(0 50%,22px 0,calc(100% - 22px) 0,100% 50%,calc(100% - 22px) 100%,22px 100%); box-shadow:0 0 18px rgba(80,160,210,.4); }
+  .tbar h1 { font-weight:900; font-size:clamp(20px,3.4vw,32px); letter-spacing:.2em; text-shadow:0 2px 0 rgba(0,0,0,.4); } .tbar small { margin-left:18px; font-family:var(--mono); font-size:13px; letter-spacing:.2em; color:#cfe8f4; }
+  .info { display:grid; grid-template-columns:1.4fr .8fr 1.5fr 1.3fr; gap:2px; margin:0 0 10px clamp(0px,4vw,60px); font-size:clamp(11px,1.5vw,15px); }
+  .cell { display:flex; flex-direction:column; justify-content:center; min-height:46px; padding:4px 12px; background:linear-gradient(180deg,var(--bar),rgba(40,78,102,.5)); border:1px solid rgba(169,214,234,.5); } .cell small { font-family:var(--mono); font-size:11px; color:#cfe8f4; letter-spacing:.1em; background:rgba(0,0,0,.25); align-self:flex-start; padding:0 6px; margin-bottom:1px; } .cell b { font-weight:700; letter-spacing:.06em; } .cell b.hard { font-family:var(--mono); letter-spacing:.3em; font-size:1.2em; }
+
+  .grid { display:grid; grid-template-columns:minmax(230px,28%) minmax(300px,34%) minmax(260px,1fr); gap:clamp(10px,1.6vw,22px); align-items:start; }
+  /* left menu */
+  .menu { display:flex; flex-direction:column; gap:7px; padding:12px 12px 12px 22px; background:var(--panel); border:2px solid rgba(169,214,234,.55); position:relative; }
+  .menu::before { content:""; position:absolute; left:0; top:0; bottom:0; width:16px; background:repeating-linear-gradient(135deg,#d6e6ee 0 5px,#2a4a5c 5px 10px); }
+  .mi { all:unset; box-sizing:border-box; cursor:pointer; display:block; padding:7px 14px 7px 18px; font-weight:700; font-size:clamp(14px,1.9vw,19px); letter-spacing:.08em; color:var(--txt); background:linear-gradient(90deg,rgba(88,144,176,.85),rgba(60,106,136,.55)); border-bottom:2px solid rgba(255,255,255,.35); position:relative; transition:.1s; animation:slide .4s calc(var(--i) * 50ms + .2s) both; }
+  .mi::before { content:""; position:absolute; left:-6px; top:8px; bottom:8px; width:4px; background:rgba(255,255,255,.4); }
+  .mi:hover { background:linear-gradient(90deg,rgba(110,170,204,.95),rgba(76,126,156,.7)); }
+  .mi.on { background:linear-gradient(90deg,#2fa85f 0%,#5bd98a 55%,rgba(60,106,136,.4) 100%); text-shadow:0 1px 0 rgba(0,40,10,.5); } .mi.on::before { background:var(--org); width:6px; } .mi.on::after { content:"▶"; position:absolute; left:-16px; top:50%; transform:translateY(-50%); color:var(--yel); font-size:11px; }
+  .mi:focus-visible, .go:focus-visible, .sq button:focus-visible, textarea:focus-visible, .li:focus-visible, .btn:focus-visible { outline:2px solid var(--yel); outline-offset:2px; }
+
+  /* center mission panel */
+  .mid { position:relative; padding:12px 14px 14px; background:var(--panel); border:2px solid rgba(169,214,234,.55); animation:fadeIn .5s .2s both; }
+  .mid::after { content:""; position:absolute; inset:5px; border:1px solid rgba(169,214,234,.3); pointer-events:none; }
+  .mode { text-align:right; font-size:clamp(11px,1.4vw,14px); letter-spacing:.14em; color:#d6eaf4; background:rgba(0,0,0,.2); padding:2px 10px; } .mtt { font-weight:900; font-size:clamp(18px,2.6vw,26px); letter-spacing:.08em; padding:4px 8px; background:rgba(10,30,44,.55); }
+  .ml { font-size:clamp(13px,1.7vw,17px); letter-spacing:.06em; padding:3px 8px; background:rgba(10,30,44,.55); border-top:1px solid rgba(169,214,234,.3); } .ml b { color:var(--yel); font-weight:700; }
+  .desc { margin-top:8px; background:#0c1218; border:3px solid #6a7f8b; min-height:200px; position:relative; }
+  textarea { display:block; width:100%; height:clamp(160px,26vh,250px); resize:none; padding:10px 12px; font:500 clamp(14px,1.8vw,17px)/1.75 var(--font); color:#f4fbff; background:transparent; border:0; outline:none; text-shadow:0 1px 2px #000; } textarea::placeholder { color:#7f9db0; }
+  .sq { display:flex; align-items:center; gap:10px; padding:6px 10px; font-size:14px; background:rgba(0,0,0,.45); border-top:2px solid #6a7f8b; } .sq span { margin-right:auto; letter-spacing:.1em; } .sq button { all:unset; cursor:pointer; width:26px; height:26px; border:2px solid #e9f5fb; background:transparent; text-align:center; font-size:13px; line-height:22px; color:var(--yel); transition:.1s; } .sq button:hover { background:rgba(255,255,255,.22); } .sq button.on { background:#e9f5fb; color:#0c1218; } .sqn { display:flex; gap:10px; padding:2px 10px 6px; justify-content:flex-end; font-size:10px; color:var(--dim); background:rgba(0,0,0,.45); } .sqn i { width:26px; text-align:center; font-style:normal; margin-left:10px; }
+  .go { all:unset; cursor:pointer; display:block; margin:12px 0 0 auto; width:max-content; padding:8px 34px; font-weight:900; font-size:clamp(16px,2.2vw,22px); letter-spacing:.2em; background:linear-gradient(90deg,#2fa85f,#5bd98a); border:2px solid #cfeedc; text-shadow:0 1px 0 rgba(0,40,10,.5); box-shadow:0 0 14px rgba(60,200,120,.4); clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%); } .go:hover { filter:brightness(1.12); } .go:active { transform:scale(.97); } .hintx { font-size:12px; color:var(--yel); min-height:1.3em; margin-top:4px; }
+  .tbl { display:grid; grid-template-columns:1fr auto auto; gap:2px 12px; font-size:clamp(13px,1.7vw,16px); } .tbl div { padding:5px 8px; background:rgba(10,30,44,.55); } .tbl .h { color:#cfe8f4; font-size:12px; letter-spacing:.14em; background:rgba(0,0,0,.3); } .tbl .sel { background:linear-gradient(90deg,#2fa85f,rgba(60,106,136,.5)); cursor:pointer; } .tbl .q { cursor:pointer; } .tbl .q:hover { background:rgba(110,170,204,.5); }
+  .list { display:flex; flex-direction:column; gap:3px; max-height:34vh; overflow:auto; } .li { all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:7em 1fr auto; gap:10px; padding:5px 8px; font-size:14px; background:rgba(10,30,44,.55); } .li:hover { background:rgba(110,170,204,.45); } .li.on { background:linear-gradient(90deg,#2fa85f,rgba(60,106,136,.5)); } .li span:nth-child(2) { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#cfe8f4; } .li small { font-family:var(--mono); color:var(--yel); }
+  .txt { white-space:pre-wrap; line-height:1.8; font-size:15px; padding:8px 10px; background:#0c1218; border:2px solid #6a7f8b; margin-top:8px; max-height:24vh; overflow:auto; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; } .cal div { aspect-ratio:1.4; display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:15px; background:rgba(10,30,44,.55); border:1px solid rgba(169,214,234,.35); } .cal .dow { aspect-ratio:auto; background:none; border:0; font-size:11px; color:var(--dim); } .cal .d { cursor:pointer; } .cal .d:hover { background:rgba(110,170,204,.5); } .cal .done { background:linear-gradient(135deg,#2fa85f,#1d7a42); } .cal .today { outline:2px solid var(--yel); outline-offset:1px; } .cal .selx { box-shadow:inset 0 0 0 2px #fff; }
+  .mh { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-family:var(--mono); font-size:18px; letter-spacing:.16em; } .btn { all:unset; cursor:pointer; padding:3px 14px; border:2px solid var(--hl); background:rgba(10,30,44,.55); } .btn:hover { background:var(--hl); color:#0b1823; }
+  .help { font-size:14px; line-height:1.9; } .help b { color:var(--yel); }
+
+  /* right: class panels (dense) */
+  .side { display:flex; flex-direction:column; gap:8px; animation:fadeIn .5s .3s both; }
+  .cp { display:grid; grid-template-columns:1fr 92px; grid-template-rows:auto 1fr; background:var(--panel); border:1px solid rgba(169,214,234,.55); font-size:clamp(11px,1.35vw,13.5px); }
+  .cp .nm { grid-column:1 / 3; display:flex; gap:8px; align-items:center; background:linear-gradient(90deg,rgba(60,106,136,.9),rgba(40,78,102,.7)); padding:3px 10px; border-bottom:1px solid rgba(169,214,234,.5); } .cp .nm b { font-weight:900; letter-spacing:.06em; } .cp .nm span { font-family:var(--mono); color:#cfe8f4; font-size:.95em; margin-left:auto; }
+  .cp .ls { padding:4px 8px; line-height:1.55; } .cp .ls div { display:flex; justify-content:space-between; gap:8px; border-bottom:1px dotted rgba(169,214,234,.25); } .cp .ls em { font-style:normal; font-family:var(--mono); color:#cfe8f4; }
+  .cp .nb { padding:4px 6px; border-left:1px solid rgba(169,214,234,.4); display:flex; flex-direction:column; gap:3px; } .cp .nb small { background:rgba(0,0,0,.3); padding:0 6px; font-size:11px; letter-spacing:.06em; } .cp .nb b { text-align:center; font-family:var(--mono); font-size:1.5em; font-weight:400; background:rgba(0,0,0,.28); }
+
+  /* log */
+  .logw { position:relative; margin-top:clamp(12px,2vw,24px); width:min(980px,100%); margin-left:clamp(0px,3vw,40px); display:grid; grid-template-columns:34px 1fr; background:#0a0f14; border:4px solid #dfeef6; border-right-width:6px; box-shadow:0 0 0 2px #3a5a6e; }
+  .logw .sl { position:relative; background:repeating-linear-gradient(135deg,#d6e6ee 0 5px,#2a4a5c 5px 10px); } .logw .sl::after { content:""; position:absolute; left:11px; top:22px; bottom:22px; width:10px; background:linear-gradient(180deg,var(--org),#a8480c); } .logw .sl i { position:absolute; left:0; right:0; font-family:var(--mono); font-size:11px; text-align:center; font-style:normal; background:#0a0f14; } .logw .sl i:first-child { top:2px; } .logw .sl i:last-child { bottom:2px; }
+  .log { padding:10px 14px; min-height:150px; max-height:28vh; overflow:auto; font-family:var(--mono); font-size:clamp(12px,1.6vw,15px); line-height:1.75; color:#cfe8f4; } .log div b { color:var(--yel); font-weight:400; } .log div i { color:var(--green); font-style:normal; }
+  .keys { position:fixed; right:clamp(14px,6vw,100px); bottom:12px; z-index:30; display:flex; gap:20px; font-size:15px; font-weight:700; letter-spacing:.1em; text-shadow:0 1px 2px #000; } .keys i { display:inline-block; width:22px; height:22px; margin-right:6px; vertical-align:-5px; border-radius:50%; border:2px solid #cfe8f4; font-style:normal; font-size:11px; text-align:center; line-height:18px; background:rgba(255,255,255,.08); }
+
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; flex-direction:column; gap:10px; background:rgba(2,10,16,.88); }
+  #ov.show { display:flex; animation:fadeIn .2s; } #bang { font-weight:900; font-size:clamp(100px,26vw,220px); letter-spacing:.04em; font-style:italic; color:#fff; text-shadow:0 0 30px #5ec8ff, 6px 6px 0 #0b3a4c; animation:edf .7s cubic-bezier(.2,2,.4,1); }
+  #ovT { font-weight:700; font-size:clamp(20px,4.4vw,34px); letter-spacing:.2em; color:#7fe0ff; } #ovS { font-family:var(--mono); font-size:clamp(13px,2.2vw,18px); letter-spacing:.3em; color:#cfe8f4; }
+  @keyframes edf { from { transform:scale(3) rotate(-8deg); opacity:0; } } @keyframes fadeIn { from { opacity:0; } } @keyframes slide { from { opacity:0; transform:translateX(-22px); } }
+  @media (max-width:980px) { .grid { grid-template-columns:1fr; } .info { grid-template-columns:1fr 1fr; margin-left:0; } .tbar { margin:0 0 12px; } .logw { margin-left:0; } .keys { display:none; } .orn { opacity:.3; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="scan"></div>
+<svg class="orn a" viewBox="0 0 200 200" aria-hidden="true"><g class="r1"><circle cx="100" cy="100" r="92" stroke-width="3"/><circle cx="100" cy="100" r="70" stroke-width="1.5" stroke-dasharray="4 6"/></g><g class="r2"><circle cx="100" cy="100" r="52" stroke-width="2"/><path d="M100 8V28M100 172V192M8 100H28M172 100H192" stroke-width="3"/></g><circle cx="100" cy="100" r="22" stroke-width="2"/></svg>
+<svg class="orn b" viewBox="0 0 200 200" aria-hidden="true"><g class="r2"><circle cx="100" cy="100" r="92" stroke-width="3"/><circle cx="100" cy="100" r="70" stroke-width="1.5" stroke-dasharray="4 6"/></g><g class="r1"><circle cx="100" cy="100" r="52" stroke-width="2"/><path d="M100 8V28M100 172V192M8 100H28M172 100H192" stroke-width="3"/></g><circle cx="100" cy="100" r="22" stroke-width="2"/></svg>
+<svg class="orn c" viewBox="0 0 200 200" aria-hidden="true"><g class="r1"><circle cx="100" cy="100" r="92" stroke-width="3"/><circle cx="100" cy="100" r="64" stroke-width="1.5" stroke-dasharray="3 7"/></g><g class="r2"><circle cx="100" cy="100" r="44" stroke-width="2"/></g></svg>
+
+<div class="hud">
+  <header class="tbar"><h1>日誌ルーム</h1><small id="sub">DIARY ROOM</small></header>
+  <section class="info">
+    <div class="cell"><small>Room Name</small><b id="rn">おとじゃ小隊 日誌所</b></div>
+    <div class="cell"><small>Difficulty</small><b class="hard" id="df">NORMAL</b></div>
+    <div class="cell"><small>連続日数 / 招待限定</small><b id="i3">連続 0 日 ─ 本人のみ記録可能</b></div>
+    <div class="cell"><small>記録上限 有効</small><b id="i4">文字数 無制限 ／ 連続判定 有効</b></div>
+  </section>
+  <div class="grid">
+    <nav class="menu" id="menu" aria-label="メニュー"></nav>
+    <section class="mid" id="mid"></section>
+    <aside class="side" id="side"></aside>
+  </div>
+  <div class="logw"><div class="sl"><i>L1</i><i>L2</i></div><div class="log" id="log"></div></div>
+</div>
+<div class="keys"><span><i>✕</i>決定</span><span><i>△</i>切替</span></div>
+<div id="ov"><div id="bang">EDF!</div><div id="ovT"></div><div id="ovS"></div></div>
+
+<script src="theme-switch.js" data-theme="edf6"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","ARMOR MAX",8],["良い","STABLE",6],["普通","DAMAGED",4],["微妙","CRITICAL",2],["最悪","DOWN",1]];
+const RANKS = ["新兵","二等兵","一等兵","軍曹","曹長","少尉","隊長"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const ITEMS = ["出撃準備完了!", "ミッション選択", "兵科武器選択", "ルーム設定", "戦歴確認", "ゲーム設定、操作マニュアル", "ルームから退出"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const moodOf = m => MOODS.find(x => x[0] === m);
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", sel = 0, recIdx = 0, calOff = 0, overlayTimer;
+
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function bestStreak() { let best = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; best = Math.max(best, run); prev = cur; } return best; }
+function totalXp() { let xp = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; } return xp; }
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+
+function renderMenu() { $("menu").innerHTML = ITEMS.map((t, i) => `<button class="mi ${i === sel ? "on" : ""}" data-i="${i}" style="--i:${i}">${t}</button>`).join(""); }
+
+function renderTop() {
+  const st = streakCount(), n = Object.keys(data).length;
+  $("df").textContent = st >= 14 ? "INFERNO" : st >= 7 ? "HARDEST" : st >= 3 ? "HARD" : "NORMAL";
+  $("i3").textContent = `連続 ${st} 日 ─ 本人のみ記録可能`; $("i4").textContent = `記録 ${n} 件 ／ 連続判定 有効`;
+}
+function renderSide() {
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length, now = new Date(), pre = ymd(now).slice(0, 7), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const keys = Object.keys(data).sort().reverse(), inMonth = keys.filter(k => k.startsWith(pre)).length, chars = keys.map(k => data[k].text.length);
+  const pct = x => (Math.round(x * 100) / 100).toFixed(2) + "%";
+  const lv = k => (moodOf(data[k].mood) || [0, 0, 0])[2];
+  const recent = keys.slice(0, 6);
+  const cp = (cls, name, who, lines, armor, rate) => `<div class="cp"><div class="nm"><b>${name}</b><span>${who}</span></div><div class="ls">${lines.map(([a, b]) => `<div><span>${a}</span><em>${b}</em></div>`).join("")}</div><div class="nb"><small>アーマー</small><b>${armor}</b><small>達成率</small><b>${rate}</b></div></div>`;
+  $("side").innerHTML =
+    cp("", "レンジャー", "おとじゃ (YOU)", recent.length ? recent.map(k => [`${fmt(k)} ${(moodOf(data[k].mood) || [0, "—"])[0]}`, "Lv" + lv(k)]) : [["記録なし", "Lv0"]], 100 + st * 10 + n * 5, pct(inMonth / dim * 100)) +
+    cp("", "ウイングダイバー", "おついち (RECORDS)", [["連続日数", st], ["最長連続", bestStreak()], ["記録数", n], ["今月の記録", `${inMonth}/${dim}`], ["階級", RANKS[rk]], ["経験値", xp]], xp, pct(rk >= RANKS.length - 1 ? 100 : (xp % XP_PER_RANK) / XP_PER_RANK * 100)) +
+    cp("", "エアレイダー", "あにじゃ (STATS)", [["平均文字数", chars.length ? Math.round(chars.reduce((a, b) => a + b, 0) / chars.length) : 0], ["最長記録", chars.length ? Math.max(...chars) : 0], ["総文字数", chars.reduce((a, b) => a + b, 0)], ["気分平均", keys.length ? (keys.reduce((a, k) => a + lv(k), 0) / keys.length).toFixed(1) : "—"]], 100 + chars.reduce((a, b) => a + b, 0) % 900, pct(Math.min(st / 30, 1) * 100));
+}
+function renderLog() {
+  const keys = Object.keys(data).sort().reverse().slice(0, 12);
+  $("log").innerHTML = keys.length ? keys.map(k => `<div><b>[${fmt(k)}]</b> <i>${esc((moodOf(data[k].mood) || [0, "—"])[1])}</i> ${esc(data[k].text.replace(/\s+/g, " ").slice(0, 70))}</div>`).join("") : `<div><b>[SYSTEM]</b> 戦歴はまだありません。出撃準備を整え、最初の日誌を送信してください。</div>`;
+}
+
+function renderMid() {
+  const mid = $("mid"), st = streakCount(), d = new Date(selected + "T00:00:00");
+  if (sel === 0) {
+    const m = moodOf(mood);
+    mid.innerHTML = `<div class="mode">DIARY MISSION MODE</div><div class="mtt">${d.getDate()}. 日記作戦（${DOW[d.getDay()]}）</div><div class="ml">日付： <b>${fmt(selected)}</b>　文字数： <b id="len">${draft.length}</b></div><div class="ml">連続日数： <b>${st}日</b>　（レンジャー）</div>
+      <div class="desc"><textarea id="body" placeholder="降下した敵の報告をここに。今日の出来事を記録してください…"></textarea>
+      <div class="sq"><span>気分</span>${MOODS.map(([mm]) => `<button data-m="${mm}" class="${mm === mood ? "on" : ""}" aria-label="${mm}">${mm === mood ? "■" : "□"}</button>`).join("")}</div><div class="sqn">${MOODS.map(([mm]) => `<i>${mm}</i>`).join("")}</div></div>
+      <div class="hintx" id="hx">${selected === ymd(new Date()) ? "" : "過去の日付を編集中です"}</div><button class="go" data-a="save">出撃! 送信</button>`;
+    $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; $("len").textContent = draft.length; });
+  } else if (sel === 1) {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""} ${k === selected ? "selx" : ""}" data-d="${k}">${i}</div>`; }
+    mid.innerHTML = `<div class="mode">MISSION SELECT</div><div class="mtt">ミッション選択（日付）</div><div class="mh"><button class="btn" data-cal="-1">◀</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button class="btn" data-cal="1">▶</button></div><div class="cal">${h}</div>`;
+  } else if (sel === 2) {
+    mid.innerHTML = `<div class="mode">CONDITION SELECT</div><div class="mtt">兵科武器選択（今日の気分）</div><div class="tbl"><div class="h">気分</div><div class="h">Lv</div><div class="h">☆</div>${MOODS.map(([m, t, lv]) => `<div class="q ${m === mood ? "sel" : ""}" data-m2="${m}">${m} ─ ${t}</div><div class="q ${m === mood ? "sel" : ""}" data-m2="${m}">${lv}</div><div class="q ${m === mood ? "sel" : ""}" data-m2="${m}">${"★".repeat(Math.ceil(lv / 2))}</div>`).join("")}</div><div class="hintx">選んだ気分は「出撃準備完了!」の画面に反映されます。</div>`;
+  } else if (sel === 3) {
+    mid.innerHTML = `<div class="mode">ROOM SETTINGS</div><div class="mtt">ルーム設定</div><div class="ml">テーマ ： <b>EARTH DEFENSE FORCE 6</b></div><div class="ml">他のゲームのテーマに切り替えます。</div><button class="go" data-a="theme">テーマ選択へ</button>`;
+  } else if (sel === 4) {
+    const keys = Object.keys(data).sort().reverse(); if (recIdx >= keys.length) recIdx = 0; const k = keys[recIdx];
+    mid.innerHTML = `<div class="mode">BATTLE RECORD</div><div class="mtt">戦歴確認</div>` + (keys.length ? `<div class="list">${keys.map((x, i) => `<button class="li ${i === recIdx ? "on" : ""}" data-r="${i}"><span>${fmt(x)}</span><span>${esc(data[x].text.replace(/\s+/g, " ").slice(0, 28))}</span><small>${esc((moodOf(data[x].mood) || [0, "—"])[1])}</small></button>`).join("")}</div><div class="txt">${esc(data[k].text)}</div><button class="go" data-edit="${k}">この日誌を修正</button>` : `<div class="ml">戦歴はまだありません。</div>`);
+  } else if (sel === 5) {
+    mid.innerHTML = `<div class="mode">MANUAL</div><div class="mtt">ゲーム設定、操作マニュアル</div><div class="help"><b>↑ ↓</b> メニュー選択<br><b>日記を書く</b> 「出撃準備完了!」で気分と本文を入力し、「出撃! 送信」で保存<br><b>ミッション選択</b> カレンダーで日付を選ぶ<br><b>兵科武器選択</b> 気分を選ぶ<br><b>戦歴確認</b> 過去の日誌を読み返し、修正する<br><b>Ctrl + Enter</b> 入力中に送信<br>右側の兵科パネルは、記録から自動で集計されます。</div>`;
+  } else {
+    mid.innerHTML = `<div class="mode">LEAVE ROOM</div><div class="mtt">ルームから退出</div><div class="ml">テーマ選択の最初の画面に戻ります。</div><button class="go" data-a="theme">退出する</button>`;
+  }
+}
+function render() { renderMenu(); renderTop(); renderMid(); renderSide(); renderLog(); }
+
+function overlay(up, isNew) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
+  $("ovT").textContent = up ? "RANK UP ─ 階級が上がった" : "MISSION COMPLETE ─ ミッション完了"; $("ovS").textContent = (up ? RANKS[rankOf(totalXp())] + " ─ " : "") + (isNew ? `${streakCount()} DAYS` : "UPDATED");
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2400);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+function save() {
+  const text = draft.trim(); if (!text) { $("body").focus(); return; } if (!mood) { $("hx").textContent = "気分(□)を選んでください"; return; }
+  const before = rankOf(totalXp()), isNew = !data[selected]; data[selected] = { mood, text }; store(data); render(); overlay(rankOf(totalXp()) > before, isNew);
+}
+function openDay(k) { selected = k; loadDay(); sel = 0; render(); }
+
+$("menu").addEventListener("click", e => { const b = e.target.closest("[data-i]"); if (!b) return; sel = +b.dataset.i; if (sel === 0 && selected !== ymd(new Date()) && false) {} if (sel === 6) { location.href = "index.html"; return; } renderMenu(); renderMid(); });
+$("mid").addEventListener("click", e => {
+  const a = e.target.closest("[data-a]"); if (a) { if (a.dataset.a === "save") return save(); if (a.dataset.a === "theme") { location.href = "index.html"; return; } }
+  const m = e.target.closest("[data-m]"); if (m) { mood = m.dataset.m; document.querySelectorAll(".sq button").forEach(x => { const on = x.dataset.m === mood; x.classList.toggle("on", on); x.textContent = on ? "■" : "□"; }); return; }
+  const m2 = e.target.closest("[data-m2]"); if (m2) { mood = m2.dataset.m2; return renderMid(); }
+  const r = e.target.closest("[data-r]"); if (r) { recIdx = +r.dataset.r; return renderMid(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) return openDay(ed.dataset.edit);
+  const dd = e.target.closest("[data-d]"); if (dd) return openDay(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; renderMid(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); return; }
+  if (e.key === "Escape") return $("ov").classList.remove("show");
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); sel = (sel + (e.key === "ArrowDown" ? 1 : -1) + ITEMS.length) % ITEMS.length; renderMenu(); renderMid(); }
+  else if (e.key === "Enter") { if (sel === 0) { const b = $("body"); if (b) b.focus(); } else if (sel === 3 || sel === 6) location.href = "index.html"; }
+});
+
+loadDay(); render();
+</script>
+</body>
+</html>

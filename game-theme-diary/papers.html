@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arstotzka Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  /* Checkpoint booth: concrete yard with a queue on top, olive counter at left, black desk with a paper document at right (pages 1/4, red M.O.A stamp) */
+  :root { --paper:#ececec; --ink:#2b2b2b; --dot:#a8a8a8; --desk:#15110f; --stamp:#ef6a5e; --olive:#8a9a5b; --brown:#6b5a35; --font:'DotGothic16','Pixelify Sans',monospace; --px:'Pixelify Sans','DotGothic16',monospace; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { min-height:100%; }
+  body { font-family:var(--font); background:#000; color:var(--ink); overflow-x:hidden; }
+  .game { position:relative; width:min(1500px,100%); margin:0 auto; min-height:100vh; display:grid; grid-template-rows:minmax(160px,32vh) 1fr; background:var(--desk); image-rendering:pixelated; }
+
+  /* yard */
+  .yard { position:relative; overflow:hidden; background:#8e8e8e; border-bottom:4px solid #4a4a4a; }
+  .yard svg { position:absolute; inset:0; width:100%; height:100%; shape-rendering:crispEdges; }
+  .crowd g { animation:shuffle 1.6s steps(2) infinite; } .crowd g:nth-child(2n) { animation-delay:-.5s; } .crowd g:nth-child(3n) { animation-delay:-1s; animation-duration:2.2s; }
+  @keyframes shuffle { 50% { transform:translateX(1.4px); } }
+  .guard { animation:bob 2.4s steps(2) infinite; } @keyframes bob { 50% { transform:translateY(-1px); } }
+  .queue { position:absolute; left:12px; bottom:8px; font-family:var(--px); font-size:13px; letter-spacing:.14em; color:#e8e8e8; background:rgba(0,0,0,.55); padding:2px 10px; }
+  .next { position:absolute; right:150px; top:10px; font-family:var(--px); font-weight:700; font-size:13px; letter-spacing:.2em; color:#fff; background:#8b1e1e; padding:2px 12px; border:2px solid #000; animation:blink 1.4s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:.2; } }
+
+  /* lower: counter + desk */
+  .low { position:relative; display:grid; grid-template-columns:minmax(150px,34%) 1fr; min-height:0; }
+  .booth { position:relative; display:flex; flex-direction:column; min-width:0; }
+  .rails { flex:1; min-height:140px; padding:12px 0; display:flex; flex-direction:column; justify-content:space-between; background:linear-gradient(90deg,#2a231c,#3a3024); border-right:4px solid #15110f; }
+  .rails i { display:block; height:16px; background:linear-gradient(180deg,#8a7f6e,#4e463a); border-top:2px solid #b0a58f; border-bottom:2px solid #1c1812; margin:0 14px; position:relative; } .rails i::after { content:""; position:absolute; left:22%; right:30%; top:4px; height:3px; background:rgba(255,255,255,.28); }
+  .counter { position:relative; padding:14px 14px 10px; background:linear-gradient(180deg,#9aa66a,#7d8c4e 60%,#6b7a40); border-top:6px solid #5b6b3a; border-right:4px solid #15110f; }
+  .counter::before { content:""; position:absolute; left:10px; right:10px; top:4px; height:8px; background:repeating-linear-gradient(90deg,#5b6b3a 0 6px,transparent 6px 12px); }
+  .drawer { display:flex; align-items:flex-end; gap:10px; margin-top:16px; padding:10px; background:linear-gradient(180deg,#7a6a3e,#5a4c2a); border:2px solid #3a2f18; }
+  .gadget { background:#4a3d22; border:2px solid #2a2210; color:#d8c89a; font-family:var(--px); font-size:12px; padding:6px 10px; min-width:64px; text-align:center; box-shadow:inset 0 0 0 2px #6b5a35; }
+  .gadget b { display:block; font-size:18px; color:#f0e2b0; font-weight:500; }
+  .date-box { background:#3a2f18; border:2px solid #1c1608; color:#e8dcb0; font-family:var(--px); font-size:13px; letter-spacing:.14em; padding:3px 10px; margin-top:8px; display:inline-block; }
+
+  .desk { position:relative; padding:clamp(12px,2.4vw,26px); background:radial-gradient(#2a2321 1px, transparent 1.4px) 0 0/6px 6px, var(--desk); display:flex; justify-content:center; align-items:flex-start; min-height:0; }
+  .tab { all:unset; position:absolute; right:0; top:22%; width:26px; height:120px; cursor:pointer; background:linear-gradient(90deg,#5a5a5a,#3a3a3a); border:2px solid #111; border-right:0; color:#cfcfcf; display:flex; align-items:center; justify-content:center; font-size:16px; } .tab:hover { background:#6a6a6a; }
+  .hintd { position:absolute; left:0; right:0; bottom:10px; text-align:center; font-size:14px; letter-spacing:.2em; color:rgba(200,190,180,.18); pointer-events:none; }
+
+  /* document */
+  .doc { position:relative; width:min(560px,100%); background:var(--paper); color:var(--ink); padding:18px 22px 54px; box-shadow:0 0 0 2px #cfcfcf, 6px 6px 0 rgba(0,0,0,.5); animation:slideIn .45s cubic-bezier(.2,.9,.3,1); }
+  @keyframes slideIn { from { transform:translateX(60px) rotate(2deg); opacity:0; } }
+  .doc.turn { animation:turn .3s ease-out; } @keyframes turn { from { transform:translateX(30px); opacity:.2; } }
+  .dh { display:flex; justify-content:space-between; align-items:flex-start; gap:10px; font-size:clamp(14px,2vw,17px); line-height:1.5; } .dh b { font-family:var(--px); font-weight:500; font-size:15px; letter-spacing:.06em; }
+  hr { border:0; border-top:2px dotted var(--dot); margin:12px -22px; }
+  .doc p, .doc label { font-size:clamp(14px,2vw,17px); line-height:1.6; } .doc label { display:block; margin-bottom:6px; color:#555; font-size:13px; letter-spacing:.14em; }
+  .moods { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; } .md { all:unset; box-sizing:border-box; cursor:pointer; text-align:center; padding:6px 2px; border:2px solid #8a8a8a; background:#f6f6f6; font-size:14px; line-height:1.3; transition:.08s; } .md small { display:block; font-family:var(--px); font-size:9px; letter-spacing:.04em; color:#777; margin-top:2px; }
+  .md:hover { background:#fff; border-color:#444; } .md.on { background:#2b2b2b; color:#f2f2f2; border-color:#2b2b2b; } .md.on small { color:#bbb; }
+  textarea { width:100%; height:min(26vh,200px); resize:none; padding:8px 10px; font:inherit; font-size:clamp(14px,2vw,17px); line-height:26px; color:var(--ink); background:repeating-linear-gradient(transparent 0 25px, #cfcfcf 25px 26px); border:2px solid #9a9a9a; outline:none; }
+  textarea:focus { border-color:#2b2b2b; }
+  .hintx { font-size:12px; color:#8b1e1e; min-height:1em; margin-top:4px; }
+  .li { all:unset; box-sizing:border-box; display:grid; grid-template-columns:7.2em 1fr auto; gap:8px; width:100%; padding:5px 4px; cursor:pointer; font-size:14px; border-bottom:2px dotted var(--dot); } .li:hover, .li.sel { background:#dcdcdc; } .li small { font-family:var(--px); font-size:11px; color:#666; align-self:center; }
+  .li span:nth-child(2) { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; color:#444; }
+  .txt { white-space:pre-wrap; line-height:1.8; font-size:15px; padding:6px 2px; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; } .cal div { aspect-ratio:1.3; display:flex; align-items:center; justify-content:center; font-family:var(--px); font-size:14px; border:2px solid #b8b8b8; background:#f6f6f6; }
+  .cal .dow { aspect-ratio:auto; border:0; background:none; font-size:11px; color:#777; } .cal .d { cursor:pointer; } .cal .d:hover { background:#fff; border-color:#2b2b2b; } .cal .done { background:#2b2b2b; color:#f2f2f2; border-color:#2b2b2b; } .cal .today { outline:3px solid var(--stamp); outline-offset:1px; }
+  .mh { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-family:var(--px); font-size:17px; } .mh button, .sbtn { all:unset; cursor:pointer; padding:2px 12px; border:2px solid #2b2b2b; background:#f6f6f6; font-size:14px; } .mh button:hover, .sbtn:hover { background:#2b2b2b; color:#fff; }
+  .st { display:grid; grid-template-columns:1fr auto; gap:4px 12px; font-size:15px; } .st b { font-family:var(--px); font-weight:500; font-size:18px; text-align:right; }
+  .bar { height:12px; border:2px solid #2b2b2b; margin:4px 0 10px; } .bar i { display:block; height:100%; width:0; background:#2b2b2b; transition:width .7s steps(12); }
+
+  .foot { position:absolute; left:0; right:0; bottom:0; height:46px; display:flex; align-items:center; justify-content:space-between; padding:0 16px 0 22px; }
+  .pg { all:unset; cursor:pointer; display:flex; align-items:center; gap:12px; font-family:var(--px); font-size:15px; margin-left:auto; } .pg::after { content:""; width:34px; height:34px; background:linear-gradient(135deg,#ececec 50%,#b5b5b5 50%); box-shadow:-2px -2px 0 rgba(0,0,0,.18); }
+  .pg:hover::after { background:linear-gradient(135deg,#ececec 40%,#9a9a9a 40%); }
+  .stampb { all:unset; position:absolute; right:56px; bottom:42px; width:92px; height:92px; border-radius:50%; cursor:pointer; background:var(--stamp); color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; font-family:var(--px); font-size:11px; letter-spacing:.08em; box-shadow:0 0 0 3px rgba(239,106,94,.35); transition:.1s; }
+  .stampb svg { width:36px; height:36px; } .stampb:hover { transform:scale(1.07) rotate(-6deg); } .stampb:active { transform:scale(.92); }
+  .stampb:focus-visible, .md:focus-visible, .pg:focus-visible, .li:focus-visible, .tab:focus-visible, textarea:focus-visible { outline:3px solid #1a6bff; outline-offset:2px; }
+  .mark { position:absolute; right:40px; bottom:90px; font-family:var(--px); font-weight:700; font-size:34px; letter-spacing:.06em; border:5px solid currentColor; padding:0 .3em; transform:rotate(-12deg); opacity:0; pointer-events:none; mix-blend-mode:multiply; } .mark.show { animation:markIn .5s cubic-bezier(.2,2,.4,1) forwards; }
+  @keyframes markIn { from { opacity:0; transform:scale(2.6) rotate(-4deg); } to { opacity:.88; transform:scale(1) rotate(-12deg); } }
+
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(4,4,2,.8); flex-direction:column; gap:14px; }
+  #ov.show { display:flex; animation:fadeIn .15s; } @keyframes fadeIn { from { opacity:0; } }
+  #bang { font-family:var(--px); font-weight:700; font-size:clamp(54px,15vw,130px); color:var(--c,#2f8f3a); border:8px solid var(--c,#2f8f3a); padding:0 .25em; letter-spacing:.06em; transform:rotate(-8deg); background:rgba(255,255,255,.05); animation:slam .5s cubic-bezier(.2,2,.4,1); }
+  @keyframes slam { from { transform:scale(2.6) rotate(-2deg); opacity:0; } } #ovS { font-family:var(--px); font-size:clamp(14px,2.4vw,20px); letter-spacing:.2em; color:#d8d0b0; }
+  @media (max-width:760px) { .low { grid-template-columns:1fr; } .booth { display:none; } .tab { top:12px; height:80px; } .next { right:60px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="game">
+  <section class="yard"><svg viewBox="0 0 1000 220" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs><pattern id="hz" width="28" height="28" patternUnits="userSpaceOnUse" patternTransform="rotate(-30)"><rect width="28" height="28" fill="#a9a9a9"/><rect width="14" height="28" fill="#5c5c5c"/></pattern></defs>
+    <rect width="1000" height="220" fill="#8e8e8e"/><rect y="150" width="1000" height="70" fill="#9b9b9b"/>
+    <rect x="330" y="40" width="64" height="150" fill="url(#hz)"/><rect x="640" y="40" width="64" height="150" fill="url(#hz)"/>
+    <rect x="410" y="0" width="14" height="190" fill="#b8b8b8"/><rect x="418" y="0" width="4" height="190" fill="#7a7a7a"/><rect x="760" y="30" width="10" height="170" fill="#b8b8b8"/>
+    <rect x="445" y="105" width="90" height="100" fill="#3a2a22"/><rect x="445" y="105" width="90" height="10" fill="#5b463a"/><rect x="474" y="82" width="34" height="22" fill="#7a7a7a"/><rect x="480" y="90" width="22" height="8" fill="#d0d0d0"/>
+    <g fill="#c4c4c4"><rect x="204" y="50" width="22" height="6"/><rect x="198" y="64" width="34" height="6"/><rect x="204" y="78" width="22" height="30"/><rect x="560" y="62" width="30" height="8"/><rect x="560" y="70" width="30" height="20"/><rect x="796" y="50" width="22" height="6"/><rect x="790" y="64" width="34" height="6"/><rect x="796" y="78" width="22" height="30"/></g>
+    <g fill="#9a9a9a"><rect x="900" y="36" width="8" height="8"/><rect x="900" y="66" width="8" height="8"/><rect x="900" y="96" width="8" height="8"/><rect x="900" y="126" width="8" height="8"/></g>
+    <g class="guard" fill="#26325a"><circle cx="846" cy="62" r="6"/><rect x="838" y="68" width="16" height="30"/><rect x="852" y="72" width="14" height="5"/><rect x="838" y="98" width="6" height="14"/><rect x="848" y="98" width="6" height="14"/></g>
+    <path d="M200 192 H980" stroke="#d2d2d2" stroke-width="3" stroke-dasharray="6 8" fill="none"/>
+    <g class="crowd" id="crowd" fill="#101010"></g>
+  </svg><div class="queue" id="queue"></div><div class="next">NEXT!</div></section>
+
+  <section class="low">
+    <aside class="booth"><div class="rails"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="counter"><div class="drawer"><div class="gadget">CASE<b id="kg">0</b>kg</div><div class="gadget">CREDITS<b id="cr">0</b></div><div class="gadget">CITATION<b id="ci">0</b></div></div><span class="date-box" id="dbox">00.00.00</span></div>
+    </aside>
+    <main class="desk">
+      <article class="doc" id="doc"></article>
+      <button class="tab" id="tabBtn" aria-label="テーマ選択へ">◀</button>
+      <div class="hintd">スタンプで書類を承認する</div>
+    </main>
+  </section>
+</div>
+<div id="ov"><div id="bang">APPROVED</div><div id="ovS"></div></div>
+
+<script src="theme-switch.js" data-theme="papers"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","GLORY"],["良い","APPROVED"],["普通","PROCESSED"],["微妙","CITATION"],["最悪","DENIED"]];
+const RANKS = ["移民","事務官","審査官","上級審査官","審査長","省職員","アルストツカの英雄"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const moodTag = m => (MOODS.find(x => x[0] === m) || ["", "—"])[1];
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", page = 0, recIdx = 0, calOff = 0, overlayTimer;
+
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; }
+  return xp;
+}
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+function citations() { const n = new Date(), pre = ymd(n).slice(0, 7); let c = 0; for (let d = 1; d < n.getDate(); d++) if (!data[pre + "-" + String(d).padStart(2, "0")]) c++; return c; }
+
+// ---- yard crowd (fewer people wait as you keep writing) ----
+function crowd() {
+  const n = Math.max(8, 52 - Object.keys(data).length * 2); let s = 5; const r = () => (s = (s * 16807) % 2147483647) / 2147483647, g = $("crowd"); let h = "";
+  for (let i = 0; i < n; i++) { const x = 6 + r() * 250, y = 24 + r() * 140, w = 9 + r() * 4; h += `<g><circle cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" r="${(w / 2.6).toFixed(1)}"/><rect x="${(x - w / 2).toFixed(0)}" y="${(y + w / 2.6).toFixed(0)}" width="${w.toFixed(0)}" height="${(w * 2.2).toFixed(0)}"/></g>`; }
+  g.innerHTML = h; $("queue").textContent = `WAITING ${n}`;
+}
+function chrome() {
+  const xp = totalXp(), d = new Date(selected + "T00:00:00"), p = n => String(n).padStart(2, "0");
+  $("kg").textContent = Object.keys(data).length; $("cr").textContent = (xp * 5).toLocaleString(); $("ci").textContent = citations();
+  $("dbox").textContent = `${p(d.getFullYear() % 100)}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
+}
+
+// ---- document pages ----
+const HEAD = () => `<div class="dh"><span>アルストツカ<br>入国管理省<br>日記局</span><b>${fmt(selected)}</b></div>`;
+function renderDoc(turn) {
+  const doc = $("doc"); chrome();
+  if (turn) { doc.classList.remove("turn"); void doc.offsetWidth; doc.classList.add("turn"); }
+  let body = "";
+  if (page === 0) {
+    body = `${HEAD()}<hr><p>審査官へ告ぐ。<br>本日の判定を選び、報告書に記入せよ。</p><hr>
+      <label>本日の判定</label><div class="moods" id="moods">${MOODS.map(([m, t]) => `<button class="md ${m === mood ? "on" : ""}" data-m="${m}">${m}<small>${t}</small></button>`).join("")}</div><hr>
+      <label>報告書</label><textarea id="body" placeholder="本日の出来事を記入せよ…"></textarea><div class="hintx" id="hx">${selected === ymd(new Date()) ? "" : "過去の日付を編集中です"}</div><hr><p>記入後、承認印を押して提出すること。<br>アルストツカに栄光あれ。</p>
+      <button class="stampb" id="stamp" aria-label="承認印を押す"><svg viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5l-8-3Zm0 2.2 6 2.3V11c0 3.9-2.5 7.5-6 9-3.5-1.5-6-5.1-6-9V6.5l6-2.3Z"/><path d="M12 6v12c2.6-1.5 4-4.3 4-7V7.5L12 6Z"/></svg>M.O.A</button><div class="mark" id="mark"></div>`;
+  } else if (page === 1) {
+    const keys = Object.keys(data).sort().reverse(); if (recIdx >= keys.length) recIdx = 0; const k = keys[recIdx];
+    body = `<div class="dh"><span>アルストツカ<br>入国管理省<br>過去の書類</span><b>${keys.length} 件</b></div><hr>` +
+      (keys.length ? keys.slice(0, 12).map((x, i) => `<button class="li ${i === recIdx ? "sel" : ""}" data-r="${i}"><span>${fmt(x)}</span><span>${esc(data[x].text.replace(/\s+/g, " ").slice(0, 22))}</span><small>${esc(moodTag(data[x].mood))}</small></button>`).join("") +
+        `<hr><div class="txt">${esc(data[k].text)}</div><div style="text-align:right;margin-top:6px"><button class="sbtn" data-edit="${k}">この書類を修正</button></div>` : `<p>書類はまだ届いていない。<br>1ページ目で最初の報告を記入せよ。</p>`);
+  } else if (page === 2) {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(d => `<div class="dow">${d}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}" data-d="${k}">${d}</div>`; }
+    body = `<div class="dh"><span>アルストツカ<br>入国管理省<br>勤務表</span><b>${y}.${String(mo + 1).padStart(2, "0")}</b></div><hr><div class="mh"><button data-cal="-1">◀</button><span>日付を選べ</span><button data-cal="1">▶</button></div><div class="cal">${h}</div>`;
+  } else {
+    const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length, pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+    body = `<div class="dh"><span>アルストツカ<br>入国管理省<br>審査官記録</span><b>${fmt(ymd(new Date()))}</b></div><hr>
+      <div class="st"><span>階級</span><b>${RANKS[rk]}</b><span>連続勤務</span><b>${st} 日</b><span>処理した書類</span><b>${n} 件</b><span>警告 (CITATIONS)</span><b>${citations()}</b><span>報酬 (CREDITS)</span><b>${(xp * 5).toLocaleString()}</b></div><hr>
+      <label>次の階級まで</label><div class="bar"><i style="width:0" data-w="${pct}"></i></div><label>連続勤務 (30日)</label><div class="bar"><i style="width:0" data-w="${Math.min(st / 30, 1) * 100}"></i></div>`;
+    setTimeout(() => doc.querySelectorAll("[data-w]").forEach(el => el.style.width = el.dataset.w + "%"), 30);
+  }
+  doc.innerHTML = body + `<div class="foot"><span></span><button class="pg" id="pg" aria-label="次のページ">${page + 1}/4</button></div>`;
+  if (page === 0) { $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; }); }
+}
+
+function overlay(bad, gain, up) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  const c = bad ? "#c0281c" : "#2f8f3a"; $("bang").textContent = bad ? "DENIED" : "APPROVED"; $("bang").style.setProperty("--c", c);
+  $("ovS").textContent = (up ? "昇進 ─ " : "") + `+${gain * 5} CREDITS`;
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2200);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+
+function save() {
+  const text = $("body").value.trim();
+  if (!mood) { $("hx").textContent = "本日の判定を選べ"; return; } if (!text) { $("body").focus(); $("hx").textContent = "報告書が空白だ"; return; }
+  const before = rankOf(totalXp()), xp0 = totalXp(), isNew = !data[selected];
+  data[selected] = { mood, text }; draft = text; store(data);
+  const bad = ["微妙", "最悪"].includes(mood), mk = $("mark"); mk.textContent = bad ? "DENIED" : "APPROVED"; mk.style.color = bad ? "#c0281c" : "#2f8f3a"; mk.classList.remove("show"); void mk.offsetWidth; mk.classList.add("show");
+  setTimeout(() => { overlay(bad, totalXp() - xp0 || 100, rankOf(totalXp()) > before); chrome(); crowd(); }, 450);
+}
+
+$("doc").addEventListener("click", e => {
+  const m = e.target.closest("[data-m]"); if (m) { mood = m.dataset.m; document.querySelectorAll("#moods .md").forEach(x => x.classList.toggle("on", x === m)); return; }
+  if (e.target.closest("#stamp")) return save();
+  if (e.target.closest("#pg")) { page = (page + 1) % 4; if (page === 0) { selected = ymd(new Date()); loadDay(); } return renderDoc(true); }
+  const r = e.target.closest("[data-r]"); if (r) { recIdx = +r.dataset.r; return renderDoc(false); }
+  const ed = e.target.closest("[data-edit]"); if (ed) { selected = ed.dataset.edit; loadDay(); page = 0; return renderDoc(true); }
+  const dd = e.target.closest("[data-d]"); if (dd) { selected = dd.dataset.d; loadDay(); page = 0; return renderDoc(true); }
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; renderDoc(false); }
+});
+$("tabBtn").onclick = () => { location.href = "index.html"; };
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.key === "ArrowRight") { page = (page + 1) % 4; if (page === 0) { selected = ymd(new Date()); loadDay(); } renderDoc(true); } else if (e.key === "ArrowLeft") { page = (page + 3) % 4; if (page === 0) { selected = ymd(new Date()); loadDay(); } renderDoc(true); }
+  else if (e.key === "Escape") $("ov").classList.remove("show");
+});
+
+loadDay(); crowd(); renderDoc(false);
+</script>
+</body>
+</html>

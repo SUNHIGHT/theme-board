@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tower Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600&family=Barlow:wght@300;500;600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Character screen: pale grey-green gradient, translucent top tab bar, white-framed square tiles, big pale numerals, beige/charcoal tooltip, black footer */
+  :root { --ink:#fff; --dim:rgba(255,255,255,.55); --line:rgba(255,255,255,.85); --bar:rgba(138,148,140,.88); --tile:#d9d9cd; --dark:#262626; --beige:#cbc5b5; --teal:#4a8f96; --font:'Zen Kaku Gothic New','Barlow Semi Condensed',sans-serif; --num:'Barlow','Barlow Semi Condensed',sans-serif; --sc:'Barlow Semi Condensed','Zen Kaku Gothic New',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--font); color:var(--ink); overflow:hidden; background:linear-gradient(100deg,#bcc1ab 0%,#aab4a4 38%,#8aa2a3 74%,#6c8c90 100%); }
+  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at 50% 55%, transparent 52%, rgba(40,56,56,.38) 100%); }
+  .geo { position:fixed; z-index:0; pointer-events:none; width:min(120vmin,1100px); height:min(120vmin,1100px); right:-24vmin; top:50%; margin-top:calc(min(120vmin,1100px) / -2); fill:none; stroke:#fff; stroke-width:1; opacity:.2; }
+  .geo * { transform-origin:0 0; } .geo .dash { stroke-dasharray:3 12; }
+  .geo .g1 { animation:gspin 200s linear infinite; } .geo .g3 { animation:gspin 110s linear infinite reverse; } .geo .g4 { animation:gspin 80s linear infinite; } .geo .g5 { animation:gspin 50s linear infinite reverse; }
+  @keyframes gspin { to { transform:rotate(360deg); } }
+  .rings { position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; transition:opacity .5s; background:repeating-radial-gradient(circle at 78% 55%, transparent 0 60px, rgba(255,255,255,.1) 60px 62px); } body.detail .rings { opacity:1; }
+
+  .app { position:relative; z-index:1; height:100%; display:grid; grid-template-rows:auto 1fr auto; }
+  /* top bar */
+  .bar { position:relative; display:flex; align-items:center; gap:clamp(14px,3vw,40px); height:clamp(46px,8vh,62px); padding:0 clamp(14px,3vw,40px); background:linear-gradient(180deg,rgba(150,158,150,.92),var(--bar)); border-bottom:3px solid rgba(255,255,255,.85); animation:fadeIn .5s both; }
+  .bk { font-family:var(--sc); font-size:11px; font-weight:600; color:rgba(255,255,255,.55); border:1px solid rgba(255,255,255,.4); border-radius:5px; padding:0 6px; line-height:18px; }
+  .tabs { display:flex; align-items:center; gap:clamp(12px,3vw,40px); }
+  .tab { all:unset; cursor:pointer; font-size:clamp(14px,2.2vw,21px); font-weight:500; letter-spacing:.08em; color:rgba(255,255,255,.48); text-shadow:0 1px 1px rgba(0,0,0,.25); padding:4px 2px; transition:.12s; } .tab:hover { color:rgba(255,255,255,.85); } .tab.on { color:#fff; font-weight:700; }
+  .tab:focus-visible, .tile:focus-visible, .big:focus-visible, .rb:focus-visible, textarea:focus-visible, .rw:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+  .card { position:fixed; right:clamp(150px,12vw,190px); top:clamp(12px,2.4vh,20px); z-index:30; display:flex; align-items:center; gap:14px; min-width:min(400px,60vw); padding:8px 12px; background:rgba(160,166,158,.92); border:2px solid rgba(255,255,255,.85); box-shadow:0 2px 6px rgba(0,0,0,.2); animation:fadeIn .6s both; }
+  .hex { width:50px; height:50px; flex:none; background:#d8403a; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); position:relative; } .hex::before { content:""; position:absolute; inset:6px; background:linear-gradient(135deg,#ff6a60 50%,#a8221c 50%); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); }
+  .card .nm { flex:1; min-width:0; font-family:var(--sc); font-size:19px; font-weight:500; letter-spacing:.04em; } .card .nm small { display:block; font-family:var(--font); font-size:12px; color:#fff; opacity:.8; margin-top:2px; }
+  .card .lv { text-align:right; font-family:var(--num); font-weight:500; font-size:38px; line-height:1; } .card .lv small { display:block; font-family:var(--sc); font-size:13px; font-weight:500; margin-top:2px; }
+  .logo { position:fixed; right:clamp(18px,6vw,100px); top:clamp(92px,14vh,124px); z-index:3; display:flex; align-items:center; gap:14px; font-size:15px; letter-spacing:.2em; color:rgba(255,255,255,.7); } .logo i { width:2px; height:26px; background:rgba(255,255,255,.6); }
+
+  /* stage */
+  .stage { position:relative; min-height:0; overflow:auto; padding:clamp(70px,17vh,150px) clamp(14px,5vw,80px) 10px; animation:fadeIn .5s .15s both; }
+  .home { display:grid; grid-template-columns:minmax(220px,1fr) minmax(260px,1.2fr) minmax(220px,1fr); gap:clamp(14px,3vw,48px); max-width:1240px; margin:0 auto; align-items:start; }
+  .col h4 { font-weight:500; font-size:clamp(14px,1.8vw,18px); letter-spacing:.14em; color:rgba(255,255,255,.7); padding-bottom:6px; border-bottom:2px solid rgba(255,255,255,.55); margin-bottom:12px; }
+  .tiles { display:flex; flex-direction:column; gap:12px; } .trow { display:flex; align-items:center; gap:14px; } .trow.rt { flex-direction:row-reverse; }
+  .tile { all:unset; box-sizing:border-box; cursor:pointer; flex:none; position:relative; width:clamp(64px,8vw,104px); height:clamp(64px,8vw,104px); background:linear-gradient(180deg,#e2e2d6,#cacabd); border:3px solid #fff; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,.2); transition:.12s; animation:pop .4s calc(var(--i) * 70ms + .3s) both; }
+  .tile:hover { transform:translateY(-2px); box-shadow:0 6px 12px rgba(0,0,0,.28); } .tile.on { box-shadow:0 0 0 3px rgba(255,255,255,.55), 0 6px 12px rgba(0,0,0,.28); transform:scale(1.06); }
+  .dia { width:34%; height:34%; transform:rotate(45deg); background:var(--c); box-shadow:0 0 14px var(--c), inset 0 0 0 3px rgba(255,255,255,.5); }
+  .tl { font-size:clamp(13px,1.6vw,16px); color:rgba(255,255,255,.85); text-shadow:0 1px 2px rgba(0,0,0,.25); line-height:1.4; } .tl small { display:block; font-family:var(--sc); color:rgba(255,255,255,.6); font-size:12px; letter-spacing:.1em; }
+  .dn { font-family:var(--num); font-weight:500; font-size:clamp(22px,3.4vw,36px); color:#3a3d36; line-height:1; text-align:center; } .dn small { display:block; font-family:var(--sc); font-size:11px; color:#6a6e62; letter-spacing:.1em; margin-top:2px; }
+  .mid { text-align:center; padding-top:4px; }
+  .lvl { font-size:clamp(15px,2vw,22px); letter-spacing:.2em; color:rgba(255,255,255,.55); } .num { font-family:var(--num); font-weight:300; font-size:clamp(110px,22vw,260px); line-height:.9; color:rgba(255,255,255,.7); letter-spacing:-.04em; text-shadow:0 2px 0 rgba(0,0,0,.08); }
+  .today { margin:10px 0 18px; font-size:clamp(13px,1.6vw,17px); color:rgba(255,255,255,.85); letter-spacing:.1em; }
+  .big { all:unset; box-sizing:border-box; cursor:pointer; display:inline-block; padding:12px 38px; font-weight:700; font-size:clamp(16px,2.2vw,22px); letter-spacing:.2em; color:#fff; background:rgba(255,255,255,.14); border:2px solid #fff; transition:.12s; } .big:hover { background:rgba(255,255,255,.36); }
+  .def { font-family:var(--num); font-weight:500; font-size:clamp(54px,9vw,104px); line-height:1; color:rgba(255,255,255,.88); margin:-4px 0 6px; text-align:right; } .col.r h4 { text-align:right; }
+  .stats { display:flex; flex-direction:column; gap:10px; margin:6px 0 20px; align-items:flex-end; } .st { display:flex; align-items:center; gap:10px; flex-direction:row-reverse; } .ic { width:38px; height:38px; border-radius:50%; border:2px solid #fff; background:rgba(255,255,255,.6); display:flex; align-items:center; justify-content:center; color:#545a50; font-family:var(--sc); font-size:13px; font-weight:600; } .stv { font-family:var(--num); font-size:18px; color:rgba(255,255,255,.9); }
+  .stl { font-size:12px; color:rgba(255,255,255,.7); }
+
+  /* list / tooltip */
+  .lsv { display:grid; grid-template-columns:minmax(240px,420px) minmax(280px,480px); gap:clamp(16px,3vw,48px); max-width:1100px; margin:0 auto; align-items:start; }
+  .rows { display:flex; flex-direction:column; gap:8px; max-height:62vh; overflow:auto; padding:4px; }
+  .rw { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:14px; padding:6px; border:2px solid transparent; transition:.1s; } .rw:hover { background:rgba(255,255,255,.14); } .rw.on { border-color:#fff; background:rgba(255,255,255,.2); }
+  .rw .tile { width:64px; height:64px; animation:none; cursor:inherit; } .rw .tl b { font-weight:500; font-size:16px; display:block; color:#fff; }
+  .tip { background:var(--dark); box-shadow:0 8px 24px rgba(0,0,0,.35); animation:pop .25s both; } .tip .th { background:var(--beige); color:#141414; padding:8px 16px; } .tip .th b { display:block; font-weight:700; font-size:22px; letter-spacing:.04em; } .tip .th span { font-size:14px; color:#4a463c; }
+  .tip .tb { padding:14px 16px 10px; } .tip p { white-space:pre-wrap; line-height:1.8; font-size:15px; margin-bottom:12px; color:#f2f2f2; max-height:24vh; overflow:auto; }
+  .sbar { display:grid; grid-template-columns:5em 1fr; align-items:center; gap:10px; margin-bottom:4px; font-size:14px; text-align:right; } .sbar i { display:block; height:12px; background:#3c3c3c; } .sbar i b { display:block; height:100%; background:#f4f4f4; width:0; transition:width .6s; }
+  .tip .tf { border-top:1px solid #555; text-align:right; padding:8px 16px; } .rb { all:unset; cursor:pointer; font-size:15px; color:#fff; } .rb::before { content:"△"; display:inline-block; width:22px; height:22px; margin-right:8px; border-radius:50%; border:1.5px solid #ccc; text-align:center; font-size:11px; line-height:19px; } .rb:hover { color:#ffd27a; }
+
+  /* calendar / settings */
+  .calv { max-width:760px; margin:0 auto; } .mh { display:flex; justify-content:space-between; align-items:center; font-family:var(--num); font-size:26px; font-weight:300; margin-bottom:12px; } .mh button { all:unset; cursor:pointer; width:44px; height:44px; text-align:center; font-size:20px; line-height:44px; border:2px solid #fff; background:rgba(255,255,255,.14); } .mh button:hover { background:rgba(255,255,255,.34); }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; } .cal div { aspect-ratio:1; max-height:78px; display:flex; align-items:center; justify-content:center; font-family:var(--num); font-size:18px; background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.7); color:#fff; position:relative; }
+  .cal .dow { aspect-ratio:auto; border:0; background:none; font-family:var(--sc); font-size:12px; color:rgba(255,255,255,.7); } .cal .d { cursor:pointer; transition:.1s; } .cal .d:hover { background:rgba(255,255,255,.4); }
+  .cal .done { background:linear-gradient(180deg,#e2e2d6,#cacabd); color:#3a3d36; border-color:#fff; } .cal .done::after { content:""; position:absolute; right:5px; top:5px; width:8px; height:8px; transform:rotate(45deg); background:#d8403a; } .cal .today { box-shadow:0 0 0 3px rgba(255,255,255,.7); }
+  .setv { max-width:620px; margin:0 auto; } .setv .sbar { color:#fff; } .setv .sbar i { background:rgba(0,0,0,.28); } .setv .sbar i b { background:#fff; } .setv .big { margin-top:18px; }
+
+  /* editor (weapon-detail style) */
+  .edv { max-width:1180px; margin:0 auto; } .eh { display:flex; align-items:center; gap:18px; margin-bottom:12px; } .eh .tile { width:76px; height:76px; animation:none; cursor:default; } .eh h2 { font-weight:500; font-size:clamp(30px,6vw,64px); letter-spacing:.04em; line-height:1.05; color:#fff; text-shadow:0 2px 0 rgba(0,0,0,.1); } .eh small { display:block; font-size:clamp(14px,2vw,20px); color:rgba(255,255,255,.75); margin-top:2px; }
+  textarea { width:min(1000px,100%); height:min(28vh,240px); resize:none; padding:10px 14px; font:500 clamp(15px,2vw,19px)/1.8 var(--font); color:#fff; background:rgba(0,0,0,.14); border:0; border-bottom:2px solid rgba(255,255,255,.8); outline:none; } textarea::placeholder { color:rgba(255,255,255,.6); } textarea:focus { background:rgba(0,0,0,.2); }
+  .erow { display:grid; grid-template-columns:minmax(120px,170px) minmax(220px,420px) 1fr; gap:clamp(14px,3vw,40px); align-items:start; margin-top:16px; border-top:2px solid rgba(255,255,255,.65); padding-top:14px; }
+  .bn { font-family:var(--num); font-weight:500; font-size:clamp(54px,8vw,92px); line-height:1; } .bn small { display:block; font-family:var(--font); font-size:14px; font-weight:400; margin-top:2px; color:rgba(255,255,255,.85); }
+  .erow .sbar { color:#fff; } .erow .sbar i { background:rgba(255,255,255,.28); } .erow .sbar i b { background:#fff; }
+  .mt { display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; } .mt .tile { width:clamp(54px,6vw,74px); height:clamp(54px,6vw,74px); animation:none; }
+  .ok { all:unset; cursor:pointer; position:fixed; right:clamp(18px,5vw,90px); bottom:76px; z-index:20; width:78px; height:78px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#7fb4ba,var(--teal)); border:4px solid rgba(255,255,255,.85); color:#fff; font-weight:700; font-size:16px; letter-spacing:.1em; text-align:center; line-height:70px; box-shadow:0 4px 14px rgba(0,0,0,.3); transition:.12s; } .ok:hover { transform:scale(1.08); } .ok:active { transform:scale(.94); }
+  .hintx { font-size:13px; color:#fff6c8; margin-top:6px; min-height:1.2em; text-shadow:0 1px 2px rgba(0,0,0,.3); }
+
+  /* footer */
+  .foot { height:clamp(38px,6vh,48px); background:#0c0c0c; display:flex; align-items:center; justify-content:flex-end; padding:0 clamp(18px,5vw,90px); gap:22px; font-size:15px; letter-spacing:.1em; animation:fadeIn .6s .3s both; } .foot span i { display:inline-block; width:20px; height:20px; margin-right:6px; vertical-align:-4px; border-radius:50%; background:#3c64d8; color:#fff; font-style:normal; font-size:11px; text-align:center; line-height:20px; } .foot button { all:unset; cursor:pointer; } .foot button:hover { color:#ffd27a; }
+
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(40,52,52,.6); }
+  #ov.show { display:flex; animation:fadeIn .2s; } #ov .bx { text-align:center; animation:zoom .6s cubic-bezier(.2,.9,.3,1); }
+  #ovD { width:clamp(90px,16vw,170px); height:clamp(90px,16vw,170px); margin:0 auto; transform:rotate(45deg); background:var(--c,#fff); box-shadow:0 0 60px var(--c,#fff), inset 0 0 0 10px rgba(255,255,255,.55); animation:engram 1.2s cubic-bezier(.2,.9,.3,1); }
+  #ovT { margin-top:clamp(40px,7vw,80px); font-size:clamp(22px,5vw,50px); font-weight:500; letter-spacing:.18em; text-shadow:0 2px 12px rgba(0,0,0,.3); } #ovS { margin-top:8px; font-family:var(--sc); font-size:clamp(14px,2.2vw,20px); letter-spacing:.24em; opacity:.85; }
+  @keyframes fadeIn { from { opacity:0; } } @keyframes pop { from { opacity:0; transform:scale(.88); } } @keyframes zoom { from { opacity:0; transform:scale(.8); } }
+  @keyframes engram { 0% { transform:rotate(45deg) scale(.1); opacity:0; } 60% { transform:rotate(405deg) scale(1.15); opacity:1; } 100% { transform:rotate(765deg) scale(1); } }
+  @media (max-width:860px) { html, body { height:auto; } body { overflow:auto; } .app { height:auto; min-height:100%; } .home, .lsv { grid-template-columns:1fr; } .erow { grid-template-columns:1fr; } .mt { justify-content:flex-start; } .card { position:static; margin:10px 14px 0; } .logo { display:none; } .stage { padding-top:20px; } .col.r h4, .def { text-align:left; } .stats { align-items:flex-start; } .st { flex-direction:row; } .trow.rt { flex-direction:row; } .bar { height:auto; padding:8px 14px; flex-wrap:wrap; } .tabs { flex-wrap:wrap; } .ok { bottom:64px; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<svg class="geo" viewBox="-450 -450 900 900" aria-hidden="true">
+  <g class="g1"><circle r="436" class="dash"/><circle r="418"/></g>
+  <g class="g3"><polygon points="0,-380 329,190 -329,190"/><polygon points="0,380 329,-190 -329,-190"/></g>
+  <g class="g4"><polygon points="0,-300 260,-150 260,150 0,300 -260,150 -260,-150"/></g>
+  <g class="g5"><polygon points="0,-225 159,-159 225,0 159,159 0,225 -159,159 -225,0 -159,-159" class="dash"/><circle r="120"/></g>
+</svg>
+<div class="rings"></div>
+
+<div class="app">
+  <header class="bar"><span class="bk">L1</span><nav class="tabs" id="tabs" aria-label="タブ"></nav><span class="bk">R1</span></header>
+  <div class="card"><div class="hex"></div><div class="nm" id="cn">GUARDIAN<small id="cs">NEW LIGHT</small></div><div class="lv"><span id="clv">1</span><small id="csub">0</small></div></div>
+  <div class="logo"><span id="beta">日誌</span><i></i><svg width="30" height="26" viewBox="0 0 30 26" fill="rgba(255,255,255,.8)" aria-hidden="true"><path d="M2 2h7l6 11 6-11h7L18 24h-6L2 2Z"/></svg></div>
+  <main class="stage" id="stage"></main>
+  <footer class="foot" id="foot"></footer>
+</div>
+<div id="ov"><div class="bx"><div id="ovD"></div><div id="ovT"></div><div id="ovS"></div></div></div>
+
+<script src="theme-switch.js" data-theme="destiny1"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","EXOTIC","#e8c340",5],["良い","LEGENDARY","#9a5ae0",4],["普通","RARE","#4a8ee0",3],["微妙","UNCOMMON","#4fb868",2],["最悪","COMMON","#f2f2f2",1]];
+const RANKS = ["NEW LIGHT","INITIATE","VANGUARD","WARDEN","EXEMPLAR","LEGEND","GUARDIAN"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const TABS = ["リスト", "キャラクター", "所持品", "設定"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const moodOf = m => MOODS.find(x => x[0] === m);
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", tab = 1, view = "tab", recIdx = 0, calOff = 0, overlayTimer;
+
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function perEntry() { const m = {}; let run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; m[k] = run; prev = cur; } return m; }
+function totalXp() { let xp = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; } return xp; }
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const lvOf = xp => Math.min(40, 1 + Math.floor(xp / 40));
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+const dia = c => `<span class="dia" style="--c:${c}"></span>`;
+const tile = (inner, extra = "", tag = "button") => `<${tag} class="tile ${extra}">${inner}</${tag}>`;
+
+function chrome() {
+  const xp = totalXp(), rk = rankOf(xp);
+  $("clv").textContent = lvOf(xp); $("cs").textContent = RANKS[rk]; $("csub").textContent = Object.keys(data).length;
+  $("tabs").innerHTML = TABS.map((t, i) => `<button class="tab ${view === "tab" && i === tab ? "on" : ""}" data-t="${i}">${t}</button>`).join("");
+  document.body.classList.toggle("detail", view === "edit");
+  $("foot").innerHTML = view === "edit" ? `<button data-a="close"><span><i>✕</i>戻る</span></button>` : `<span>← → タブ切替</span><button data-a="home"><span><i>✕</i>閉じる</span></button>`;
+}
+function sbar(label, v, max) { return `<div class="sbar"><span>${label}</span><i><b style="width:0" data-w="${Math.round(v / max * 100)}"></b></i></div>`; }
+function fillBars() { requestAnimationFrame(() => document.querySelectorAll("[data-w]").forEach(el => el.style.width = el.dataset.w + "%")); }
+
+function render() {
+  chrome(); const st = $("stage"), xp = totalXp(), s = streakCount(), n = Object.keys(data).length, rk = rankOf(xp);
+  if (view === "edit") {
+    const m = moodOf(mood), len = draft.length, pe = perEntry();
+    st.innerHTML = `<div class="edv"><div class="eh">${tile(m ? dia(m[2]) : `<span class="dn">${new Date(selected + "T00:00:00").getDate()}</span>`)}<div><h2>今日の日記</h2><small>${fmt(selected)}（${DOW[new Date(selected + "T00:00:00").getDay()]}）${m ? " ─ " + m[1] : ""}</small></div></div>
+      <textarea id="body" placeholder="今日の出来事を記録してください…"></textarea><div class="hintx" id="hx">${selected === ymd(new Date()) ? "" : "過去の日付を編集中です"}</div>
+      <div class="erow"><div class="bn"><span id="len">${len}</span><small>文字数</small></div>
+        <div id="eb">${sbar("気分", m ? m[3] : 0, 5)}${sbar("文字数", Math.min(len, 400), 400)}${sbar("連続", Math.min(s, 30), 30)}</div>
+        <div class="mt" id="mt">${MOODS.map(([mm, t, c]) => `<button class="tile ${mm === mood ? "on" : ""}" data-m="${mm}" title="${t}">${dia(c)}</button>`).join("")}</div></div></div><button class="ok" data-a="save">保存</button>`;
+    $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; $("len").textContent = draft.length; $("eb").innerHTML = sbar("気分", moodOf(mood) ? moodOf(mood)[3] : 0, 5) + sbar("文字数", Math.min(draft.length, 400), 400) + sbar("連続", Math.min(s, 30), 30); fillBars(); });
+    fillBars(); return;
+  }
+  if (tab === 1) {
+    const recent = Object.keys(data).sort().reverse().slice(0, 5), today = !!data[ymd(new Date())];
+    st.innerHTML = `<div class="home"><div class="col"><h4>コンディション</h4><div class="tiles">${MOODS.map(([m, t, c], i) => `<div class="trow"><button class="tile ${m === mood ? "on" : ""}" data-m="${m}" style="--i:${i}">${dia(c)}</button><span class="tl">${m}<small>${t}</small></span></div>`).join("")}</div></div>
+      <div class="mid"><div class="lvl">レベル</div><div class="num">${lvOf(xp)}</div><div class="today">${fmt(ymd(new Date()))} ─ ${today ? "今日の記録は済んでいます" : "今日の記録はまだです"}</div><button class="big" data-a="write">日記を書く</button></div>
+      <div class="col r"><h4>連続日数</h4><div class="def">${s}</div><div class="stats"><div class="st"><span class="ic">記</span><span class="stv">${n}</span><span class="stl">記録数</span></div><div class="st"><span class="ic">階</span><span class="stv">${rk + 1}</span><span class="stl">階級</span></div><div class="st"><span class="ic">経</span><span class="stv">${xp}</span><span class="stl">経験値</span></div></div>
+        <div class="tiles">${recent.length ? recent.map((k, i) => `<div class="trow rt"><button class="tile" data-open="${k}" style="--i:${i}"><span class="dn">${+k.slice(8)}<small>${DOW[new Date(k + "T00:00:00").getDay()]}</small></span></button><span class="tl">${fmt(k)}<small>${(moodOf(data[k].mood) || [0, "—"])[1]}</small></span></div>`).join("") : `<span class="tl">記録はまだありません。</span>`}</div></div></div>`;
+  } else if (tab === 0) {
+    const keys = Object.keys(data).sort().reverse(), pe = perEntry(); if (recIdx >= keys.length) recIdx = 0; const k = keys[recIdx];
+    st.innerHTML = keys.length ? `<div class="lsv"><div class="rows">${keys.map((x, i) => `<button class="rw ${i === recIdx ? "on" : ""}" data-r="${i}">${tile(`<span class="dn">${+x.slice(8)}<small>${DOW[new Date(x + "T00:00:00").getDay()]}</small></span>`, "", "span")}<span class="tl"><b>${fmt(x)}</b>${esc(data[x].text.replace(/\s+/g, " ").slice(0, 20))}</span></button>`).join("")}</div>
+      <div class="tip"><div class="th"><b>${fmt(k)}</b><span>${(moodOf(data[k].mood) || [0, "—"])[1]} ─ ${data[k].mood || ""}</span></div><div class="tb"><p>${esc(data[k].text)}</p>${sbar("気分", (moodOf(data[k].mood) || [0, 0, 0, 0])[3], 5)}${sbar("文字数", Math.min(data[k].text.length, 400), 400)}${sbar("連続", Math.min(pe[k] || 1, 30), 30)}</div><div class="tf"><button class="rb" data-edit="${k}">編集</button></div></div></div>` : `<div class="home"><div class="mid" style="grid-column:1/-1"><div class="today">記録はまだありません。</div><button class="big" data-a="write">日記を書く</button></div></div>`;
+    fillBars();
+  } else if (tab === 2) {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(d => `<div class="dow">${d}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}" data-d="${k}">${d}</div>`; }
+    st.innerHTML = `<div class="calv"><div class="mh"><button data-cal="-1">◀</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button data-cal="1">▶</button></div><div class="cal">${h}</div></div>`;
+  } else {
+    const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+    st.innerHTML = `<div class="setv"><div class="col"><h4>ステータス</h4></div>${sbar("連続日数", Math.min(s, 30), 30)}${sbar("記録数", Math.min(n, 100), 100)}${sbar("次のランク", pct, 100)}${sbar("レベル", lvOf(xp), 40)}<p class="tl" style="margin-top:14px">階級: ${RANKS[rk]} ／ レベル ${lvOf(xp)} ／ 経験値 ${xp}</p><button class="big" data-a="theme">テーマ選択へ</button></div>`;
+    fillBars();
+  }
+}
+
+function overlay(up, isNew) {
+  const m = moodOf(mood); $("ovD").style.setProperty("--c", m ? m[2] : "#fff");
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("ovT").textContent = up ? "ランクアップ" : "エングラムを入手"; $("ovS").textContent = (m ? m[1] + " ─ " : "") + (isNew ? streakCount() + " DAYS" : "UPDATED");
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2500);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+function save() {
+  const text = draft.trim(); if (!text) { $("body").focus(); return; } if (!mood) { $("hx").textContent = "右下のタイルから、今日の気分を選んでください"; return; }
+  const before = rankOf(totalXp()), isNew = !data[selected]; data[selected] = { mood, text }; store(data);
+  view = "tab"; tab = 1; selected = ymd(new Date()); loadDay(); render(); overlay(rankOf(totalXp()) > before, isNew);
+}
+function startEdit(k) { selected = k || ymd(new Date()); loadDay(); view = "edit"; render(); setTimeout(() => $("body") && $("body").focus(), 50); }
+
+document.addEventListener("click", e => {
+  const t = e.target.closest("[data-t]"); if (t) { view = "tab"; tab = +t.dataset.t; if (tab === 1) { selected = ymd(new Date()); loadDay(); } return render(); }
+  const a = e.target.closest("[data-a]");
+  if (a) { const v = a.dataset.a; if (v === "write") return startEdit(); if (v === "save") return save(); if (v === "close") { view = "tab"; return render(); } if (v === "home" || v === "theme") { location.href = "index.html"; return; } }
+  const m = e.target.closest("[data-m]"); if (m) { mood = m.dataset.m; if (view === "edit") { document.querySelectorAll("#mt .tile").forEach(x => x.classList.toggle("on", x.dataset.m === mood)); const b = document.querySelector("#eb"); b.innerHTML = sbar("気分", moodOf(mood)[3], 5) + sbar("文字数", Math.min(draft.length, 400), 400) + sbar("連続", Math.min(streakCount(), 30), 30); fillBars(); } else { document.querySelectorAll(".home .col:first-child .tile").forEach(x => x.classList.toggle("on", x.dataset.m === mood)); } return; }
+  const o = e.target.closest("[data-open]"); if (o) return startEdit(o.dataset.open);
+  const r = e.target.closest("[data-r]"); if (r) { recIdx = +r.dataset.r; return render(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) return startEdit(ed.dataset.edit);
+  const dd = e.target.closest("[data-d]"); if (dd) return startEdit(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; render(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); return; }
+  if (e.key === "Escape") { if ($("ov").classList.contains("show")) return $("ov").classList.remove("show"); view = "tab"; return render(); }
+  if (view === "edit") return;
+  if (e.key === "ArrowRight") { tab = (tab + 1) % 4; if (tab === 1) { selected = ymd(new Date()); loadDay(); } render(); } else if (e.key === "ArrowLeft") { tab = (tab + 3) % 4; if (tab === 1) { selected = ymd(new Date()); loadDay(); } render(); }
+  else if (tab === 0 && (e.key === "ArrowDown" || e.key === "ArrowUp")) { const n = Object.keys(data).length; if (n) { e.preventDefault(); recIdx = (recIdx + (e.key === "ArrowDown" ? 1 : -1) + n) % n; render(); } }
+  else if (tab === 0 && e.key === "Enter") { const k = Object.keys(data).sort().reverse()[recIdx]; if (k) startEdit(k); }
+});
+
+loadDay(); render();
+</script>
+</body>
+</html>

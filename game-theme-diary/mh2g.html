@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunter Notes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;700;800&family=Alfa+Slab+One&display=swap" rel="stylesheet">
+<style>
+  /* Hunting-game system menus: tribal mural backdrop, dark green cross-hatched panels with a rust dotted-chain frame, beaded rule, MIN-MAX bars, parchment card */
+  :root { --ink:#f4f6ee; --dim:#a8b09c; --green:#3cff6a; --gbar:#2f8a3e; --rust:#d0703a; --gold:#e0b040; --yel:#ffd84a; --panel:rgba(26,50,34,.9); --font:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN',sans-serif; --slab:'Alfa Slab One',serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { min-height:100%; }
+  body { font-family:var(--font); font-weight:700; color:var(--ink); overflow-x:hidden; background:#202a1c; letter-spacing:.1em; text-shadow:1px 1px 2px rgba(0,0,0,.85); }
+  .bg { position:fixed; inset:0; z-index:0; } .bg svg { width:100%; height:100%; display:block; }
+  .shade { position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at center, rgba(10,16,8,.1) 35%, rgba(6,10,4,.75) 100%); }
+  .app { position:relative; z-index:2; max-width:1280px; margin:0 auto; min-height:100vh; padding:clamp(10px,2.4vw,30px) clamp(12px,3vw,40px) 40px; }
+  .scr { display:none; } .scr.on { display:block; animation:fadeIn .3s both; }
+
+  /* frame (rust dotted chain) + fill (cross-hatch) */
+  .fr { position:relative; background:
+      linear-gradient(90deg,var(--rust) 0 6px,transparent 6px 10px) 0 0/10px 4px repeat-x, linear-gradient(90deg,var(--rust) 0 6px,transparent 6px 10px) 0 100%/10px 4px repeat-x,
+      linear-gradient(180deg,var(--rust) 0 6px,transparent 6px 10px) 0 0/4px 10px repeat-y, linear-gradient(180deg,var(--rust) 0 6px,transparent 6px 10px) 100% 0/4px 10px repeat-y,
+      repeating-linear-gradient(45deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px), repeating-linear-gradient(-45deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px), var(--panel); padding:14px 18px; }
+  .fr::before, .fr::after { content:""; position:absolute; width:9px; height:9px; background:var(--rust); border:2px solid #3a1c0c; } .fr::before { left:-3px; top:-3px; box-shadow:calc(100% + 0px) 0 0 transparent; } .fr::after { right:-3px; bottom:-3px; }
+  .fr > i.c1, .fr > i.c2 { position:absolute; width:9px; height:9px; background:var(--rust); border:2px solid #3a1c0c; } .fr > i.c1 { right:-3px; top:-3px; } .fr > i.c2 { left:-3px; bottom:-3px; }
+
+  /* screen A (options) */
+  .ttl { display:flex; justify-content:center; gap:4px; margin:6px 0 4px; } .ttl span { font-family:var(--slab); font-size:clamp(40px,8vw,84px); line-height:1; letter-spacing:0; -webkit-text-stroke:4px #1a1008; paint-order:stroke fill; text-shadow:3px 3px 0 #1a1008; animation:pop .5s calc(var(--i) * 70ms) cubic-bezier(.2,1.6,.4,1) both; }
+  .beads { height:22px; margin:6px 0 10px; background:repeating-linear-gradient(90deg,var(--gold) 0 18px,transparent 18px 32px); position:relative; -webkit-mask:linear-gradient(#000 0 0); } .beads::after { content:""; position:absolute; inset:5px 0; background:repeating-linear-gradient(90deg,#4a3410 0 8px,transparent 8px 32px) 5px 0; }
+  .rows { max-width:980px; margin:0 auto; }
+  .row { display:grid; grid-template-columns:minmax(120px,36%) 1fr; align-items:center; gap:14px; min-height:clamp(42px,6.2vh,58px); padding:0 clamp(8px,2vw,28px); cursor:pointer; font-size:clamp(17px,2.6vw,28px); transition:color .1s; }
+  .row .lab { color:#f4f6ee; } .row .val { text-align:center; display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap; }
+  .row.sel .lab, .row.sel .val { color:var(--green); text-shadow:0 0 10px rgba(60,255,106,.6), 1px 1px 2px #000; } .row:hover:not(.sel) .lab { color:#cfe8c0; }
+  .ar { color:var(--dim); font-size:.8em; cursor:pointer; user-select:none; } .row.sel .ar { color:var(--green); } .ar:hover { color:#fff; }
+  .mm { display:flex; align-items:center; gap:clamp(8px,2vw,20px); } .mm b { font-weight:800; } .sq { display:flex; gap:4px; } .sq i { display:block; width:clamp(18px,3vw,34px); height:clamp(18px,3vw,34px); background:rgba(244,246,238,.14); cursor:pointer; box-shadow:inset 0 0 0 2px rgba(244,246,238,.4); } .sq i.f { background:#f4f6ee; box-shadow:none; } .row.sel .sq i.f { background:var(--green); box-shadow:0 0 8px rgba(60,255,106,.7); }
+  .desc { max-width:980px; margin:clamp(10px,2vh,24px) auto 0; min-height:clamp(120px,22vh,190px); font-size:clamp(14px,2vw,20px); line-height:1.9; } .desc textarea { display:block; width:100%; min-height:clamp(110px,20vh,170px); resize:none; padding:2px 4px; font:700 clamp(14px,2vw,19px)/1.9 var(--font); letter-spacing:.08em; color:var(--ink); background:transparent; border:0; outline:none; text-shadow:1px 1px 2px #000; } .desc textarea::placeholder { color:var(--dim); }
+  .hintbar { max-width:980px; margin:10px auto 0; display:flex; justify-content:flex-end; gap:24px; padding:6px 20px; background:linear-gradient(90deg,transparent,rgba(40,120,50,.85)); font-size:clamp(14px,2vw,20px); } .hintbar i { display:inline-block; width:24px; height:24px; vertical-align:-5px; margin-right:6px; border-radius:50%; background:rgba(255,255,255,.2); border:2px solid #cfe8c0; font-style:normal; font-size:12px; text-align:center; line-height:20px; }
+
+  /* screen B (list / detail) */
+  .bg2 { display:grid; grid-template-columns:minmax(260px,1fr) minmax(300px,1.1fr); gap:clamp(12px,2vw,26px); }
+  .col { display:flex; flex-direction:column; gap:clamp(8px,1.4vw,14px); min-width:0; }
+  .q { font-size:clamp(17px,2.6vw,26px); } .pv { min-height:clamp(180px,34vh,340px); font-size:clamp(14px,1.9vw,19px); line-height:1.9; white-space:pre-wrap; overflow:auto; max-height:44vh; } .pvh { color:var(--yel); font-size:.8em; letter-spacing:.2em; margin-bottom:6px; }
+  .bar2 { display:flex; justify-content:space-between; gap:12px; padding:5px 14px; background:linear-gradient(90deg,#2f7a38,#1e5428); font-size:clamp(14px,1.9vw,19px); } .kb { display:inline-block; padding:0 8px; margin-right:8px; background:#e8ecdc; color:#1a2412; border-radius:5px; text-shadow:none; font-size:.8em; }
+  .zh { display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:clamp(17px,2.4vw,26px); padding:2px 6px; } .zh b { font-weight:800; letter-spacing:.2em; } .zh span { font-size:.95em; letter-spacing:.16em; }
+  .ty { display:flex; justify-content:space-between; align-items:center; color:var(--yel); font-size:clamp(14px,1.9vw,19px); margin-bottom:6px; } .rb { display:inline-flex; align-items:center; justify-content:center; width:34px; height:34px; border-radius:50%; background:#0c1c10; border:3px solid #2a3a22; color:#4cff7a; cursor:pointer; font-size:14px; } .rb:hover { filter:brightness(1.4); }
+  .li { all:unset; box-sizing:border-box; display:grid; grid-template-columns:34px 1fr auto; align-items:center; gap:10px; width:100%; padding:5px 10px; cursor:pointer; font-size:clamp(15px,2.1vw,22px); color:#9aa690; } .li:hover { color:#e6efdc; } .li .ic { width:20px; height:24px; border:2px solid #8aa078; background:#1c2a1a; } .li.sel { background:linear-gradient(90deg,#2f8a3e,#2a7a38 60%,rgba(40,100,50,.4)); color:#fff; } .li.sel .ic { background:#9ad88a; border-color:#fff; } .li small { font-size:.9em; letter-spacing:.18em; }
+  .lst { max-height:36vh; overflow:auto; min-height:120px; }
+  .dt .nm { display:flex; align-items:center; gap:12px; color:#5cff8a; font-size:clamp(17px,2.4vw,24px); margin-bottom:8px; } .dt .nm i { width:30px; height:30px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#ff8a7a,#c0281c); border:3px solid #7a1a10; flex:none; }
+  .dt .m { display:grid; grid-template-columns:34px 1fr auto; align-items:center; gap:10px; font-size:clamp(14px,2vw,21px); padding:3px 0; } .dt .m i { width:26px; height:26px; border-radius:50%; border:3px solid #1a1008; } .dt .m span:last-child { letter-spacing:.14em; }
+  .btn { all:unset; cursor:pointer; display:inline-block; padding:5px 22px; margin-top:8px; background:linear-gradient(180deg,#3aa04a,#2a7a38); border:3px solid #1a1008; box-shadow:0 0 0 2px var(--rust); font-size:clamp(14px,2vw,19px); } .btn:hover { filter:brightness(1.15); }
+
+  /* screen C (parchment) */
+  .c1 { display:grid; grid-template-columns:1fr minmax(300px,520px); gap:clamp(12px,3vw,40px); align-items:start; min-height:56vh; }
+  .big { font-size:clamp(24px,4.4vw,44px); letter-spacing:.14em; padding-top:6px; }
+  .pap { position:relative; padding:20px 26px 26px; color:#2c2a26; text-shadow:none; background:radial-gradient(ellipse at 30% 20%,#9a8f80,#7d7366 70%); box-shadow:inset 0 0 40px rgba(60,48,34,.5), 0 8px 24px rgba(0,0,0,.5);
+    clip-path:polygon(0 3%,3% 0,12% 2%,24% 0,38% 2%,52% 0,67% 2%,82% 0,94% 2%,100% 1%,99% 14%,100% 28%,98% 44%,100% 60%,99% 76%,100% 92%,97% 100%,84% 98%,70% 100%,54% 98%,40% 100%,26% 98%,12% 100%,2% 98%,0 94%,1% 78%,0 62%,2% 46%,0 30%,1% 14%); font-weight:700; }
+  .pap .pg { display:flex; justify-content:center; align-items:center; gap:10px; margin-bottom:6px; } .pap .pg .rb { background:#0c1c10; } .pap .pg span { font-size:clamp(16px,2.2vw,22px); letter-spacing:.1em; color:#1e1c18; }
+  .pap h3 { text-align:center; font-size:clamp(17px,2.4vw,22px); letter-spacing:.2em; line-height:1.7; font-weight:700; } .pap .sec { margin-top:16px; font-size:clamp(14px,1.9vw,19px); line-height:1.9; letter-spacing:.14em; } .pap .sec b { display:block; font-weight:700; } .pap .sec em { font-style:normal; color:#7a1a10; }
+  .pap .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; margin-top:12px; } .pap .cal div { aspect-ratio:1.2; display:flex; align-items:center; justify-content:center; font-size:clamp(12px,1.6vw,16px); border:2px solid rgba(40,34,26,.45); } .pap .cal .dow { aspect-ratio:auto; border:0; font-size:11px; } .pap .cal .d { cursor:pointer; } .pap .cal .d:hover { background:rgba(255,255,255,.3); } .pap .cal .done { background:#2c4a30; color:#f4f6ee; border-color:#1a2a1c; } .pap .cal .today { outline:3px solid #b8281c; }
+  .pap .mt { display:grid; grid-template-columns:5.5em 1fr 2em; align-items:center; gap:8px; margin-top:8px; font-size:clamp(13px,1.8vw,17px); } .pap .mt .tr { height:14px; background:rgba(40,34,26,.25); border:2px solid #3a3226; } .pap .mt .tr i { display:block; height:100%; background:#2c4a30; width:0; transition:width .7s; }
+  .dlg { max-width:1040px; margin:clamp(10px,3vh,34px) auto 0; padding:14px 22px; font-size:clamp(14px,2vw,21px); line-height:1.9; min-height:96px; } .dlg y { color:var(--yel); }
+
+  /* result overlay */
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:14px; background:rgba(6,12,6,.8); } #ov.show { display:flex; animation:fadeIn .2s; }
+  #ov .bx { width:min(760px,100%); padding:30px 24px; text-align:center; animation:pop .5s cubic-bezier(.2,1.6,.4,1); } #ovT { font-family:var(--slab); font-size:clamp(30px,7vw,68px); letter-spacing:.04em; color:var(--yel); -webkit-text-stroke:3px #1a1008; paint-order:stroke fill; text-shadow:3px 3px 0 #1a1008; } #ovS { margin-top:10px; font-size:clamp(14px,2.2vw,22px); letter-spacing:.2em; }
+  @keyframes fadeIn { from { opacity:0; } } @keyframes pop { from { opacity:0; transform:scale(.8); } }
+  .row:focus-visible, .li:focus-visible, .btn:focus-visible, .rb:focus-visible, textarea:focus-visible { outline:3px solid var(--yel); outline-offset:2px; }
+  @media (max-width:860px) { .bg2, .c1 { grid-template-columns:1fr; } .row { grid-template-columns:1fr; gap:2px; padding:6px 10px; } .row .val { justify-content:flex-start; } .ttl span { -webkit-text-stroke:3px #1a1008; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="bg"><svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs><radialGradient id="mg" cx=".5" cy=".4" r=".8"><stop offset="0" stop-color="#3a4a2c"/><stop offset=".6" stop-color="#2a3522"/><stop offset="1" stop-color="#151b11"/></radialGradient><filter id="rough"><feTurbulence type="fractalNoise" baseFrequency=".03" numOctaves="3" seed="3" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="12"/></filter></defs>
+  <rect width="1600" height="900" fill="url(#mg)"/>
+  <g filter="url(#rough)" fill="none" stroke-linecap="round">
+    <g stroke="#8a5a2c" stroke-width="10" opacity=".34"><circle cx="1180" cy="270" r="150"/><circle cx="1180" cy="270" r="104"/><circle cx="1180" cy="270" r="58"/><path d="M1180 90V450M1000 270H1360M1050 140L1310 400M1310 140L1050 400"/></g>
+    <g stroke="#a33a22" stroke-width="12" opacity=".3"><path d="M200 150l40 -50 40 50 40 -50 40 50 40 -50 40 50 40 -50"/><path d="M200 210l40 -50 40 50 40 -50 40 50 40 -50 40 50 40 -50"/><circle cx="330" cy="520" r="90"/><circle cx="330" cy="520" r="52"/></g>
+    <g stroke="#c8a030" stroke-width="8" opacity=".22"><path d="M560 640c40 -90 130 -90 170 0s130 90 170 0"/><path d="M960 700l60 -80 60 80 60 -80 60 80 60 -80"/><circle cx="780" cy="260" r="46"/><path d="M700 170h160M700 360h160"/></g>
+    <g fill="#7a8a4a" opacity=".16" stroke="none"><path d="M0 900C60 760 140 700 240 690 190 760 170 830 180 900Z"/><path d="M1600 900C1540 780 1450 730 1340 720 1400 790 1420 840 1410 900Z"/></g>
+  </g>
+</svg></div>
+<div class="shade"></div>
+
+<div class="app">
+  <section class="scr on" id="sA">
+    <div class="ttl" id="ttl"></div><div class="beads"></div>
+    <div class="rows fr" id="rows"><i class="c1"></i><i class="c2"></i></div>
+    <div class="desc fr" id="descA"><i class="c1"></i><i class="c2"></i><div id="dtxt"></div></div>
+    <div class="hintbar"><span><i>↑↓</i>選択</span><span><i>←→</i>変更</span><span><i>✕</i>戻る</span></div>
+  </section>
+
+  <section class="scr" id="sB">
+    <div class="bg2"><div class="col">
+      <div class="fr q"><i class="c1"></i><i class="c2"></i>どの記録を読みますか？</div>
+      <div class="fr pv" id="pv"><i class="c1"></i><i class="c2"></i><div class="pvh" id="pvh"></div><div id="pvt"></div></div>
+      <div class="bar2"><span><span class="kb">Enter</span>編集</span><span><span class="kb">Esc</span>戻る</span></div></div>
+      <div class="col"><div class="zh"><b>記録一覧</b><span id="zen">0z</span></div>
+        <div class="fr"><i class="c1"></i><i class="c2"></i><div class="ty"><span id="mon">現在の月</span><span><span class="rb" data-mo="-1">◀</span> <span id="pgn">1/1</span> <span class="rb" data-mo="1">▶</span></span></div><div class="lst" id="lst"></div></div>
+        <div class="fr dt" id="dt"><i class="c1"></i><i class="c2"></i></div></div></div>
+  </section>
+
+  <section class="scr" id="sC">
+    <div class="c1"><div class="big" id="bigC">ステータス</div>
+      <div class="pap" id="pap"></div></div>
+    <div class="dlg fr" id="dlg"><i class="c1"></i><i class="c2"></i><div id="dg"></div></div>
+    <div class="hintbar"><span><i>←→</i>ページ</span><span><i>✕</i>戻る</span></div>
+  </section>
+</div>
+<div id="ov"><div class="bx fr"><i class="c1"></i><i class="c2"></i><div id="ovT"></div><div id="ovS"></div></div></div>
+
+<script src="theme-switch.js" data-theme="mh2g"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","上手に焼けました♪",5],["良い","こんがり肉",4],["普通","生焼け肉",3],["微妙","生肉",2],["最悪","黒こげ肉",1]];
+const RANKS = ["HR1 見習い","HR2 ハンター","HR3 一人前","HR4 熟練","HR5 上位","HR6 G級","HR7 伝説"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const ROWS = ["日付", "焼き加減（気分）", "本文", "記録する", "過去の記録", "ステータス・暦", "初期設定に戻す"];
+const DESC = ["日記を書く日付を設定します。", "今日の気分を、肉の焼き加減で設定します。", "", "この内容で日記を保存し、クエストを達成します。", "過去の記録を一覧で読み返します。", "ステータスやカレンダー、気分の傾向を確認します。", "入力中の内容と気分をリセットします。"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const addDays = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const moodOf = m => MOODS.find(x => x[0] === m);
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", scr = "A", row = 0, recIdx = 0, monOff = 0, pgC = 0, calOff = 0, overlayTimer;
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function bestStreak() { let best = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; best = Math.max(best, run); prev = cur; } return best; }
+function totalXp() { let xp = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; } return xp; }
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+
+// ---- title (coloured tribal letters) ----
+(function () { const cols = ["#d8402a","#e0b040","#5cc84a","#d8402a","#4a8ee0","#e0b040","#5cc84a"]; $("ttl").innerHTML = "DIARY".split("").map((c, i) => `<span style="--i:${i};color:${cols[i % cols.length]}">${c}</span>`).join(""); })();
+
+// ---- screen A ----
+function renderA() {
+  const m = moodOf(mood), lv = m ? m[2] : 0, d = new Date(selected + "T00:00:00");
+  const vals = [
+    `<span class="ar" data-ad="-1">‹</span><span>${fmt(selected)}（${DOW[d.getDay()]}）</span><span class="ar" data-ad="1">›</span>`,
+    `<span class="mm"><b>MIN</b><span class="sq">${[1,2,3,4,5].map(i => `<i class="${i <= lv ? "f" : ""}" data-lv="${i}"></i>`).join("")}</span><b>MAX</b></span><span style="min-width:7em">${m ? m[1] : "未設定"}</span>`,
+    `<span>${draft ? esc(draft.replace(/\s+/g, " ").slice(0, 16)) + (draft.length > 16 ? "…" : "") : "未入力"}</span>`, `<span>OK</span>`, `<span>▶</span>`, `<span>▶</span>`, `<span></span>`
+  ];
+  const ic = $("rows").querySelectorAll("i.c1, i.c2");
+  $("rows").innerHTML = `<i class="c1"></i><i class="c2"></i>` + ROWS.map((r, i) => `<div class="row ${i === row ? "sel" : ""}" data-r="${i}"><span class="lab">${r}</span><span class="val">${vals[i]}</span></div>`).join("");
+  const box = $("dtxt");
+  if (row === 2) { box.innerHTML = `<textarea id="body" placeholder="今日の狩りを、ここに書き残そう…"></textarea>`; $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; const v = $("rows").querySelector('[data-r="2"] .val span'); if (v) v.textContent = draft ? draft.replace(/\s+/g, " ").slice(0, 16) + (draft.length > 16 ? "…" : "") : "未入力"; }); $("body").addEventListener("focus", () => {}); }
+  else box.textContent = DESC[row] + (row === 3 && !mood ? "（先に気分を設定してください）" : "");
+}
+
+// ---- screen B ----
+function monthKeys() { const d = new Date(); d.setMonth(d.getMonth() + monOff); const pre = ymd(d).slice(0, 7); return { pre, keys: Object.keys(data).filter(k => k.startsWith(pre)).sort().reverse() }; }
+function renderB() {
+  const { pre, keys } = monthKeys(); if (recIdx >= keys.length) recIdx = 0; const k = keys[recIdx], xp = totalXp();
+  $("zen").textContent = (xp * 10).toLocaleString() + "z"; $("mon").textContent = `現在の月：${pre.replace("-", ".")}`; $("pgn").textContent = keys.length ? `${recIdx + 1}/${keys.length}` : "0/0";
+  $("lst").innerHTML = keys.length ? keys.map((x, i) => `<button class="li ${i === recIdx ? "sel" : ""}" data-i="${i}"><span class="ic"></span><span>${fmt(x)}</span><small>${esc((moodOf(data[x].mood) || [0, "—"])[1])}</small></button>`).join("") : `<div style="padding:10px;color:#9aa690">この月の記録はありません。</div>`;
+  $("pvh").textContent = k ? `${fmt(k)} ─ ${(moodOf(data[k].mood) || [0, "—"])[1]}` : ""; $("pvt").textContent = k ? data[k].text : "記録を選んでください。";
+  if (k) { const e = data[k], m = moodOf(e.mood), len = e.text.length, all = Object.values(data).map(v => v.text.length), avg = Math.round(all.reduce((a, b) => a + b, 0) / all.length); const st = streakCount();
+    $("dt").innerHTML = `<i class="c1"></i><i class="c2"></i><div class="nm"><i></i>${fmt(k)}</div>
+      <div class="m"><i style="background:#d8402a"></i><span>気分</span><span>：${m ? m[0] : "—"}（Lv${m ? m[2] : 0}）/ 5</span></div>
+      <div class="m"><i style="background:#5cc84a"></i><span>文字数</span><span>：${len}（平均${avg}）/ 400字</span></div>
+      <div class="m"><i style="background:#c0392b"></i><span>連続</span><span>：${st}（最長${bestStreak()}）/ 30日</span></div><button class="btn" data-edit="${k}">この記録を編集</button>`;
+  } else $("dt").innerHTML = `<i class="c1"></i><i class="c2"></i><div class="nm">記録なし</div>`;
+}
+
+// ---- screen C ----
+function renderC() {
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length, pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100), titles = ["ステータス", "カレンダー", "気分の傾向"];
+  $("bigC").textContent = titles[pgC];
+  let body = "";
+  if (pgC === 0) body = `<h3>狩人ギルド<br>指定地：集会所<今日></h3><div class="sec"><b>成功条件：</b>30日連続で日記を書く<br>現在 <em>${st}日</em> 連続（最長 ${bestStreak()}日）</div><div class="sec"><b>失敗条件：</b>記録ゼロ<br>日付が変わる</div><div class="sec"><b>ハンターランク：</b>${RANKS[rk]}（次まで あと ${100 - pct}%）<br><b>記録数：</b>${n} 件　<b>報酬金：</b>${(xp * 10).toLocaleString()}z</div>`;
+  else if (pgC === 1) { const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(d => `<div class="dow">${d}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first); for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}" data-d="${k}">${i}</div>`; }
+    body = `<h3>依頼カレンダー<br>${y}.${String(mo + 1).padStart(2, "0")}　<span class="rb" data-cal="-1" style="width:28px;height:28px">◀</span> <span class="rb" data-cal="1" style="width:28px;height:28px">▶</span></h3><div class="cal">${h}</div>`; }
+  else { const c = Object.fromEntries(MOODS.map(m => [m[0], 0])); Object.values(data).forEach(e => { if (c[e.mood] !== undefined) c[e.mood]++; }); const mx = Math.max(1, ...Object.values(c));
+    body = `<h3>焼き加減の記録<br>全 ${n} 件</h3>` + MOODS.map(([m, t]) => `<div class="mt"><span>${m}</span><div class="tr"><i style="width:0" data-w="${c[m] / mx * 100}"></i></div><span>${c[m]}</span></div>`).join(""); }
+  $("pap").innerHTML = `<div class="pg"><span class="rb" data-pg="-1">◀</span><span>${pgC + 1}/3</span><span class="rb" data-pg="1">▶</span></div>${body}`;
+  requestAnimationFrame(() => $("pap").querySelectorAll("[data-w]").forEach(el => el.style.width = el.dataset.w + "%"));
+  $("dg").innerHTML = `日記の続けるコツは<y>毎日少しだけ</y>書くことにある。<br>小さな記録も、積み重ねれば<y>何倍もの力</y>をもつ。　連続記録を途切れさせるなよ！`;
+}
+
+function show(s) { scr = s; ["A", "B", "C"].forEach(x => $("s" + x).classList.toggle("on", x === s)); if (s === "A") renderA(); else if (s === "B") renderB(); else renderC(); }
+
+function overlay(up, isNew) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("ovT").textContent = up ? "HR UP!" : mood === "最高" ? "上手に焼けました♪" : mood === "最悪" ? "黒こげ肉…" : "QUEST CLEAR!";
+  $("ovS").textContent = `${up ? RANKS[rankOf(totalXp())] + " ─ " : ""}${isNew ? streakCount() + " DAYS" : "UPDATED"} ─ 報酬金 ${(totalXp() * 10).toLocaleString()}z`;
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2800);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+function save() {
+  const text = draft.trim(); if (!text) { row = 2; renderA(); setTimeout(() => $("body") && $("body").focus(), 30); return; } if (!mood) { row = 1; renderA(); return; }
+  const before = rankOf(totalXp()), isNew = !data[selected]; data[selected] = { mood, text }; store(data); renderA(); overlay(rankOf(totalXp()) > before, isNew);
+}
+function setLv(i) { mood = MOODS.find(x => x[2] === i)[0]; }
+function shiftMood(d) { const lv = mood ? moodOf(mood)[2] : 0; setLv(Math.max(1, Math.min(5, (lv || 3) + d))); }
+function act(i) {
+  if (i === 2) { setTimeout(() => $("body") && $("body").focus(), 20); } else if (i === 3) save(); else if (i === 4) { monOff = 0; recIdx = 0; show("B"); } else if (i === 5) { pgC = 0; show("C"); } else if (i === 6) { draft = ""; mood = null; renderA(); }
+}
+function openDay(k) { selected = k; loadDay(); row = 0; show("A"); }
+
+$("rows").addEventListener("click", e => {
+  const ad = e.target.closest("[data-ad]"); if (ad) { selected = addDays(selected, +ad.dataset.ad); if (selected > ymd(new Date())) selected = ymd(new Date()); loadDay(); row = 0; return renderA(); }
+  const lv = e.target.closest("[data-lv]"); if (lv) { setLv(+lv.dataset.lv); row = 1; return renderA(); }
+  const r = e.target.closest("[data-r]"); if (r) { const i = +r.dataset.r; const same = i === row; row = i; renderA(); if (same || i >= 3) act(i); else if (i === 2) act(2); }
+});
+$("sB").addEventListener("click", e => {
+  const mo = e.target.closest("[data-mo]"); if (mo) { monOff += +mo.dataset.mo; recIdx = 0; return renderB(); }
+  const li = e.target.closest("[data-i]"); if (li) { recIdx = +li.dataset.i; return renderB(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) openDay(ed.dataset.edit);
+});
+$("sC").addEventListener("click", e => {
+  const pg = e.target.closest("[data-pg]"); if (pg) { pgC = (pgC + +pg.dataset.pg + 3) % 3; return renderC(); }
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; return renderC(); }
+  const dd = e.target.closest("[data-d]"); if (dd) openDay(dd.dataset.d);
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); return; }
+  if (e.key === "Escape") { if ($("ov").classList.contains("show")) return $("ov").classList.remove("show"); if (scr !== "A") return show("A"); location.href = "index.html"; return; }
+  if (scr === "A") {
+    if (e.key === "ArrowDown") { e.preventDefault(); row = (row + 1) % ROWS.length; renderA(); } else if (e.key === "ArrowUp") { e.preventDefault(); row = (row + ROWS.length - 1) % ROWS.length; renderA(); }
+    else if (e.key === "ArrowLeft" || e.key === "ArrowRight") { const d = e.key === "ArrowRight" ? 1 : -1; if (row === 0) { selected = addDays(selected, d); if (selected > ymd(new Date())) selected = ymd(new Date()); loadDay(); renderA(); } else if (row === 1) { shiftMood(d); renderA(); } }
+    else if (e.key === "Enter") act(row);
+  } else if (scr === "B") {
+    const n = monthKeys().keys.length; if (e.key === "ArrowDown" && n) { recIdx = (recIdx + 1) % n; renderB(); } else if (e.key === "ArrowUp" && n) { recIdx = (recIdx + n - 1) % n; renderB(); } else if (e.key === "Enter") { const k = monthKeys().keys[recIdx]; if (k) openDay(k); }
+  } else if (e.key === "ArrowRight" || e.key === "ArrowLeft") { pgC = (pgC + (e.key === "ArrowRight" ? 1 : 2)) % 3; renderC(); }
+});
+
+loadDay(); renderA();
+</script>
+</body>
+</html>

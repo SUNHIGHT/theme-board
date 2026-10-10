@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aegis Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,600;1,700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Two blue panels with pointed-hex rows, header emblem, banner, description box, bottom button guide (after XB2's core/material screen) */
+  :root { --b0:#0c1470; --b1:#1a29a8; --b2:#2a3cc8; --line:#9bb4ff; --pink:#ff6fc8; --tx:#f1f4ff; --dim:#a9b6f0; --fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --fn:'Barlow Condensed','Zen Kaku Gothic New',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:var(--tx); overflow:hidden; background:#0b1230; }
+  /* blurred workshop backdrop */
+  .bg { position:fixed; inset:0; z-index:0; overflow:hidden; background:linear-gradient(180deg,#0f1c3a 0%,#1b2438 40%,#2b2018 100%); }
+  .bg i { position:absolute; display:block; filter:blur(10px); }
+  .bg .s1 { left:18%; top:20%; width:30%; height:22%; background:repeating-linear-gradient(90deg,#35452e 0 14px,#18241a 14px 22px); opacity:.55; } .bg .s2 { left:2%; top:26%; width:12%; height:40%; background:#3b2a1c; opacity:.7; }
+  .bg .g1 { left:62%; top:30%; width:9%; height:14%; border-radius:50%; background:#27ff7a; opacity:.55; filter:blur(18px); } .bg .g2 { left:68%; top:24%; width:6%; height:10%; border-radius:50%; background:#9bff5a; opacity:.5; filter:blur(16px); }
+  .bg .r1 { left:42%; top:42%; width:10%; height:16%; border-radius:50%; background:#ff3a2a; opacity:.35; filter:blur(24px); } .bg .f1 { left:0; right:0; bottom:0; height:30%; background:repeating-linear-gradient(90deg,#3a2c20 0 90px,#241a12 90px 94px); opacity:.8; }
+  .bg .t1 { right:6%; top:0; width:22%; height:24%; background:repeating-linear-gradient(60deg,#2fb4a8 0 14px,#d6a82a 14px 28px,#c23a8a 28px 42px); opacity:.55; }
+  .bg::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 40%, rgba(2,6,30,.65)); }
+
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto auto 1fr auto; }
+
+  /* header */
+  .hd { display:flex; align-items:center; gap:24px; padding:12px 40px 8px; background:linear-gradient(180deg,rgba(26,41,168,.95),rgba(20,30,130,.9)); animation:down .5s both; }
+  .emb { width:68px; height:76px; position:relative; flex:none; } .emb svg { width:100%; height:100%; filter:drop-shadow(0 0 8px rgba(160,190,255,.7)); }
+  .hd h1 { font-weight:900; font-size:clamp(26px,4.2vw,44px); font-style:italic; letter-spacing:.04em; transform:skewX(-8deg); text-shadow:0 2px 6px rgba(0,0,40,.6); }
+  .ban { position:relative; padding:6px 0 12px 150px; font-weight:700; font-size:clamp(17px,2.6vw,27px); font-style:italic; letter-spacing:.06em; color:#dfe6ff; background:linear-gradient(90deg,transparent 0,rgba(14,22,120,.92) 120px, rgba(14,22,120,.92) 62%, transparent 100%); border-top:1px solid var(--line); border-bottom:1px solid rgba(155,180,255,.4); animation:down .5s .1s both; }
+  .ban span { display:inline-block; transform:skewX(-8deg); }
+
+  .main { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:14px 18px 6px; min-height:0; }
+  .pn { position:relative; min-height:0; display:flex; flex-direction:column; background:linear-gradient(180deg,rgba(32,48,190,.82),rgba(14,22,120,.9)); border:1px solid var(--line); padding:0 0 12px; animation:pan .5s .15s both; clip-path:polygon(0 0,100% 0,100% calc(100% - 26px),calc(100% - 26px) 100%,0 100%); }
+  .pn + .pn { animation-delay:.25s; }
+  .tabs { display:flex; height:30px; font-weight:900; font-size:16px; font-style:italic; }
+  .tabs .a { width:46%; padding:3px 16px; background:linear-gradient(90deg,#3d6bff,#2a3cc8); clip-path:polygon(0 0,calc(100% - 22px) 0,100% 100%,0 100%); letter-spacing:.06em; }
+  .tabs .b { flex:1; display:flex; justify-content:space-around; align-items:center; background:#3a3f78; color:#d8ddf5; font-weight:700; font-size:14px; clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%); } .tabs .b button { all:unset; cursor:pointer; padding:0 8px; } .tabs .b button:hover { color:#fff; text-decoration:underline; }
+  .tabs .b input { background:#1c2160; color:#fff; border:1px solid var(--line); font:600 12px var(--fb); color-scheme:dark; }
+  .cols { display:grid; padding:8px 24px 2px; font-size:13px; color:var(--dim); text-align:center; font-weight:700; }
+  .L .cols, .L .row { grid-template-columns:1fr 90px 100px; } .R .cols, .R .row { grid-template-columns:1fr 70px 70px 120px; }
+  .cols span:first-child { text-align:center; }
+  .rows { padding:2px 10px; display:flex; flex-direction:column; gap:4px; overflow:auto; min-height:0; scrollbar-width:thin; scrollbar-color:#6a8cff #1c2160; }
+  .row { all:unset; position:relative; box-sizing:border-box; display:grid; align-items:center; height:34px; flex:none; padding:0 26px; cursor:pointer; font-weight:900; font-size:17px; font-style:italic; text-align:center; animation:rowIn .35s calc(var(--i)*30ms + .3s) both; }
+  .row::before { content:""; position:absolute; inset:0; background:#cfd9ff; opacity:.3; clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,16px 100%,0 50%); }
+  .row::after { content:""; position:absolute; inset:1px; background:linear-gradient(180deg,#2b3dbc,#1a29a0); clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,16px 100%,0 50%); }
+  .row > * { position:relative; z-index:1; }
+  .row.cur::before { opacity:1; background:#fff; box-shadow:0 0 16px #8fb0ff; } .row.cur::after { inset:2px; background:linear-gradient(180deg,#5b72ff,#1d2cb0 60%,#2336c4); }
+  .row.cur { filter:drop-shadow(0 0 6px rgba(150,180,255,.9)); }
+  .row.empty { cursor:default; } .row.empty::after { background:#1a2498; }
+  .row .nm { text-align:left; display:flex; gap:12px; align-items:center; white-space:nowrap; overflow:hidden; } .row .nm b { font-weight:900; overflow:hidden; text-overflow:ellipsis; transform:skewX(-6deg); } .row .nm .ic { width:22px; height:22px; flex:none; display:grid; place-items:center; color:#dfe6ff; font-style:normal; font-size:18px; }
+  .row .num { font:italic 700 21px var(--fn); letter-spacing:.04em; } .row .num small { font-size:15px; opacity:.8; }
+  .dia { display:block; width:15px; height:15px; margin:auto; transform:rotate(45deg) scale(1,1); background:linear-gradient(135deg,#9fd0ee,#4b7aa6); box-shadow:0 0 6px rgba(160,210,255,.6); border:1px solid #cde; }
+  .dia.g { background:linear-gradient(135deg,#ffe58a,#c8921c); border-color:#ffe9a8; } .dia.c { background:linear-gradient(135deg,#bff6ff,#35b0d8); } .dia.p { background:linear-gradient(135deg,#d7b8ff,#7a4ad8); } .dia.o { background:linear-gradient(135deg,#ffc08a,#d8601c); } .dia.r { background:linear-gradient(135deg,#ff9a9a,#c42a2a); }
+  .lr { display:flex; align-items:center; justify-content:center; gap:5px; } .lr kbd { width:22px; height:20px; display:grid; place-items:center; background:#7b86c8; color:#e8ecff; font:700 12px var(--fn); border-radius:3px; opacity:.55; } .lr kbd.on { background:#fff; color:#1a29a0; opacity:1; } .lr b { font:italic 700 24px var(--fn); width:26px; text-align:center; }
+
+  .desc { margin:10px 14px 0; flex:1; min-height:92px; display:flex; flex-direction:column; border:1px solid rgba(155,180,255,.6); background:rgba(14,22,130,.75); padding:6px 14px 8px; position:relative; }
+  .desc::before, .desc::after { content:""; position:absolute; width:8px; height:8px; border:1px solid var(--line); top:-4px; } .desc::before { left:-4px; } .desc::after { right:-4px; }
+  .desc small { font-size:12px; color:var(--dim); font-weight:700; } .desc small b { float:right; font:italic 700 14px var(--fn); color:var(--dim); }
+  textarea { flex:1; resize:none; width:100%; min-height:60px; background:transparent; border:0; outline:0; color:#fff; font:700 17px/1.7 var(--fb); }
+  textarea::placeholder { color:#8d9bdc; } .desc:focus-within { border-color:#fff; box-shadow:0 0 14px rgba(150,180,255,.7); }
+
+  .build { margin:10px 14px 0; border:1px solid rgba(155,180,255,.6); background:rgba(14,22,130,.75); padding:12px 20px 14px; }
+  .build .t { display:flex; justify-content:space-between; align-items:baseline; color:var(--pink); font-weight:900; font-size:22px; font-style:italic; } .build .t b { font:italic 700 24px var(--fn); }
+  .build .bar { height:4px; margin-top:6px; background:rgba(255,111,200,.25); } .build .bar div { height:100%; background:var(--pink); box-shadow:0 0 8px var(--pink); transition:width .8s cubic-bezier(.2,.9,.3,1); }
+  .save { all:unset; cursor:pointer; display:block; margin:10px auto 0; padding:5px 56px; font-weight:900; font-size:18px; font-style:italic; letter-spacing:.2em; background:linear-gradient(180deg,#fff,#c6d4ff); color:#1a29a0; clip-path:polygon(16px 0,calc(100% - 16px) 0,100% 50%,calc(100% - 16px) 100%,16px 100%,0 50%); transition:.12s; } .save:hover { filter:brightness(1.08) drop-shadow(0 0 6px #9bb4ff); transform:scale(1.04); }
+  .hint { text-align:center; font-size:12px; color:#ffe58a; min-height:16px; margin-top:4px; }
+
+  .foot { display:flex; justify-content:flex-end; gap:34px; align-items:center; padding:6px 36px 12px; background:linear-gradient(180deg,rgba(14,22,130,.0),rgba(14,22,130,.92) 40%); font-weight:900; font-size:19px; font-style:italic; animation:up .5s .3s both; }
+  .foot button { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; transform:skewX(-6deg); } .foot button:hover { color:#ffe58a; }
+  .foot kbd { min-width:26px; height:26px; display:grid; place-items:center; background:#dfe6ff; color:#1a29a0; font:700 15px var(--fn); font-style:normal; border-radius:5px; padding:0 4px; } .foot kbd.r { border-radius:50%; }
+  button:focus-visible, textarea:focus-visible { outline:2px solid #ffe58a; outline-offset:2px; }
+
+  #ov { position:fixed; inset:0; z-index:60; pointer-events:none; visibility:hidden; display:grid; place-content:center; text-align:center; background:radial-gradient(ellipse at center, rgba(40,60,220,.9), rgba(4,8,60,.96)); }
+  #ov.show { visibility:visible; pointer-events:auto; cursor:pointer; animation:ovIn .3s both, ovOut .4s 2.5s forwards; }
+  #ov svg { width:110px; height:124px; margin:0 auto 10px; filter:drop-shadow(0 0 18px #9bb4ff); animation:spin 1.2s cubic-bezier(.2,.9,.3,1) both; }
+  #ov b { display:block; font-weight:900; font-style:italic; font-size:clamp(34px,8vw,76px); letter-spacing:.06em; transform:skewX(-8deg); text-shadow:0 0 22px #7f9cff; animation:rise .5s .3s both; } #ov small { font-weight:700; letter-spacing:.3em; color:var(--pink); font-size:18px; font-style:italic; animation:rise .5s .45s both; }
+  @keyframes down { from { opacity:0; transform:translateY(-24px); } } @keyframes up { from { opacity:0; transform:translateY(24px); } } @keyframes pan { from { opacity:0; transform:translateY(24px) scale(.98); } }
+  @keyframes rowIn { from { opacity:0; transform:translateX(-30px); } } @keyframes ovIn { from { opacity:0; } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @keyframes spin { from { transform:rotateY(180deg) scale(.4); opacity:0; } } @keyframes rise { from { opacity:0; transform:translateY(18px) skewX(-8deg); } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:860px) {
+    body { overflow-y:auto; overflow-x:hidden; } .app { height:auto; min-height:100%; } .main { grid-template-columns:1fr; padding:10px 8px; } .hd { padding:10px 14px; gap:12px; } .emb { width:44px; height:50px; } .ban { padding-left:20px; }
+    .rows { max-height:330px; } .row { padding:0 18px; font-size:15px; } .L .cols, .L .row { grid-template-columns:1fr 50px 70px; } .R .cols, .R .row { grid-template-columns:1fr 50px 50px 96px; } .cols { padding:6px 14px 2px; font-size:11px; } .foot { flex-wrap:wrap; gap:14px; justify-content:center; padding:8px 8px 80px; font-size:15px; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"><i class="s1"></i><i class="s2"></i><i class="g1"></i><i class="g2"></i><i class="r1"></i><i class="f1"></i><i class="t1"></i></div>
+<svg width="0" height="0" style="position:absolute"><defs><symbol id="emblem" viewBox="0 0 68 76"><path d="M34 2 64 19v38L34 74 4 57V19Z" fill="rgba(20,34,150,.9)" stroke="#fff" stroke-width="3"/><path d="M34 12 55 24v28L34 64 13 52V24Z" fill="none" stroke="#bcd0ff" stroke-width="2"/><path d="M26 28v20M42 28v20M26 38h16" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/></symbol></defs></svg>
+
+<div class="app">
+  <div class="hd"><div class="emb"><svg><use href="#emblem"/></svg></div><h1>ジャーナル・コア</h1></div>
+  <div class="ban"><span id="ban">記録する日を選んでください</span></div>
+
+  <div class="main">
+    <div class="pn L">
+      <div class="tabs"><div class="a">日記コア</div><div class="b"><button id="sortB">並び順 新しい順</button><input type="date" id="pick" title="日付を指定"></div></div>
+      <div class="cols"><span>名前</span><span>調子</span><span>文字数</span></div>
+      <div class="rows" id="rows"></div>
+      <div class="desc"><small>説明<b id="dInfo"></b></small><textarea id="body" placeholder="今日はどんな一日だった？ ここに書いて決定(A)で保存"></textarea></div>
+    </div>
+    <div class="pn R">
+      <div class="tabs"><div class="a">必要素材</div><div class="b"><span>調子を選択</span><span id="rk"></span></div></div>
+      <div class="cols"><span>名前</span><span>レア</span><span>所持数</span><span>使用数</span></div>
+      <div class="rows" id="moods"></div>
+      <div class="build"><div class="t"><span id="bt">ランクアップまで残り</span><b id="bn"></b></div><div class="bar"><div id="bb"></div></div></div>
+      <button class="save" id="save">決定</button><div class="hint" id="hint"></div>
+    </div>
+  </div>
+
+  <div class="foot"><button id="bL"><kbd>L</kbd>並び替え</button><button id="bP"><kbd class="r">✛</kbd>選択</button><button id="bA"><kbd class="r">A</kbd>決定</button><button id="bB"><kbd class="r">B</kbd>戻る</button></div>
+</div>
+
+<div id="ov"><div><svg><use href="#emblem"/></svg><b id="ovT"></b><small id="ovS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="xb2"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "EXCELLENT", "g", "✦"], ["良い", "GOOD", "c", "◈"], ["普通", "NORMAL", "", "◇"], ["微妙", "TIRED", "p", "▽"], ["最悪", "SLUMP", "r", "✕"]];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let data = load(), newest = true, extra = null, selected = ymd(new Date()), mood = null, ovTimer;
+const today = () => ymd(new Date());
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+function items() {
+  const s = new Set(Object.keys(data)); s.add(today()); if (extra) s.add(extra);
+  const a = [...s].sort(); return newest ? a.reverse() : a;
+}
+const diaClass = m => (MOODS.find(x => x[0] === m) || [])[2] || "";
+
+function render(scroll) {
+  const its = items(), e = data[selected];
+  $("rows").innerHTML = its.map((k, i) => {
+    const en = data[k], d = new Date(k + "T00:00:00");
+    return `<button class="row ${k === selected ? "cur" : ""}" data-k="${k}" style="--i:${Math.min(i, 10)}"><span class="nm"><span class="ic">${en ? (MOODS.find(m => m[0] === en.mood) || [,,,"◆"])[3] : "＋"}</span><b>${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）${en ? esc(en.text.replace(/\s+/g, " ")) : "未記録"}${k === today() ? " ★" : ""}</b></span>
+      <span><i class="dia ${en ? diaClass(en.mood) : ""}" style="${en ? "" : "opacity:.35"}"></i></span><span class="num">${en ? en.text.length : 0}<small>/99</small></span></button>`;
+  }).join("") + Array.from({ length: Math.max(0, 8 - its.length) }, () => `<div class="row empty"><span></span><span></span><span></span></div>`).join("");
+  if (scroll) { const c = $("rows").querySelector(".cur"); if (c) c.scrollIntoView({ block: "nearest" }); }
+
+  const ta = $("body"); if (document.activeElement !== ta || ta.dataset.k !== selected) { ta.value = e ? e.text : ""; ta.dataset.k = selected; }
+  const sd = new Date(selected + "T00:00:00");
+  $("dInfo").textContent = `${selected.replace(/-/g, ".")}（${DOW[sd.getDay()]}）` + (e ? ` ／ 連続 ${streakAt(selected)}` : " ／ NEW");
+  $("hint").textContent = selected === today() ? "" : "過去の日付を編集中";
+
+  const cnt = m => Object.values(data).filter(x => x.mood === m).length;
+  $("moods").innerHTML = MOODS.map(([m, tag, c, ic], i) => `<button class="row ${m === mood ? "cur" : ""}" data-m="${m}" style="--i:${i}"><span class="nm"><span class="ic">${ic}</span><b>${m}　<small style="font:italic 700 12px var(--fn);opacity:.7">${tag}</small></b></span><span><i class="dia ${c}"></i></span><span class="num">${cnt(m)}</span>
+    <span class="lr"><kbd>L</kbd><b>${m === mood ? 1 : 0}</b><kbd class="${m === mood ? "on" : ""}">R</kbd></span></button>`).join("");
+
+  const xp = totalXp(), into = xp % XP_PER_RANK, left = XP_PER_RANK - into;
+  $("bn").textContent = `${left}/${XP_PER_RANK}`; $("bb").style.width = (into / XP_PER_RANK * 100) + "%";
+  $("rk").textContent = `RANK ${Math.floor(xp / XP_PER_RANK) + 1}`;
+  $("sortB").textContent = "並び順 " + (newest ? "新しい順" : "古い順");
+}
+
+function pick(k) { selected = k; mood = data[k] ? data[k].mood : null; render(true); }
+function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data);
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "ランクアップ！" : "記録しました"; $("ovS").textContent = isNew ? `${streakCount()} DAYS ─ BUILD COMPLETE` : "UPDATED ─ BUILD COMPLETE";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 3000);
+  render(true);
+}
+function move(d) { const its = items(), i = its.indexOf(selected), n = Math.max(0, Math.min(its.length - 1, i + d)); if (n !== i) pick(its[n]); }
+
+document.addEventListener("click", e => {
+  const r = e.target.closest("#rows .row[data-k]"); if (r) return pick(r.dataset.k);
+  const m = e.target.closest("#moods .row"); if (m) { mood = mood === m.dataset.m ? null : m.dataset.m; return render(false); }
+  if (e.target.closest("#save") || e.target.closest("#bA")) return save();
+  if (e.target.closest("#sortB") || e.target.closest("#bL")) { newest = !newest; return render(true); }
+  if (e.target.closest("#bP")) return move(1);
+  if (e.target.closest("#bB")) { extra = null; return pick(today()); }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+$("pick").onchange = e => { if (e.target.value) { extra = e.target.value; pick(extra); } };
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $("ov").classList.remove("show"); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key === "ArrowDown") { e.preventDefault(); move(1); } else if (e.key === "ArrowUp") { e.preventDefault(); move(-1); }
+  else if (e.key === "l" || e.key === "L") { newest = !newest; render(true); }
+  else if (/^[1-5]$/.test(e.key)) { mood = MOODS[+e.key - 1][0]; render(false); }
+  else if (e.key === "Enter") { $("body").focus(); e.preventDefault(); }
+});
+pick(today());
+</script>
+</body>
+</html>

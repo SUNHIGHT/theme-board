@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Court Record Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Passion+One:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  /* Courtroom scene + visual-novel dialogue box (name tag, typed text, advance cursor), choice buttons and a court-record window */
+  :root { --navy:#0b1d4d; --ink:#0a1230; --box:rgba(26,32,56,.86); --tag:#3e507a; --line:#dfe6ff; --org:#ff9a00; --blue:#2f7bff; --font:'DotGothic16','Hiragino Kaku Gothic ProN',sans-serif; --head:'Passion One','DotGothic16',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--font); color:#fff; background:#a87a16; overflow:hidden; }
+  .scene { position:fixed; inset:0; width:100%; height:100%; z-index:0; filter:saturate(1.08) contrast(1.04); }
+  .vig { position:fixed; inset:0; z-index:1; pointer-events:none; background:radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(30,14,0,.55) 100%); }
+  .beam { animation:beam 7s ease-in-out infinite alternate; } @keyframes beam { from { opacity:.35; } to { opacity:.8; } }
+  .dust i { position:fixed; z-index:1; width:3px; height:3px; border-radius:50%; background:rgba(255,250,210,.7); pointer-events:none; left:var(--x); top:var(--y); animation:float var(--d) ease-in-out infinite alternate; }
+  @keyframes float { to { transform:translate(30px,-40px); opacity:.2; } }
+
+  /* HUD */
+  .hud { position:fixed; z-index:5; top:14px; left:16px; display:flex; align-items:center; gap:12px; text-shadow:2px 2px 0 #000; animation:fadeIn .5s both; }
+  .hud b { font-family:var(--head); font-weight:900; font-size:22px; letter-spacing:.1em; font-style:italic; }
+  .gauge { width:min(240px,40vw); height:18px; border:3px solid #fff; border-radius:10px; background:#04102f; padding:2px; box-shadow:0 2px 0 #000; }
+  .gauge i { display:block; height:100%; width:0; border-radius:6px; background:linear-gradient(180deg,#8dff8a,#27a62e); transition:width .8s cubic-bezier(.2,.9,.3,1); }
+  .hud span { font-size:13px; letter-spacing:.1em; }
+
+  /* dialogue */
+  .dlg { position:fixed; z-index:6; left:50%; bottom:max(14px,2.4vh); transform:translateX(-50%); width:min(960px,96vw); animation:rise .5s both; }
+  .tag { display:inline-block; margin-left:6px; padding:4px 22px; font-size:clamp(15px,2.2vw,20px); letter-spacing:.14em; background:var(--tag); border:2px solid #aab6d8; border-bottom:0; border-radius:4px 4px 0 0; text-shadow:1px 1px 0 #000; }
+  .box { position:relative; min-height:clamp(120px,24vh,190px); padding:clamp(14px,2.4vw,24px) clamp(18px,3vw,34px); background:var(--box); border:2px solid #cdd6f2; border-radius:4px; box-shadow:0 0 0 2px #0a0f22, 0 8px 30px rgba(0,0,0,.55); cursor:pointer; }
+  #txt { font-size:clamp(19px,3.4vw,34px); line-height:1.55; letter-spacing:.06em; text-shadow:2px 2px 0 #000; white-space:pre-wrap; }
+  .adv { position:absolute; right:16px; bottom:10px; font-size:24px; color:#fff; text-shadow:2px 2px 0 #000; animation:blink .8s steps(1) infinite; }
+  .adv.hide { display:none; }
+
+  /* choices */
+  .choices { position:fixed; z-index:7; left:50%; top:46%; transform:translate(-50%,-50%); width:min(560px,90vw); display:flex; flex-direction:column; gap:12px; }
+  .choices:empty { display:none; }
+  .ch { all:unset; box-sizing:border-box; cursor:pointer; display:flex; justify-content:space-between; align-items:center; gap:16px; padding:clamp(10px,1.8vh,16px) 22px; font-size:clamp(17px,2.6vw,26px); letter-spacing:.1em; color:#fff; text-shadow:2px 2px 0 #000;
+    background:linear-gradient(180deg,rgba(60,90,170,.92),rgba(24,42,110,.92)); border:2px solid #dfe6ff; border-radius:6px; box-shadow:0 0 0 2px #0a1230, 0 6px 14px rgba(0,0,0,.5); animation:pop .3s calc(var(--i) * 60ms) cubic-bezier(.2,1.6,.4,1) both; transition:.1s; }
+  .ch small { font-family:var(--head); font-size:15px; letter-spacing:.14em; color:#ffd27a; text-shadow:1px 1px 0 #000; }
+  .ch:hover, .ch:focus-visible { background:linear-gradient(180deg,#ffb23a,#e07a00); color:#2a1400; text-shadow:none; transform:translateX(6px); outline:none; } .ch:hover small { color:#4a2800; }
+  .ch.back { background:linear-gradient(180deg,rgba(70,76,96,.92),rgba(34,38,54,.92)); }
+
+  /* windows */
+  .win { position:fixed; z-index:8; left:50%; top:46%; transform:translate(-50%,-50%); width:min(880px,94vw); max-height:68vh; display:none; flex-direction:column; border:3px solid #fff; border-radius:12px;
+    background:linear-gradient(180deg,#1e55c8,#0d2a78 60%,#091c58); box-shadow:0 0 0 3px #04102f, 0 16px 50px rgba(0,0,0,.7); }
+  .win.show { display:flex; animation:pop .28s cubic-bezier(.2,1.5,.4,1); }
+  .wh { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:10px 16px; border-bottom:2px solid rgba(255,255,255,.5); }
+  .wh b { font-family:var(--head); font-weight:900; font-style:italic; font-size:24px; letter-spacing:.12em; text-shadow:2px 2px 0 #04102f; }
+  .wb { padding:14px 16px 16px; overflow:auto; min-height:0; }
+  .btn { all:unset; box-sizing:border-box; cursor:pointer; padding:8px 24px; font-family:var(--head); font-weight:900; font-style:italic; font-size:22px; letter-spacing:.1em; color:#1a0f00; background:var(--org); border:3px solid #fff; border-radius:12px; box-shadow:0 4px 0 #04102f; transition:.1s; }
+  .btn:hover { background:#fff; } .btn:active { transform:translateY(3px); box-shadow:0 1px 0 #04102f; } .btn.ghost { background:transparent; color:#fff; box-shadow:none; border-radius:10px; font-size:18px; padding:6px 18px; } .btn.ghost:hover { background:rgba(255,255,255,.18); }
+  .btn:focus-visible, .ch:focus-visible, textarea:focus-visible { outline:3px solid var(--org); outline-offset:2px; }
+  textarea { width:100%; height:min(30vh,240px); resize:none; padding:12px 14px; font:inherit; font-size:clamp(16px,2.4vw,22px); line-height:1.7; color:#fff; background:#051345; border:2px solid #fff; border-radius:8px; outline:none; }
+  textarea::placeholder { color:#8fa4e0; }
+  .row2 { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; } .hintx { font-size:13px; color:#ffd27a; }
+  .chip { font-family:var(--head); font-size:14px; letter-spacing:.14em; padding:2px 12px; border:2px solid #fff; border-radius:12px; color:#ffd27a; }
+  .split { display:grid; grid-template-columns:minmax(200px,1fr) 2fr; gap:14px; }
+  .list { display:flex; flex-direction:column; gap:6px; max-height:44vh; overflow:auto; }
+  .card { all:unset; box-sizing:border-box; cursor:pointer; display:flex; justify-content:space-between; gap:10px; padding:8px 12px; background:linear-gradient(180deg,#e9f1ff,#cfdcf6); color:#0b1d4d; border:2px solid #fff; border-left:8px solid var(--org); border-radius:6px; font-size:15px; }
+  .card:hover, .card.sel { background:linear-gradient(180deg,#fff3d6,#ffd48a); } .card small { font-family:var(--head); font-size:13px; color:#1b53d6; letter-spacing:.1em; }
+  .detail { background:rgba(2,10,40,.55); border:2px solid rgba(255,255,255,.5); border-radius:8px; padding:12px 14px; overflow:auto; max-height:44vh; }
+  .detail .hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; font-family:var(--head); font-size:20px; letter-spacing:.1em; } .detail p { white-space:pre-wrap; line-height:1.8; font-size:17px; }
+  .cals { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; } .cals div { aspect-ratio:1.4; display:flex; align-items:center; justify-content:center; font-size:16px; border:2px solid rgba(255,255,255,.35); border-radius:8px; }
+  .cals .dow { aspect-ratio:auto; border:0; font-size:12px; color:#ffd27a; } .cals .d { cursor:pointer; transition:.1s; } .cals .d:hover { background:rgba(255,255,255,.22); }
+  .cals .done { background:var(--org); color:#1a0f00; border-color:#fff; } .cals .today { outline:2px solid #fff; outline-offset:2px; }
+  .mh { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-family:var(--head); font-size:22px; letter-spacing:.14em; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:14px; } .stat { background:rgba(2,10,40,.55); border:2px solid rgba(255,255,255,.5); border-radius:8px; padding:8px 12px; }
+  .stat b { display:block; font-family:var(--head); font-size:13px; letter-spacing:.2em; color:#ffd27a; font-weight:700; } .stat span { font-family:var(--head); font-size:30px; font-weight:900; font-style:italic; } .stat span.sm { font-size:18px; }
+  .g2 { margin-bottom:10px; } .g2 b { display:flex; justify-content:space-between; font-size:13px; letter-spacing:.1em; margin-bottom:4px; } .g2 .gauge { width:100%; }
+
+  /* objection overlay */
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(2,8,28,.75); }
+  #ov.show { display:flex; animation:fadeIn .1s; }
+  #ov .flash { position:absolute; inset:0; background:#fff; animation:flash .5s both; pointer-events:none; }
+  #bang { font-family:var(--head); font-weight:900; font-style:italic; font-size:clamp(60px,17vw,170px); line-height:1; letter-spacing:.02em; color:var(--c, #2f7bff); -webkit-text-stroke:10px #fff; paint-order:stroke fill; text-shadow:6px 6px 0 #000; animation:obj .5s cubic-bezier(.2,2,.4,1), shake .4s .5s; }
+  #ovS { position:absolute; top:64%; left:0; right:0; text-align:center; font-size:16px; letter-spacing:.3em; color:#fff; text-shadow:2px 2px 0 #000; }
+  body.shake .scene { animation:shake .4s; }
+
+  @keyframes fadeIn { from { opacity:0; } } @keyframes rise { from { opacity:0; transform:translate(-50%,24px); } } @keyframes pop { from { opacity:0; transform:translate(-50%,-50%) scale(.85); } }
+  .ch { --pp:1; } .ch { animation-name:chIn; } @keyframes chIn { from { opacity:0; transform:scale(.9); } }
+  @keyframes blink { 50% { opacity:0; } }
+  @keyframes obj { from { transform:scale(3.4) rotate(-6deg); opacity:0; } }
+  @keyframes shake { 25% { transform:translate(-8px,3px); } 50% { transform:translate(7px,-3px); } 75% { transform:translate(-4px,2px); } }
+  @keyframes flash { from { opacity:.95; } to { opacity:0; } }
+
+  @media (max-width:700px) { .split { grid-template-columns:1fr; } .hud b { font-size:16px; } .hud span { display:none; } .choices { top:40%; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<svg class="scene" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ecd77f"/><stop offset=".3" stop-color="#d8b53c"/><stop offset="1" stop-color="#a87a16"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b4210"/><stop offset="1" stop-color="#3a2108"/></linearGradient>
+    <radialGradient id="brass" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#fff4b8"/><stop offset=".5" stop-color="#d8a920"/><stop offset="1" stop-color="#5e3f06"/></radialGradient>
+    <linearGradient id="panelg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c9a02e"/><stop offset="1" stop-color="#a5761a"/></linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#wall)"/>
+  <rect width="1600" height="260" fill="#f1e5ab"/>
+  <g fill="#fffdf1" stroke="#cbae4e" stroke-width="12"><rect x="150" y="46" width="330" height="170"/><rect x="640" y="46" width="330" height="170"/><rect x="1130" y="46" width="330" height="170"/></g>
+  <g stroke="#cbae4e" stroke-width="6"><path d="M315 46V216M805 46V216M1295 46V216"/></g>
+  <polygon class="beam" points="640,216 970,216 1200,900 560,900" fill="rgba(255,252,225,.20)"/>
+  <polygon class="beam" points="150,216 480,216 520,900 60,900" fill="rgba(255,252,225,.14)"/>
+  <rect y="256" width="1600" height="34" fill="#8a5a14"/><rect y="256" width="1600" height="6" fill="#d9a840"/><rect y="290" width="1600" height="10" fill="#4f300a"/>
+  <g>
+    <rect x="30" y="330" width="360" height="360" rx="6" fill="url(#panelg)" stroke="#7a5410" stroke-width="8"/><rect x="60" y="360" width="300" height="300" fill="none" stroke="#e6c25a" stroke-width="3" opacity=".6"/>
+    <rect x="430" y="330" width="360" height="360" rx="6" fill="url(#panelg)" stroke="#7a5410" stroke-width="8"/><rect x="460" y="360" width="300" height="300" fill="none" stroke="#e6c25a" stroke-width="3" opacity=".6"/>
+    <rect x="830" y="330" width="360" height="360" rx="6" fill="url(#panelg)" stroke="#7a5410" stroke-width="8"/><rect x="860" y="360" width="300" height="300" fill="none" stroke="#e6c25a" stroke-width="3" opacity=".6"/>
+    <rect x="1230" y="330" width="360" height="360" rx="6" fill="url(#panelg)" stroke="#7a5410" stroke-width="8"/><rect x="1260" y="360" width="300" height="300" fill="none" stroke="#e6c25a" stroke-width="3" opacity=".6"/>
+  </g>
+  <rect y="690" width="1600" height="44" fill="#5b3a0e"/><rect y="690" width="1600" height="7" fill="#c9962c"/>
+  <rect y="734" width="1600" height="170" fill="url(#wood)"/><rect y="734" width="1600" height="5" fill="#8a5a1a"/>
+  <g><rect x="1318" y="640" width="40" height="270" fill="#4b2f0c"/><circle cx="1338" cy="628" r="36" fill="url(#brass)"/><rect x="1498" y="660" width="40" height="250" fill="#4b2f0c"/><circle cx="1518" cy="648" r="36" fill="url(#brass)"/>
+    <path d="M1338 715 Q1428 810 1518 735" stroke="#7a1420" stroke-width="16" fill="none" stroke-linecap="round"/><path d="M1338 715 Q1428 810 1518 735" stroke="#c0394a" stroke-width="4" fill="none" stroke-linecap="round" opacity=".7"/></g>
+</svg>
+<div class="vig"></div>
+<div class="dust"><i style="--x:12%;--y:62%;--d:6s"></i><i style="--x:30%;--y:40%;--d:8s"></i><i style="--x:52%;--y:70%;--d:7s"></i><i style="--x:70%;--y:30%;--d:9s"></i><i style="--x:84%;--y:55%;--d:6.5s"></i></div>
+
+<div class="hud"><b>LIFE</b><div class="gauge"><i id="life"></i></div><span id="hudT"></span></div>
+
+<div class="choices" id="choices"></div>
+
+<div class="win" id="win" role="dialog" aria-modal="true"><div class="wh"><b id="wt"></b><button class="btn ghost" id="wx">BACK ✕</button></div><div class="wb" id="wb"></div></div>
+
+<div class="dlg"><div class="tag" id="who">弁護人</div><div class="box" id="box"><div id="txt"></div><span class="adv hide" id="adv">▶</span></div></div>
+
+<div id="ov"><div class="flash"></div><div id="bang">OBJECTION!</div><div id="ovS"></div></div>
+
+<script src="theme-switch.js" data-theme="ace"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","NOT GUILTY"],["良い","SUSTAINED"],["普通","ADJOURNED"],["微妙","OVERRULED"],["最悪","GUILTY"]];
+const RANKS = ["INTERN","ATTORNEY","DEFENSE ATTORNEY","VETERAN","ACE ATTORNEY","CHIEF","LEGEND"];
+const SHOUT = { "最高": ["TAKE THAT!", "#e63946"], "良い": ["OBJECTION!", "#2f7bff"], "普通": ["HOLD IT!", "#ff9a00"], "微妙": ["HOLD IT!", "#ff9a00"], "最悪": ["OBJECTION!", "#2f7bff"] };
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", calOff = 0, recIdx = 0, typeTimer, ovTimer;
+
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; }
+  return xp;
+}
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+
+// ---- dialogue ----
+function say(text, who = "弁護人") {
+  $("who").textContent = who; clearInterval(typeTimer);
+  const el = $("txt"); el.textContent = ""; $("adv").classList.add("hide");
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = text; $("adv").classList.remove("hide"); return; }
+  let i = 0; typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) { clearInterval(typeTimer); $("adv").classList.remove("hide"); } }, 32);
+  el.dataset.full = text;
+}
+$("box").onclick = () => { const el = $("txt"); if (el.dataset.full && el.textContent !== el.dataset.full) { clearInterval(typeTimer); el.textContent = el.dataset.full; $("adv").classList.remove("hide"); } };
+
+function setChoices(items) {
+  $("choices").innerHTML = items.map((c, i) => `<button class="ch ${c.back ? "back" : ""}" data-c="${c.id}" style="--i:${i}">${c.label}${c.sub ? `<small>${c.sub}</small>` : ""}</button>`).join("");
+}
+function openWin(title, html) { $("wt").textContent = title; $("wb").innerHTML = html; $("win").classList.add("show"); setChoices([]); }
+function closeWin() { $("win").classList.remove("show"); }
+
+function hud() {
+  const st = streakCount(); $("life").style.width = Math.max(6, Math.min(st / 30, 1) * 100) + "%";
+  $("hudT").textContent = `EVIDENCE ${Object.keys(data).length}`;
+}
+
+// ---- screens ----
+function talk(extra) {
+  closeWin(); hud();
+  const st = streakCount(), has = !!data[ymd(new Date())], d = new Date();
+  let line = extra || (has ? "今日の記録は、すでに法廷記録に載っている。\n更新するか、過去の記録を見直そう。" : st >= 3 ? `連続${st}日目だ。いい流れだぞ！\nさあ、今日の日記を書こう。` : `${d.getMonth() + 1}月${d.getDate()}日。\n法廷記録に、今日の日記を追加しよう。`);
+  say(line);
+  setChoices([
+    { id: "write", label: "日記を書く", sub: "TESTIMONY" }, { id: "record", label: "法廷記録を見る", sub: "COURT RECORD" },
+    { id: "cal", label: "カレンダー", sub: "SCHEDULE" }, { id: "stat", label: "ステータス", sub: "BADGE" }
+  ]);
+}
+function askMood() {
+  closeWin(); loadDay();
+  say(selected === ymd(new Date()) ? "今日の気分は？" : `${fmt(selected)} の気分は？`);
+  setChoices([...MOODS.map(([m, t]) => ({ id: "m:" + m, label: m, sub: t })), { id: "back", label: "もどる", back: true }]);
+}
+function writeWin() {
+  say("では、証言を述べてもらおう。");
+  const t = SHOUT[mood] ? MOODS.find(x => x[0] === mood)[1] : "";
+  openWin("TESTIMONY ─ 証言", `<div class="row2" style="margin:0 0 10px"><span class="chip">${fmt(selected)}</span><span class="chip">${t || "NO DATA"}</span></div>
+    <textarea id="body" placeholder="今日の出来事を、ここに記録しよう…"></textarea>
+    <div class="row2"><span class="hintx">${selected === ymd(new Date()) ? "" : "過去の日付を編集中です"}</span><span><button class="btn ghost" data-a="back">BACK</button> <button class="btn" data-a="save">PRESENT!</button></span></div>`);
+  $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; }); setTimeout(() => $("body").focus(), 50);
+}
+function recordWin() {
+  const keys = Object.keys(data).sort().reverse(); if (recIdx >= keys.length) recIdx = 0;
+  say(keys.length ? "これが、これまでの法廷記録だ。" : "法廷記録は、まだ空だ。");
+  const k = keys[recIdx];
+  openWin("COURT RECORD ─ 法廷記録", keys.length ? `<div class="split"><div class="list">${keys.map((x, i) => `<button class="card ${i === recIdx ? "sel" : ""}" data-r="${i}"><span>${fmt(x)}</span><small>${esc((MOODS.find(m => m[0] === data[x].mood) || ["", "-"])[1])}</small></button>`).join("")}</div>
+      <div class="detail"><div class="hd"><span>${fmt(k)}</span><button class="btn ghost" data-edit="${k}">EDIT</button></div><p>${esc(data[k].text)}</p></div></div>` : `<p>最初の証言を提出しよう。</p>`);
+}
+function calWin() {
+  say("日付を選ぶと、その日の記録を開けるぞ。");
+  const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+  let h = DOW.map(d => `<div class="dow">${d[0]}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+  for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}" data-d="${k}">${d}</div>`; }
+  openWin("SCHEDULE ─ 法廷スケジュール", `<div class="mh"><button class="btn ghost" data-cal="-1">◀</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button class="btn ghost" data-cal="1">▶</button></div><div class="cals">${h}</div>`);
+}
+function statWin() {
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length, pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+  say(`現在の階級は ${RANKS[rk]}。\n次の昇格まで、あと少しだ！`);
+  openWin("ATTORNEY'S BADGE ─ 弁護士バッジ", `<div class="stats"><div class="stat"><b>RANK</b><span class="sm">${RANKS[rk]}</span></div><div class="stat"><b>STREAK</b><span>${st}</span></div><div class="stat"><b>EVIDENCE</b><span>${n}</span></div></div>
+    <div class="g2"><b><span>PENALTY GAUGE ─ 連続日数</span><span>${st} / 30</span></b><div class="gauge"><i style="width:${Math.min(st / 30, 1) * 100}%"></i></div></div>
+    <div class="g2"><b><span>EXPERIENCE ─ 次のランクまで</span><span>${pct}%</span></b><div class="gauge"><i style="width:${pct}%;background:linear-gradient(180deg,#8fc4ff,#2f7bff)"></i></div></div>`);
+}
+
+function objection(isNew, up) {
+  const [word, color] = SHOUT[mood] || SHOUT["良い"];
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("bang").textContent = word; $("bang").style.setProperty("--c", color); $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
+  $("ovS").textContent = (up ? "RANK UP ─ " : "") + (isNew ? streakCount() + " DAYS" : "UPDATED") + " ─ COURT RECORD UPDATED";
+  document.body.classList.remove("shake"); void document.body.offsetWidth; document.body.classList.add("shake");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => ov.classList.remove("show"), 2300);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+
+function save() {
+  const text = $("body").value.trim();
+  if (!text) { $("body").focus(); return; }
+  if (!mood) { say("まだ気分を選んでいないぞ。"); askMood(); return; }
+  const before = rankOf(totalXp()), isNew = !data[selected];
+  data[selected] = { mood, text }; draft = text; store(data);
+  const up = rankOf(totalXp()) > before;
+  objection(isNew, up);
+  talk(up ? `ランクアップだ！\n${RANKS[rankOf(totalXp())]} になったぞ！` : "法廷記録を更新した！\nこの調子で行こう。");
+}
+
+// ---- events ----
+$("choices").addEventListener("click", e => {
+  const b = e.target.closest("[data-c]"); if (!b) return; const c = b.dataset.c;
+  if (c === "write") { selected = ymd(new Date()); askMood(); }
+  else if (c === "record") recordWin(); else if (c === "cal") calWin(); else if (c === "stat") statWin();
+  else if (c === "back") talk();
+  else if (c.startsWith("m:")) { mood = c.slice(2); writeWin(); }
+});
+$("win").addEventListener("click", e => {
+  const a = e.target.closest("[data-a]"); if (a) return a.dataset.a === "save" ? save() : talk();
+  const r = e.target.closest("[data-r]"); if (r) { recIdx = +r.dataset.r; return recordWin(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) { selected = ed.dataset.edit; return askMood(); }
+  const dd = e.target.closest("[data-d]"); if (dd) { selected = dd.dataset.d; return askMood(); }
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; calWin(); }
+});
+$("wx").onclick = () => talk();
+document.addEventListener("keydown", e => { if (e.key === "Escape" && $("win").classList.contains("show")) talk(); });
+
+loadDay(); talk();
+</script>
+</body>
+</html>

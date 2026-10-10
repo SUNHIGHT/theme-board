@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Midgard Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@1,600;1,700&family=Shippori+Mincho+B1:wght@500;700;800&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Camp screen: pale cream lattice, white-blue ornate cards with gold frames, red PT ribbons, bevelled steel buttons */
+  :root { --cream:#efe8d8; --gold:#b8a070; --gold2:#d8c48a; --navy:#2d4f8a; --ink:#2a2f45; --green:#2f9a44; --brown:#3a2a1a;
+    --font:'Shippori Mincho B1','Hiragino Mincho ProN',serif; --it:'Cormorant Garamond','Shippori Mincho B1',serif; --head:'Cinzel','Shippori Mincho B1',serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { min-height:100%; }
+  body { font-family:var(--font); color:var(--ink); background:
+      linear-gradient(45deg, rgba(255,255,255,.55) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.55) 75%) 0 0/56px 56px,
+      linear-gradient(45deg, rgba(255,255,255,.55) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.55) 75%) 28px 28px/56px 56px,
+      radial-gradient(ellipse at 50% 0%, #fbf7ec, #e4dcc6 80%); background-attachment:fixed; }
+  body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:40; background:radial-gradient(ellipse at center, transparent 60%, rgba(120,100,60,.22) 100%); }
+  .app { max-width:1100px; margin:0 auto; padding:clamp(14px,2.6vw,30px) clamp(14px,3vw,36px) 40px; }
+
+  .top { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px; animation:fadeIn .5s both; }
+  .top h1 { font-weight:800; font-size:clamp(28px,5vw,46px); letter-spacing:.08em; color:var(--brown); text-shadow:1px 1px 0 #fff, 0 0 12px rgba(255,255,255,.8); }
+  .top h1 small { font-family:var(--it); font-style:italic; font-size:.4em; letter-spacing:.1em; color:var(--navy); margin-left:12px; }
+  .back { all:unset; cursor:pointer; padding:6px 22px; margin-right:150px; font-size:26px; line-height:1; color:#2a3040; border-radius:12px; border:2px solid #7a8296; background:linear-gradient(180deg,#f6f8fb,#bdc6d6 55%,#9fa9bd); box-shadow:inset 0 1px 0 #fff, 0 2px 0 rgba(0,0,0,.25); }
+  .back:hover { filter:brightness(1.08); } .back:active { transform:translateY(2px); }
+
+  /* cards */
+  .cards { display:grid; grid-template-columns:repeat(2,1fr); gap:14px 18px; margin-bottom:12px; }
+  .card { all:unset; box-sizing:border-box; cursor:pointer; position:relative; display:block; min-height:clamp(120px,17vw,164px); padding:clamp(10px,1.8vw,18px) clamp(16px,2.6vw,28px); border-radius:14px; overflow:hidden;
+    background:linear-gradient(120deg,#fefeff 0%,#e4eaf5 55%,#c6d1e6 100%); border:3px solid var(--gold); box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 4px rgba(184,160,112,.55), 0 4px 10px rgba(80,60,20,.25);
+    animation:cardIn .5s calc(var(--i) * 90ms + .1s) cubic-bezier(.2,.9,.3,1) both; transition:.15s; }
+  .card:hover { transform:translateY(-3px); filter:brightness(1.04); box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 4px rgba(184,160,112,.8), 0 10px 18px rgba(80,60,20,.3); }
+  .card.empty { cursor:default; opacity:.7; } .card.empty:hover { transform:none; filter:none; }
+  .card .nm { font-weight:800; font-size:clamp(16px,2.4vw,22px); letter-spacing:.06em; color:#26304a; text-shadow:1px 1px 0 #fff; margin-bottom:2px; }
+  .card .ln { display:grid; grid-template-columns:4.2em 1fr; font-family:var(--it); font-style:italic; font-weight:700; font-size:clamp(14px,2vw,19px); line-height:1.35; color:var(--navy); text-shadow:1px 1px 0 rgba(255,255,255,.9); }
+  .card .ln b { font-weight:700; } .card .ln span { color:#1c2740; letter-spacing:.04em; } .card .ln span.g { color:var(--green); }
+  .card::after { content:attr(data-mark); position:absolute; right:clamp(10px,2vw,24px); top:50%; transform:translateY(-50%); font-family:var(--font); font-weight:800; font-size:clamp(34px,6vw,64px); letter-spacing:.1em; color:rgba(90,110,160,.16); }
+  .pt { position:absolute; right:8px; bottom:8px; width:50px; height:22px; background:linear-gradient(180deg,#e0453a,#a02018); color:#fff; font-family:var(--head); font-size:13px; text-align:center; line-height:22px; clip-path:polygon(0 0,100% 0,88% 50%,100% 100%,0 100%); box-shadow:0 2px 0 rgba(0,0,0,.3); }
+
+  .bar { all:unset; box-sizing:border-box; cursor:pointer; display:block; width:min(560px,100%); margin:0 0 14px auto; padding:8px 40px 10px 54px; font-weight:700; font-size:clamp(16px,2.4vw,22px); letter-spacing:.12em; color:#eef2fb; text-align:center; text-shadow:0 1px 0 rgba(0,0,0,.4);
+    background:linear-gradient(180deg,#8d9ab4,#5e6a86 55%,#4a5570); border:2px solid #cfd6e6; border-radius:4px 28px 4px 4px; clip-path:polygon(18px 0,100% 0,100% 100%,0 100%); position:relative; box-shadow:inset 0 1px 0 rgba(255,255,255,.5); }
+  .bar::after { content:"▼"; position:absolute; right:16px; top:50%; transform:translateY(-50%); font-size:.8em; } .bar:hover { filter:brightness(1.1); }
+
+  .bottom { display:grid; grid-template-columns:minmax(260px,5fr) 6fr; gap:18px; align-items:stretch; }
+  .status { position:relative; padding:clamp(10px,1.6vw,16px) clamp(14px,2.4vw,24px); border-radius:12px; background:linear-gradient(180deg,#f7f1de,#eadfc2); border:3px solid var(--gold); box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 4px rgba(184,160,112,.55), 0 4px 10px rgba(80,60,20,.2); animation:cardIn .5s .5s both; }
+  .status .l1 { display:flex; justify-content:space-between; font-family:var(--it); font-style:italic; font-weight:700; font-size:clamp(17px,2.4vw,22px); color:var(--navy); border-bottom:1px solid rgba(184,160,112,.7); padding-bottom:4px; margin-bottom:6px; }
+  .status .l1 i { font-style:italic; color:#1c2740; margin-left:.4em; }
+  .status .l { display:flex; justify-content:space-between; align-items:baseline; gap:10px; padding:3px 0; font-size:clamp(14px,2vw,18px); color:#3c4258; font-weight:700; }
+  .status .l span { font-family:var(--it); font-style:italic; font-size:1.3em; color:#1c2740; } .status .l span.g { color:var(--green); }
+
+  .btns { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .bt { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; justify-content:center; text-align:center; min-height:clamp(46px,6vw,60px); padding:6px 10px; font-weight:800; font-size:clamp(14px,2.1vw,20px); letter-spacing:.08em; color:#27304a; text-shadow:0 1px 0 rgba(255,255,255,.9);
+    border-radius:14px 14px 14px 14px; border:2px solid #6b7488; background:linear-gradient(180deg,#f8fafd,#cfd6e4 52%,#a7b1c6); box-shadow:inset 0 1px 0 #fff, inset 0 -3px 0 rgba(60,70,100,.25), 0 3px 0 rgba(40,50,80,.35); transition:.1s; animation:cardIn .4s calc(var(--i) * 60ms + .6s) both; }
+  .bt.dk { color:#f2f5fb; text-shadow:0 1px 0 rgba(0,0,0,.6); background:linear-gradient(180deg,#8892a8,#586178 52%,#434b60); border-color:#2d3446; }
+  .bt:hover { filter:brightness(1.08); transform:translateY(-1px); } .bt:active { transform:translateY(2px); box-shadow:inset 0 2px 4px rgba(0,0,0,.3); }
+  .bt:focus-visible, .card:focus-visible, .bar:focus-visible, .back:focus-visible, textarea:focus-visible, .mood:focus-visible { outline:3px solid #e0453a; outline-offset:2px; }
+
+  /* windows */
+  .veil { position:fixed; inset:0; z-index:60; display:none; align-items:center; justify-content:center; padding:14px; background:rgba(60,50,30,.45); backdrop-filter:blur(2px); }
+  .veil.show { display:flex; animation:fadeIn .2s; }
+  .win { width:min(860px,100%); max-height:90vh; display:flex; flex-direction:column; border-radius:16px; background:linear-gradient(180deg,#fefdf8,#ece4cd); border:4px solid var(--gold); box-shadow:inset 0 0 0 2px #fff, inset 0 0 0 4px rgba(184,160,112,.55), 0 20px 50px rgba(40,30,10,.5); animation:pop .3s cubic-bezier(.2,1.4,.4,1); }
+  .wh { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 20px 8px; border-bottom:2px solid rgba(184,160,112,.7); }
+  .wh h2 { font-weight:800; font-size:clamp(20px,3.2vw,28px); letter-spacing:.1em; color:var(--brown); } .wh h2 small { font-family:var(--it); font-style:italic; font-size:.6em; color:var(--navy); margin-left:10px; }
+  .wb { padding:14px 20px 20px; overflow:auto; min-height:0; }
+  .lbl { font-family:var(--it); font-style:italic; font-weight:700; font-size:18px; color:var(--navy); margin:2px 0 6px; }
+  .moods { display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px; margin-bottom:12px; }
+  .mood { all:unset; box-sizing:border-box; cursor:pointer; text-align:center; padding:8px 6px; border-radius:12px; border:2px solid #6b7488; font-weight:800; font-size:16px; color:#27304a; background:linear-gradient(180deg,#f8fafd,#cfd6e4 52%,#a7b1c6); box-shadow:inset 0 1px 0 #fff, 0 2px 0 rgba(40,50,80,.35); }
+  .mood small { display:block; font-family:var(--it); font-style:italic; font-size:12px; color:var(--navy); } .mood.on { color:#f2f5fb; background:linear-gradient(180deg,#8892a8,#586178 52%,#434b60); border-color:#2d3446; } .mood.on small { color:#d6ddf0; }
+  textarea { width:100%; height:min(32vh,260px); resize:none; padding:12px 14px; font:500 clamp(15px,2.2vw,19px)/1.8 var(--font); color:var(--ink); background:repeating-linear-gradient(#fffdf4 0 31px, rgba(184,160,112,.45) 31px 32px); border:2px solid var(--gold); border-radius:8px; outline:none; }
+  .acts { display:flex; justify-content:flex-end; gap:12px; margin-top:12px; flex-wrap:wrap; } .acts .bt { min-width:120px; animation:none; } .hint { margin-right:auto; align-self:center; font-size:13px; color:#8a5a2c; }
+  .split { display:grid; grid-template-columns:minmax(200px,1fr) 2fr; gap:14px; }
+  .list { display:flex; flex-direction:column; gap:6px; max-height:46vh; overflow:auto; padding-right:4px; }
+  .li { all:unset; box-sizing:border-box; cursor:pointer; display:flex; justify-content:space-between; gap:8px; padding:7px 12px; border-radius:8px; border:2px solid #cdbf93; background:linear-gradient(180deg,#fff,#e6edf8); font-size:15px; font-weight:700; } .li small { font-family:var(--it); font-style:italic; color:var(--navy); font-size:14px; }
+  .li:hover, .li.sel { background:linear-gradient(180deg,#fff7df,#f0dca0); border-color:var(--gold); }
+  .detail { border:2px solid rgba(184,160,112,.7); border-radius:10px; background:#fffdf4; padding:12px 16px; max-height:46vh; overflow:auto; } .detail .hd { display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; font-family:var(--it); font-style:italic; font-weight:700; font-size:20px; color:var(--navy); }
+  .detail p { white-space:pre-wrap; line-height:1.9; font-size:16px; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; } .cal div { aspect-ratio:1.5; display:flex; align-items:center; justify-content:center; border-radius:8px; border:2px solid #d8cba0; background:#fffdf4; font-family:var(--it); font-style:italic; font-weight:700; font-size:18px; color:#27304a; }
+  .cal .dow { aspect-ratio:auto; border:0; background:none; font-size:13px; color:var(--navy); } .cal .d { cursor:pointer; transition:.1s; } .cal .d:hover { background:#fff1cf; }
+  .cal .done { background:linear-gradient(180deg,#8892a8,#586178); color:#fff; border-color:#2d3446; } .cal .today { outline:3px solid #e0453a; outline-offset:1px; }
+  .mh { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; font-family:var(--it); font-style:italic; font-weight:700; font-size:24px; color:var(--navy); } .mh .bt { min-height:38px; min-width:64px; animation:none; font-size:18px; }
+  .sg { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:10px; margin-bottom:14px; } .sc { border:2px solid var(--gold); border-radius:10px; background:linear-gradient(120deg,#fefeff,#dde5f3); padding:8px 14px; } .sc b { display:block; font-weight:700; font-size:13px; letter-spacing:.1em; color:#3c4258; } .sc span { font-family:var(--it); font-style:italic; font-weight:700; font-size:30px; color:var(--navy); }
+  .gg { margin-bottom:10px; } .gg b { display:flex; justify-content:space-between; font-size:14px; font-weight:700; margin-bottom:4px; } .gt { height:14px; border:2px solid var(--gold); border-radius:8px; background:#fffdf4; padding:2px; } .gt i { display:block; height:100%; width:0; border-radius:5px; background:linear-gradient(180deg,#9fb2d8,#2d4f8a); transition:width .8s; }
+
+  /* result overlay */
+  #ov { position:fixed; inset:0; z-index:80; display:none; align-items:center; justify-content:center; background:radial-gradient(circle, rgba(255,255,255,.96), rgba(239,232,216,.9)); }
+  #ov.show { display:flex; animation:fadeIn .3s; } #ov .bx { text-align:center; padding:30px 20px; animation:pop .6s cubic-bezier(.2,1.4,.4,1); }
+  #ovT { font-family:var(--head); font-weight:700; font-size:clamp(30px,8vw,76px); letter-spacing:.22em; color:var(--brown); text-shadow:0 0 30px rgba(216,196,138,.9), 2px 2px 0 #fff; } #ovT::after { content:""; display:block; height:3px; margin:14px auto 0; width:60%; background:linear-gradient(90deg,transparent,var(--gold),transparent); }
+  #ovS { margin-top:12px; font-family:var(--it); font-style:italic; font-weight:700; font-size:clamp(16px,3vw,24px); color:var(--navy); letter-spacing:.14em; }
+  @keyframes fadeIn { from { opacity:0; } } @keyframes cardIn { from { opacity:0; transform:translateY(16px); } } @keyframes pop { from { opacity:0; transform:scale(.88); } }
+  @media (max-width:760px) { .cards { grid-template-columns:1fr; } .bottom { grid-template-columns:1fr; } .back { margin-right:0; } .top { padding-top:44px; } .split { grid-template-columns:1fr; } .btns { grid-template-columns:repeat(2,1fr); } .bar { margin-left:0; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+  <header class="top"><h1>キャンプ<small>Camp</small></h1><button class="back" id="homeBtn" aria-label="テーマ選択へ">↩</button></header>
+  <section class="cards" id="cards"></section>
+  <button class="bar" id="barBtn">記録一覧</button>
+  <section class="bottom">
+    <div class="status" id="status"></div>
+    <div class="btns" id="btns"></div>
+  </section>
+</div>
+<div class="veil" id="veil"><div class="win" id="win" role="dialog" aria-modal="true"><div class="wh"><h2 id="wt"></h2><button class="bt" id="wx" style="min-height:36px;min-width:72px;animation:none;font-size:20px">↩</button></div><div class="wb" id="wb"></div></div></div>
+<div id="ov"><div class="bx"><div id="ovT"></div><div id="ovS"></div></div></div>
+
+<script src="theme-switch.js" data-theme="valkyrie"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","DIVINE"],["良い","BLESSED"],["普通","NEUTRAL"],["微妙","WEARY"],["最悪","DESPAIR"]];
+const RANKS = ["PROLOGUE","CHAPTER 1","CHAPTER 2","CHAPTER 3","CHAPTER 4","CHAPTER 5","FINAL CHAPTER"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["S","M","T","W","T","F","S"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", calOff = 0, recIdx = 0, overlayTimer;
+const t0 = Date.now();
+
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function perEntry() {
+  const m = {}; let run = 0, prev = null, cum = 0;
+  for (const k of Object.keys(data).sort()) {
+    const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
+    const gain = XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; cum += gain; m[k] = { run, gain, cum }; prev = cur;
+  }
+  return m;
+}
+const totalXp = () => { const e = perEntry(), k = Object.keys(e).sort().pop(); return k ? e[k].cum : 0; };
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+const moodTag = m => (MOODS.find(x => x[0] === m) || ["", "—"])[1];
+
+function renderCards() {
+  const keys = Object.keys(data).sort().reverse().slice(0, 4), pe = perEntry(), today = ymd(new Date());
+  let h = "";
+  for (let i = 0; i < 4; i++) {
+    const k = keys[i];
+    if (!k) { h += `<div class="card empty" style="--i:${i}"><div class="nm">— 未記録 —</div><div class="ln"><b>LV</b><span>—</span></div><div class="ln"><b>DME</b><span>—</span></div><div class="ln"><b>EXP</b><span>—</span></div><div class="ln"><b>After</b><span>—</span></div></div>`; continue; }
+    const e = data[k], p = pe[k];
+    h += `<button class="card" data-k="${k}" data-mark="${esc(e.mood || "")}" style="--i:${i}"><div class="nm">${fmt(k)}</div>
+      <div class="ln"><b>LV</b><span>${p.run}</span></div><div class="ln"><b>DME</b><span class="g">${esc(moodTag(e.mood))}</span></div><div class="ln"><b>EXP</b><span>${p.gain}</span></div><div class="ln"><b>After</b><span>${p.cum.toLocaleString()}</span></div>${k === today ? '<i class="pt">PT</i>' : ""}</button>`;
+  }
+  $("cards").innerHTML = h;
+}
+function renderStatus() {
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount(), now = new Date(), dim = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const sec = Object.keys(data).length * 1800 + Math.floor((Date.now() - t0) / 1000), p = n => String(n).padStart(2, "0");
+  $("status").innerHTML = `<div class="l1"><span>Chapter <i>${rk + 1}</i></span><span>Period <i>${now.getDate()}/${dim}</i></span></div>
+    <div class="l"><label>プレイ時間</label><span id="pt">${p(Math.floor(sec / 3600))}:${p(Math.floor(sec / 60) % 60)}:${p(sec % 60)}</span></div>
+    <div class="l"><label>マテリアライズポイント</label><span>${(xp * 17).toLocaleString()}</span></div>
+    <div class="l"><label>評価値</label><span class="g">${st}</span></div>`;
+}
+const BTNS = [["write", "日記を書く", ""], ["list", "記録一覧", ""], ["cal", "カレンダー", "dk"], ["rest", "休息", "dk"], ["stat", "ステータス", ""], ["theme", "オプション", "dk"]];
+function renderBtns() { $("btns").innerHTML = BTNS.map(([id, l, c], i) => `<button class="bt ${c}" data-b="${id}" style="--i:${i}">${l}</button>`).join(""); }
+function renderAll() { renderCards(); renderStatus(); }
+setInterval(() => { const x = $("pt"); if (!x) return; const sec = Object.keys(data).length * 1800 + Math.floor((Date.now() - t0) / 1000), p = n => String(n).padStart(2, "0"); x.textContent = `${p(Math.floor(sec / 3600))}:${p(Math.floor(sec / 60) % 60)}:${p(sec % 60)}`; }, 1000);
+
+// ---- windows ----
+function openWin(title, sub, html) { $("wt").innerHTML = `${title}<small>${sub}</small>`; $("wb").innerHTML = html; $("veil").classList.add("show"); }
+function closeWin() { $("veil").classList.remove("show"); }
+function writeWin() {
+  const today = selected === ymd(new Date());
+  openWin("日記を書く", "Diary", `<div class="lbl">${fmt(selected)}${today ? "" : "（過去の日付）"}</div>
+    <div class="moods" id="moods">${MOODS.map(([m, t]) => `<button class="mood ${m === mood ? "on" : ""}" data-m="${m}">${m}<small>${t}</small></button>`).join("")}</div>
+    <textarea id="body" placeholder="今日の出来事を、魂に刻みましょう…"></textarea>
+    <div class="acts"><span class="hint"></span><button class="bt dk" data-a="close">戻る</button><button class="bt" data-a="save">決定</button></div>`);
+  $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; });
+}
+function entryWin(k) {
+  const e = data[k]; if (!e) return;
+  openWin(fmt(k), moodTag(e.mood), `<div class="detail"><div class="hd"><span>${esc(moodTag(e.mood))}</span></div><p>${esc(e.text)}</p></div><div class="acts"><button class="bt dk" data-a="close">戻る</button><button class="bt" data-edit="${k}">編集</button></div>`);
+}
+function listWin() {
+  const keys = Object.keys(data).sort().reverse(); if (recIdx >= keys.length) recIdx = 0; const k = keys[recIdx];
+  openWin("記録一覧", "List", keys.length ? `<div class="split"><div class="list">${keys.map((x, i) => `<button class="li ${i === recIdx ? "sel" : ""}" data-r="${i}"><span>${fmt(x)}</span><small>${esc(moodTag(data[x].mood))}</small></button>`).join("")}</div>
+    <div class="detail"><div class="hd"><span>${fmt(k)}</span><button class="bt" data-edit="${k}" style="min-height:34px;font-size:15px;animation:none">編集</button></div><p>${esc(data[k].text)}</p></div></div>` : `<p>記録はまだありません。「日記を書く」から最初の一行を刻みましょう。</p>`);
+}
+function calWin() {
+  const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+  let h = DOW.map(d => `<div class="dow">${d}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+  for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}" data-d="${k}">${d}</div>`; }
+  openWin("カレンダー", "Calendar", `<div class="mh"><button class="bt dk" data-cal="-1">◀</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button class="bt dk" data-cal="1">▶</button></div><div class="cal">${h}</div>`);
+}
+function statWin() {
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length, pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+  openWin("ステータス", "Status", `<div class="sg"><div class="sc"><b>CHAPTER</b><span>${RANKS[rk]}</span></div><div class="sc"><b>評価値 (STREAK)</b><span>${st}</span></div><div class="sc"><b>記録数</b><span>${n}</span></div></div>
+    <div class="gg"><b><span>評価値 ─ 連続日数</span><span>${st} / 30</span></b><div class="gt"><i style="width:${Math.min(st / 30, 1) * 100}%"></i></div></div>
+    <div class="gg"><b><span>次の章まで</span><span>${pct}%</span></b><div class="gt"><i style="width:${pct}%"></i></div></div>`);
+}
+function restWin() { const st = streakCount(); openWin("休息", "Rest", `<p style="font-size:19px;line-height:2">${st ? `連続 ${st} 日、お疲れさまでした。` : "まずは、ゆっくり休みましょう。"}<br>書きたくなったら、いつでも「日記を書く」から。</p><div class="acts"><button class="bt" data-a="close">戻る</button></div>`); }
+
+function overlay(up, isNew) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("ovT").textContent = up ? "NEW CHAPTER" : "SOUL RECORDED"; $("ovS").textContent = (up ? RANKS[rankOf(totalXp())] + " ─ " : "") + (isNew ? `${streakCount()} DAYS` : "UPDATED");
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2400);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+
+function save() {
+  const text = $("body").value.trim();
+  if (!text) { $("body").focus(); return; }
+  if (!mood) { document.querySelector(".hint").textContent = "今日の気分を選んでください"; return; }
+  const before = rankOf(totalXp()), isNew = !data[selected];
+  data[selected] = { mood, text }; draft = text; store(data); closeWin(); renderAll(); overlay(rankOf(totalXp()) > before, isNew);
+}
+function openEdit(k) { selected = k; loadDay(); writeWin(); }
+
+$("btns").addEventListener("click", e => {
+  const b = e.target.closest("[data-b]"); if (!b) return; const id = b.dataset.b;
+  if (id === "write") { selected = ymd(new Date()); loadDay(); writeWin(); } else if (id === "list") listWin(); else if (id === "cal") calWin(); else if (id === "stat") statWin(); else if (id === "rest") restWin(); else if (id === "theme") location.href = "index.html";
+});
+$("barBtn").onclick = listWin; $("homeBtn").onclick = () => { location.href = "index.html"; };
+$("cards").addEventListener("click", e => { const c = e.target.closest("[data-k]"); if (c) entryWin(c.dataset.k); });
+$("wx").onclick = closeWin; $("veil").addEventListener("click", e => { if (e.target === $("veil")) closeWin(); });
+$("wb").addEventListener("click", e => {
+  const a = e.target.closest("[data-a]"); if (a) return a.dataset.a === "save" ? save() : closeWin();
+  const m = e.target.closest("[data-m]"); if (m) { mood = m.dataset.m; document.querySelectorAll("#moods .mood").forEach(x => x.classList.toggle("on", x === m)); return; }
+  const r = e.target.closest("[data-r]"); if (r) { recIdx = +r.dataset.r; return listWin(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) return openEdit(ed.dataset.edit);
+  const dd = e.target.closest("[data-d]"); if (dd) return openEdit(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; calWin(); }
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeWin(); });
+
+loadDay(); renderBtns(); renderAll();
+</script>
+</body>
+</html>

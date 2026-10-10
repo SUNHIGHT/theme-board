@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alchemy Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@500;700;800&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Open-book menu: left pill menu, parchment pages (oval frame + status memo | memo cards), clock, coin counter, speech bubble (after Atelier Sophie) */
+  :root { --pa:#f3e3c3; --pa2:#e6cf9f; --br:#6b3b22; --br2:#9a6a3a; --go:#d9a93c; --ye:#ffd21a; --wine:#5a1d2a; --tx:#4a2c1a; --pk:#e8a8a8; --f:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif; --fm:'Shippori Mincho B1','Zen Maru Gothic',serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--tx); overflow:hidden; background:radial-gradient(ellipse at 50% 40%, #35503a, #1c2e22 70%); }
+  body::before { content:""; position:fixed; inset:0; pointer-events:none; opacity:.4; background:repeating-linear-gradient(90deg, rgba(0,0,0,.18) 0 2px, transparent 2px 14px), repeating-linear-gradient(0deg, rgba(255,255,255,.04) 0 1px, transparent 1px 6px); }
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto 1fr auto; }
+
+  .top { position:relative; height:64px; display:flex; align-items:center; padding-left:130px; background:linear-gradient(180deg,rgba(60,20,30,.0),rgba(40,10,20,.0)); }
+  .top h1 { font:800 28px var(--fm); color:#fff; letter-spacing:.1em; text-shadow:0 2px 0 #4a1a1a, 0 0 10px rgba(0,0,0,.6); background:linear-gradient(90deg,rgba(90,25,40,.9),rgba(90,25,40,.6) 70%,transparent); padding:2px 70px 2px 24px; clip-path:polygon(0 0,100% 0,calc(100% - 30px) 100%,0 100%); }
+  .clock { position:absolute; left:6px; top:4px; width:112px; height:112px; z-index:6; filter:drop-shadow(0 4px 6px rgba(0,0,0,.5)); }
+
+  .mid { display:grid; grid-template-columns:200px 1fr; gap:8px; padding:0 14px 0 6px; min-height:0; }
+  .menu { display:flex; flex-direction:column; gap:7px; padding:52px 0 0 4px; z-index:5; }
+  .mi { all:unset; box-sizing:border-box; cursor:pointer; display:flex; align-items:center; gap:10px; height:42px; padding:0 14px 0 6px; background:linear-gradient(180deg,#fffaf0,#efdcb6); border:2px solid var(--br2); border-radius:24px; font-weight:900; font-size:15px; letter-spacing:.04em; box-shadow:0 3px 0 rgba(60,30,10,.4); transition:.12s; animation:slideR .4s calc(var(--i)*45ms) both; }
+  .mi .ic { width:30px; height:30px; border-radius:50%; background:#fff; border:2px solid var(--br); display:grid; place-items:center; font-size:15px; flex:none; }
+  .mi:hover { filter:brightness(1.06); transform:translateX(4px); }
+  .mi.on { background:linear-gradient(180deg,#fff27a,#ffc800); border-color:#c88a00; transform:translateX(10px); box-shadow:0 3px 0 rgba(120,70,0,.5), 0 0 14px rgba(255,210,30,.6); }
+  .mi:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+
+  .bookw { position:relative; min-height:0; display:flex; padding:4px 0 6px; }
+  .book { position:relative; flex:1; display:grid; grid-template-columns:1fr 1fr; background:linear-gradient(90deg,var(--pa2),var(--pa) 8%,var(--pa) 46%,#c9b078 50%,var(--pa) 54%,var(--pa) 92%,var(--pa2)); border:10px solid var(--br); border-radius:18px; box-shadow:0 0 0 4px #2f6a3a, 0 12px 28px rgba(0,0,0,.6), inset 0 0 40px rgba(120,80,30,.3); min-height:0; animation:fadeB .5s both; }
+  .pg { position:relative; padding:14px 22px 12px; min-width:0; min-height:0; display:flex; flex-direction:column; }
+  .pg.l::before { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at 30% 30%, rgba(255,255,255,.35), transparent 60%); pointer-events:none; }
+  .flip { animation:flip .45s both; transform-origin:left center; }
+
+  .tab { position:absolute; left:50%; top:10px; transform:translateX(-50%); z-index:3; background:linear-gradient(180deg,#fff6e0,#ecd7aa); border:2px solid var(--br2); border-radius:6px; padding:1px 28px; font:800 18px var(--fm); letter-spacing:.1em; clip-path:polygon(0 0,100% 0,100% 100%,0 100%); }
+  .oval { position:relative; margin:30px auto 0; width:min(78%,300px); aspect-ratio:.82; border-radius:50% / 46%; border:6px double var(--go); background:radial-gradient(ellipse at 40% 30%, #fff3ee, #f2cfc6 70%, #e9b8b0); box-shadow:0 0 0 5px #b78a4a, 0 0 0 7px #f3e3c3, inset 0 0 26px rgba(160,90,90,.35); display:flex; flex-direction:column; align-items:center; justify-content:center; padding:14%; text-align:center; overflow:hidden; flex:none; }
+  .oval::before, .oval::after { content:"❦"; position:absolute; font-size:26px; color:#c9922c; } .oval::before { top:6%; left:50%; transform:translateX(-50%); } .oval::after { bottom:6%; left:50%; transform:translateX(-50%) rotate(180deg); }
+  .oval .n { font:800 clamp(56px,9vw,104px)/1 var(--fm); color:#8a4a3a; text-shadow:0 2px 0 #fff; } .oval .n small { font-size:.36em; } .oval .d { font:700 15px var(--fm); letter-spacing:.3em; color:#a46a54; margin-top:4px; } .oval .m { font-size:34px; margin-top:6px; }
+  .oval .tx { font:600 14px/1.8 var(--fm); color:#6a3a2a; overflow:auto; max-height:100%; white-space:pre-wrap; width:100%; text-align:left; }
+  .memo { position:absolute; right:3%; bottom:33%; width:min(40%,170px); background:linear-gradient(180deg,#fffdf6,#f2e6c6); border:1px solid #c9b078; padding:6px 12px; font:700 13px/1.5 var(--f); transform:rotate(-1deg); box-shadow:2px 3px 6px rgba(80,50,20,.4); clip-path:polygon(0 3%,3% 0,97% 1%,100% 4%,99% 96%,96% 100%,4% 99%,0 97%); z-index:4; }
+  .memo div { display:flex; justify-content:space-between; border-bottom:1px dotted #b59a60; } .memo b { font-family:var(--fm); }
+  .low { display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:auto; }
+  .coin { display:flex; align-items:center; gap:8px; background:linear-gradient(180deg,#6a4a30,#3e2a1a); border:2px solid #a37a42; border-radius:20px; padding:2px 16px 2px 4px; color:#fff; font:800 18px var(--fm); letter-spacing:.06em; min-width:150px; justify-content:space-between; } .coin i { width:24px; height:24px; border-radius:50%; background:radial-gradient(circle at 35% 30%,#ffe98a,#c88a10); border:2px solid #fff3c0; }
+  .ttp { background:linear-gradient(180deg,#fffaf0,#ecd7aa); border:2px solid var(--br2); border-radius:6px; padding:1px 22px; font:800 13px var(--fm); letter-spacing:.1em; }
+  .gg { width:170px; height:14px; background:#3a5a2a; border:2px solid #fff; border-radius:8px; overflow:hidden; box-shadow:0 0 0 2px var(--br); } .gg div { height:100%; background:linear-gradient(180deg,#d8ff7a,#6ac82a); transition:width .8s; }
+  .bub { position:relative; margin-top:6px; background:#fff3c8; border:3px solid #c89a30; border-radius:18px; padding:8px 14px 8px 62px; font:700 15px/1.6 var(--f); min-height:62px; box-shadow:0 3px 0 rgba(120,80,20,.35); }
+  .bub .fc { position:absolute; left:6px; top:-14px; width:48px; height:48px; border-radius:50%; background:radial-gradient(circle at 40% 35%,#f6e4ff,#b8a0e8); border:3px solid #fff; box-shadow:0 0 0 2px #8a6ac8; display:grid; place-items:center; font-size:24px; }
+
+  /* right page */
+  .moods { display:flex; gap:6px; flex-wrap:wrap; margin:34px 0 8px; list-style:none; padding:0; } .mt { all:unset; cursor:pointer; display:flex; align-items:center; gap:4px; background:linear-gradient(180deg,#fffdf6,#f0e0b8); border:1.5px solid var(--br2); border-radius:4px; padding:2px 12px 2px 8px; font:800 14px var(--f); transition:.12s; } .mt::before { content:"◆"; color:#5aa0d8; font-size:12px; } .mt:hover { filter:brightness(1.06); } .mt.on { background:linear-gradient(180deg,#fff27a,#ffc800); border-color:#c88a00; }
+  .paper { position:relative; flex:1; min-height:0; background:#fffdf4; border:1px solid #c9b078; box-shadow:2px 3px 6px rgba(80,50,20,.4); transform:rotate(-.4deg); display:flex; flex-direction:column; clip-path:polygon(0 1%,2% 0,98% 1%,100% 3%,99% 98%,97% 100%,3% 99%,0 98%); }
+  textarea { flex:1; width:100%; min-height:120px; resize:none; border:0; outline:0; background:repeating-linear-gradient(transparent 0 30px, #d9c89a 30px 31px); font:600 16px/31px var(--fm); color:var(--tx); padding:2px 16px; } textarea:focus { background-color:#fffbe8; }
+  .acts { display:flex; align-items:center; gap:10px; margin-top:8px; } .save { all:unset; cursor:pointer; padding:6px 30px; background:linear-gradient(180deg,#ff9a8a,#e0506a); color:#fff; border:2px solid #fff; border-radius:22px; font:900 16px var(--f); letter-spacing:.1em; box-shadow:0 3px 0 rgba(120,30,50,.5); text-shadow:0 1px 0 #8a2a3a; transition:.12s; } .save:hover { transform:translateY(-2px) rotate(-1deg); } .hint { font-size:12px; color:#a04a30; font-weight:700; } .dt { font:700 12px var(--f); border:1.5px solid var(--br2); border-radius:8px; padding:2px 6px; background:#fffdf4; color:var(--tx); }
+  .cards { display:flex; flex-direction:column; gap:10px; margin-top:34px; flex:1; min-height:0; }
+  .mc { all:unset; box-sizing:border-box; cursor:pointer; position:relative; background:linear-gradient(180deg,#fffdf6,#f4e8ca); border:1px solid #c9b078; padding:6px 10px 6px 150px; min-height:84px; box-shadow:2px 3px 6px rgba(80,50,20,.4); clip-path:polygon(0 3%,2% 0,98% 2%,100% 5%,99% 96%,97% 100%,3% 98%,0 96%); animation:slideL .35s calc(var(--i)*70ms) both; transition:.12s; } .mc:hover { filter:brightness(1.05); } .mc.on { outline:3px solid var(--ye); outline-offset:-3px; background:linear-gradient(180deg,#fffbe0,#fbeab0); }
+  .mc .nm { position:absolute; left:8px; top:8px; width:134px; background:linear-gradient(180deg,#fffaf0,#e8d3a4); border:2px solid var(--br2); border-radius:4px; padding:1px 6px; font:800 14px var(--f); } .mc .nm::before { content:"◆ "; color:#5aa0d8; }
+  .mc .ex { position:absolute; left:10px; bottom:6px; width:134px; font:600 11px/1.4 var(--f); color:#7a5a3a; max-height:3em; overflow:hidden; }
+  .mc .r { display:flex; justify-content:space-between; font:700 14px/1.55 var(--f); border-bottom:1px dotted #b59a60; } .mc .r b { font-family:var(--fm); }
+  .pgn { display:flex; justify-content:center; align-items:center; gap:14px; font:800 14px var(--fm); } .pgn button { all:unset; cursor:pointer; background:linear-gradient(180deg,#fffaf0,#ecd7aa); border:2px solid var(--br2); border-radius:14px; padding:0 14px; } .pgn button:hover { background:var(--ye); }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-top:34px; } .cal div { aspect-ratio:1.2; display:grid; place-items:center; font:800 17px var(--fm); background:#fffdf4; border:1.5px solid #c9b078; border-radius:6px; } .cal .dow { background:none; border:0; font:800 12px var(--f); color:#a46a54; aspect-ratio:auto; } .cal .done { background:linear-gradient(180deg,#fff27a,#ffc800); border-color:#c88a00; } .cal .today { outline:3px solid #e0506a; } .cal [data-go] { cursor:pointer; }
+  .tbl { margin-top:34px; display:grid; gap:8px; } .row { background:#fffdf4; border:1.5px solid #c9b078; padding:6px 14px; font:800 15px var(--f); display:flex; justify-content:space-between; align-items:center; box-shadow:1px 2px 4px rgba(80,50,20,.3); } .row b { font:800 20px var(--fm); } .row .bar { flex:1; margin:0 12px; height:10px; background:#e6d6a8; border-radius:6px; overflow:hidden; } .row .bar i { display:block; height:100%; background:linear-gradient(180deg,#d8ff7a,#6ac82a); }
+  .big { all:unset; cursor:pointer; display:block; background:linear-gradient(180deg,#fffaf0,#ecd7aa); border:2px solid var(--br2); border-radius:14px; padding:12px 18px; font:900 16px var(--f); box-shadow:0 3px 0 rgba(60,30,10,.4); } .big:hover { background:var(--ye); } .big small { display:block; font:600 12px var(--f); color:#7a5a3a; }
+  button:focus-visible, textarea:focus-visible { outline:3px solid #e0506a; outline-offset:2px; }
+
+  .guide { display:flex; justify-content:flex-end; gap:18px; padding:2px 24px 8px; font:700 13px var(--f); color:#fff; text-shadow:0 1px 3px #000; } .guide b { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background:#fff; color:#333; font-size:11px; margin-right:4px; text-shadow:none; }
+
+  #ov { position:fixed; inset:0; z-index:60; display:none; place-content:center; text-align:center; background:radial-gradient(circle, rgba(255,240,200,.5), rgba(30,20,10,.85)); }
+  #ov.show { display:grid; animation:fadeB .25s both, ovOut .4s 2.4s forwards; cursor:pointer; }
+  #ov .bx { background:linear-gradient(180deg,#fffaf0,#ecd7aa); border:6px double var(--br2); border-radius:24px; padding:28px 56px; animation:pop .5s both; box-shadow:0 0 40px rgba(255,220,120,.6); } #ov .bx .s { font-size:46px; } #ov .bx b { display:block; font:800 clamp(26px,5vw,42px) var(--fm); color:#8a3a2a; letter-spacing:.1em; } #ov .bx small { font:700 14px var(--f); color:#7a5a3a; letter-spacing:.2em; }
+  @keyframes slideR { from { opacity:0; transform:translateX(-30px); } } @keyframes slideL { from { opacity:0; transform:translateX(24px); } } @keyframes fadeB { from { opacity:0; } } @keyframes flip { from { opacity:0; transform:perspective(900px) rotateY(-50deg); } } @keyframes pop { from { opacity:0; transform:scale(.7) rotate(-6deg); } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:900px) {
+    body { overflow-y:auto; overflow-x:hidden; } .app { height:auto; min-height:100%; } .top { padding-left:120px; } .top h1 { font-size:20px; padding-right:40px; } .clock { width:90px; height:90px; }
+    .mid { grid-template-columns:1fr; padding:0 8px; } .menu { flex-direction:row; flex-wrap:wrap; padding:6px 0; } .mi { height:36px; font-size:13px; } .mi.on, .mi:hover { transform:none; } .book { grid-template-columns:1fr; border-width:6px; } .oval { width:60%; } .memo { bottom:30%; } .mc { padding-left:10px; padding-top:40px; } .mc .nm { width:auto; right:8px; } .mc .ex { position:static; width:auto; } .guide { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="top"><svg class="clock" id="clk" viewBox="0 0 112 112"></svg><h1 id="ttl">メインメニュー</h1></div>
+  <div class="mid">
+    <div class="menu" id="menu"></div>
+    <div class="bookw"><div class="book" id="book"></div></div>
+  </div>
+  <div class="guide"><span><b>✛</b>選択</span><span><b>−</b>マニュアル表示</span><span><b>B</b>戻る</span><span><b>A</b>決定</span></div>
+</div>
+<div id="ov"><div class="bx"><div class="s">⚗️</div><b id="ovT"></b><small id="ovS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="sophie"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "☀️"], ["良い", "🌤️"], ["普通", "☁️"], ["微妙", "🌧️"], ["最悪", "⛈️"]];
+const MENU = [["コンテナ", "log", "📦"], ["レシピ発想", "write", "💡"], ["出来事", "cal", "📅"], ["ステータス", "stat", "📊"], ["依頼・ウワサ", "quest", "📜"], ["図鑑", "book", "📖"], ["設定", "opt", "⚙️"]];
+const TITLES = ["見習いの錬金術士", "不思議の錬金術士", "一人前の錬金術士", "名高い錬金術士", "伝説の錬金術士"];
+const MS = [3, 7, 14, 30, 60, 100];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`; };
+
+let data = load(), view = "write", selected = today(), mood = null, draft = null, logPage = 0, logSel = 0, ovTimer, flipNext = true;
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const keysDesc = () => Object.keys(data).sort().reverse();
+const moodIc = m => (MOODS.find(x => x[0] === m) || [, "✨"])[1];
+
+// clock
+(() => {
+  let h = `<circle cx="56" cy="56" r="52" fill="#b8862a" stroke="#6b3b22" stroke-width="4"/><circle cx="56" cy="56" r="44" fill="#fff6dc" stroke="#8a5a22" stroke-width="2"/>`;
+  [12, 3, 6, 9].forEach((n, i) => { const a = i * Math.PI / 2 - Math.PI / 2; h += `<text x="${56 + Math.cos(a) * 33}" y="${60 + Math.sin(a) * 33}" font-size="14" font-weight="800" text-anchor="middle" fill="#5a2a1a" font-family="serif">${n}</text>`; });
+  h += `<line id="hh" x1="56" y1="56" x2="56" y2="36" stroke="#3a1a10" stroke-width="4" stroke-linecap="round"/><line id="mm" x1="56" y1="56" x2="56" y2="26" stroke="#c0302a" stroke-width="2.5" stroke-linecap="round"/><circle cx="56" cy="56" r="4" fill="#3a1a10"/>`;
+  $("clk").innerHTML = h;
+  const tick = () => { const n = new Date(); $("hh").setAttribute("transform", `rotate(${(n.getHours() % 12 + n.getMinutes() / 60) * 30} 56 56)`); $("mm").setAttribute("transform", `rotate(${n.getMinutes() * 6} 56 56)`); };
+  tick(); setInterval(tick, 20000);
+})();
+
+function leftPage() {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, st = streakCount(), into = xp % XP_PER_RANK, all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0);
+  const d = new Date(selected + "T00:00:00"), e = data[selected];
+  const tl = TITLES[Math.min(Math.floor((lv - 1) / 3), TITLES.length - 1)];
+  let msg = e ? `${dl(selected)}の日記は書けているよ。いいかんじ♪` : selected === today() ? "今日はまだ日記を書いていないみたい…。何があったのか、教えてくれる？" : "この日の日記は空っぽみたい。思い出して書いてみようか。";
+  if (st >= 7) msg = `${st}日も連続で書いているの？ すごいね、錬金術の腕もあがりそう!`;
+  let oval;
+  if (view === "log") { const en = data[selected]; oval = `<div class="oval"><div class="tx">${en ? esc(en.text) : "記録がありません"}</div></div>`; }
+  else if (view === "cal") { const n = new Date(); oval = `<div class="oval"><div class="n">${n.getMonth() + 1}<small>月</small></div><div class="d">${n.getFullYear()}</div></div>`; }
+  else oval = `<div class="oval"><div class="d">${d.getFullYear()}</div><div class="n">${d.getDate()}<small>日</small></div><div class="d">${d.getMonth() + 1}月 ${DOW[d.getDay()]}曜日</div><div class="m">${e ? moodIc(e.mood) : "✨"}</div></div>`;
+  return `<div class="tab">${view === "log" ? "記録" : view === "cal" ? "カレンダー" : dl(selected)}</div>${oval}
+    <div class="memo"><div><span>Lv</span><b>${lv}</b></div><div><span>HP</span><b>${st}/30</b></div><div><span>MP</span><b>${ch}</b></div><div><span>LP</span><b>${all.length}</b></div><div><span>錬金Lv</span><b>${Math.floor(xp / 60)}</b></div></div>
+    <div class="low"><div class="coin"><i></i>${xp}</div><div class="ttp">${tl}</div><div class="gg"><div style="width:${into / XP_PER_RANK * 100}%"></div></div></div>
+    <div class="bub"><span class="fc">✿</span>${esc(msg)}</div>`;
+}
+function cardHtml(k, i, on) {
+  const en = data[k]; return `<button class="mc ${on ? "on" : ""}" data-k="${k}" data-i="${i}" style="--i:${i}"><span class="nm">${dl(k)}</span><span class="ex">${esc(en.text.replace(/\s+/g, " "))}</span>
+    <div class="r"><span>調子</span><b>${esc(en.mood || "-")}</b></div><div class="r"><span>文字数</span><b>${en.text.length}</b></div><div class="r"><span>連続</span><b>${streakAt(k)}</b></div></button>`;
+}
+function rightPage() {
+  const now = new Date();
+  if (view === "write") {
+    const e = data[selected]; if (mood === null && e && draft === null) mood = e.mood;
+    return `<ul class="moods">${MOODS.map(([m, ic]) => `<li><button class="mt ${m === mood ? "on" : ""}" data-m="${m}">${ic} ${m}</button></li>`).join("")}</ul>
+      <div class="paper"><textarea id="ta" placeholder="今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea></div>
+      <div class="acts"><button class="save" id="save">調合する</button><input type="date" class="dt" id="dt" value="${selected}" max="${today()}"><span class="hint">${selected === today() ? "" : "過去の日付を編集中"}</span></div>`;
+  }
+  if (view === "log") {
+    const ks = keysDesc(), pages = Math.max(1, Math.ceil(ks.length / 3)); logPage = Math.min(logPage, pages - 1);
+    const slice = ks.slice(logPage * 3, logPage * 3 + 3);
+    return `<div class="cards">${slice.length ? slice.map((k, i) => cardHtml(k, i, k === selected)).join("") : `<div class="row">まだ記録がありません</div>`}</div>
+      <div class="pgn"><button id="pp">◀</button>${logPage + 1} / ${pages}<button id="pn">▶</button><button id="edit">編集する</button></div>`;
+  }
+  if (view === "cal") {
+    const y = now.getFullYear(), mo = now.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); c += `<div data-go="${k}" class="${data[k] ? "done" : ""} ${k === today() ? "today" : ""}">${d}</div>`; }
+    return `<div class="cal">${c}</div>`;
+  }
+  if (view === "stat") {
+    const all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0), xp = totalXp();
+    return `<div class="tbl"><div class="row"><span>記録日数</span><b>${all.length}</b></div><div class="row"><span>連続日数</span><b>${streakCount()}</b></div><div class="row"><span>総文字数</span><b>${ch}</b></div><div class="row"><span>今月の記録</span><b>${all.filter(k => k.startsWith(today().slice(0, 7))).length}</b></div><div class="row"><span>経験値</span><b>${xp}</b></div></div>`;
+  }
+  if (view === "quest") {
+    const st = streakCount();
+    return `<div class="tbl">${MS.map(n => `<div class="row"><span>${st >= n ? "✔ " : ""}${n}日連続</span><div class="bar"><i style="width:${Math.min(st / n, 1) * 100}%"></i></div><b>${Math.min(st, n)}/${n}</b></div>`).join("")}</div>`;
+  }
+  if (view === "book") {
+    const all = Object.keys(data);
+    return `<div class="tbl">${MOODS.map(([m, ic]) => { const c = all.filter(k => data[k].mood === m).length; return `<div class="row"><span>${ic} ${m}</span><div class="bar"><i style="width:${all.length ? c / all.length * 100 : 0}%"></i></div><b>${c}</b></div>`; }).join("")}</div>`;
+  }
+  return `<div class="tbl" style="gap:12px"><button class="big" id="theme">テーマ選択へ戻る<small>他のゲームのUIに切り替えても記録は引き継がれます</small></button><button class="big" id="exp">記録を書き出す<small>JSONファイルとして保存</small></button><button class="big" id="imp">記録を読み込む<small>JSONファイルから復元</small></button></div>`;
+}
+function render() {
+  $("menu").innerHTML = MENU.map(([n, v, ic], i) => `<button class="mi ${v === view ? "on" : ""}" data-v="${v}" style="--i:${i}"><span class="ic">${ic}</span>${n}</button>`).join("");
+  $("ttl").textContent = "メインメニュー";
+  $("book").innerHTML = `<div class="pg l">${leftPage()}</div><div class="pg r ${flipNext ? "flip" : ""}">${rightPage()}</div>`; flipNext = false;
+}
+function setView(v) { view = v; flipNext = true; if (v === "write") { selected = today(); const e = data[selected]; mood = e ? e.mood : null; draft = null; } if (v === "log") { logPage = 0; const ks = keysDesc(); if (ks.length) selected = ks[0]; } render(); }
+function pickDay(k) { selected = k; draft = null; const e = data[k]; mood = e ? e.mood : null; view = "write"; flipNext = true; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data); draft = null;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "ランクアップ！" : "調合成功！"; $("ovS").textContent = isNew ? `${streakCount()}日連続` : "更新しました";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2900);
+  render();
+}
+document.addEventListener("click", e => {
+  const mi = e.target.closest(".mi"); if (mi) return setView(mi.dataset.v);
+  const mc = e.target.closest(".mc"); if (mc) { selected = mc.dataset.k; return render(); }
+  const g = e.target.closest("[data-go]"); if (g) return pickDay(g.dataset.go);
+  const mt = e.target.closest(".mt"); if (mt) { mood = mt.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#pp")) { logPage = Math.max(0, logPage - 1); flipNext = true; return render(); }
+  if (e.target.closest("#pn")) { logPage++; flipNext = true; return render(); }
+  if (e.target.closest("#edit")) return pickDay(selected);
+  if (e.target.closest("#theme")) { location.href = "index.html"; return; }
+  if (e.target.closest("#exp")) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "diary-backup.json"; a.click(); return; }
+  if (e.target.closest("#imp")) { const f = document.createElement("input"); f.type = "file"; f.accept = "application/json"; f.onchange = () => f.files[0] && f.files[0].text().then(t => { try { const o = JSON.parse(t); for (const k in o) if (o[k] && typeof o[k].text === "string") data[k] = { mood: o[k].mood || null, text: o[k].text }; store(data); render(); } catch { alert("読み込みに失敗しました"); } }); f.click(); return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; selected = e.target.value; const x = data[selected]; if (x) mood = x.mood; render(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $("ov").classList.remove("show"); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  const i = MENU.findIndex(m => m[1] === view);
+  if (e.key === "ArrowDown") { e.preventDefault(); setView(MENU[(i + 1) % MENU.length][1]); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); setView(MENU[(i + MENU.length - 1) % MENU.length][1]); }
+  else if (view === "log" && (e.key === "ArrowRight" || e.key === "e")) { logPage++; flipNext = true; render(); }
+  else if (view === "log" && (e.key === "ArrowLeft" || e.key === "q")) { logPage = Math.max(0, logPage - 1); flipNext = true; render(); }
+  else if (view === "log" && e.key === "Enter") pickDay(selected);
+});
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Night City Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* Perk-tree layout: top HUD + nav, circuit-line tile tree, tooltip, skill progress bottom-left, ESC close (after 2077's skill screen) */
+  :root { --bg:#070304; --red:#ff4a4a; --dred:#7a1d1f; --ye:#f5c518; --cy:#46f0ff; --gr:#5dff8a; --fb:'Rajdhani','Zen Kaku Gothic New',sans-serif; --fj:'Zen Kaku Gothic New','Rajdhani',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:var(--red); overflow:hidden; background:radial-gradient(ellipse at 50% 45%, #1c0709 0%, #0a0305 55%, #030102 100%); }
+  body::before { content:""; position:fixed; inset:0; z-index:50; pointer-events:none; background:repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); mix-blend-mode:multiply; }
+  body::after { content:""; position:fixed; inset:0; z-index:49; pointer-events:none; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.7)); }
+  .dots { position:fixed; top:0; bottom:0; width:6px; opacity:.5; background:repeating-linear-gradient(0deg, var(--red) 0 2px, transparent 2px 7px); z-index:1; }
+  .dots.l { left:3px; } .dots.r { right:3px; }
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto 1fr; }
+
+  /* HUD */
+  .hud { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; padding:12px 34px 8px; border-bottom:2px solid var(--red); box-shadow:0 6px 16px -10px var(--red); animation:fade .5s both; }
+  .lv { display:flex; gap:34px; font-size:26px; font-weight:600; } .lv small { font-size:15px; margin-left:3px; } .lv .a { color:var(--cy); } .lv .b { color:var(--gr); }
+  .lv i { display:block; height:3px; background:currentColor; opacity:.5; margin-top:-2px; position:relative; } .lv i b { position:absolute; left:0; top:0; height:100%; background:#fff; }
+  .nav { display:flex; gap:6px; align-items:center; font-family:var(--fj); font-size:14px; font-weight:700; }
+  .key { width:22px; height:22px; border:1.5px solid var(--cy); color:var(--cy); display:grid; place-items:center; font:700 13px var(--fb); margin:0 14px; }
+  .nb { all:unset; cursor:pointer; padding:6px 16px; color:var(--red); display:flex; gap:7px; align-items:center; letter-spacing:.04em; }
+  .nb::before { content:"◈"; font-size:12px; }
+  .nb:hover { color:#ff8a8a; } .nb.on { color:var(--cy); text-shadow:0 0 10px var(--cy); font-size:15px; } .nb.on::before { content:"⬢"; }
+  .res { justify-self:end; display:flex; gap:30px; font-size:24px; font-weight:600; color:var(--ye); }
+  .res span::before { content:attr(data-i); margin-right:8px; color:var(--red); font-size:20px; }
+
+  .stage { position:relative; min-height:0; display:grid; grid-template-columns:minmax(250px,22%) 1fr minmax(30px,6%); }
+  .side { display:flex; flex-direction:column; justify-content:space-between; padding:18px 10px 14px 34px; }
+  .pt { font-family:var(--fj); font-size:14px; } .pt b { font:600 34px var(--fb); color:var(--cy); } .pt .sub { font-size:12px; color:var(--cy); opacity:.8; margin-top:2px; border-top:1px solid var(--cy); padding-top:2px; }
+  .perk { display:flex; align-items:center; gap:10px; margin:18px 0 0 -6px; color:var(--ye); font-size:34px; font-weight:600; }
+  .perk i { width:34px; height:34px; border:2px solid var(--ye); display:grid; place-items:center; font-style:normal; font-size:16px; }
+  .perk small { font-family:var(--fj); font-size:13px; line-height:1.2; }
+  .prog b.n { font:600 54px var(--fb); color:#fff; text-shadow:0 0 10px rgba(255,255,255,.4); } .prog b.t { font:700 22px var(--fj); color:#fff; margin-left:8px; }
+  .prog .bar { height:3px; margin:2px 0 4px; background:repeating-linear-gradient(90deg, rgba(255,255,255,.35) 0 4px, transparent 4px 8px); position:relative; } .prog .bar div { position:absolute; left:0; top:-1px; height:5px; background:repeating-linear-gradient(90deg,#fff 0 4px,transparent 4px 8px); transition:width .8s; }
+  .prog .nums { display:flex; justify-content:space-between; font-size:14px; color:#fff; } .prog .ml { font-size:9px; letter-spacing:.2em; color:var(--dred); border-top:1px solid var(--dred); margin-top:6px; padding-top:2px; display:flex; justify-content:space-between; }
+  .rew { margin-top:10px; border:1px solid var(--dred); border-left:4px solid var(--red); padding:6px 10px 10px; } .rew h4 { font:700 13px var(--fj); color:var(--red); } .rew ol { list-style:none; display:flex; gap:8px; padding:0; margin-top:6px; }
+  .rew li { width:30px; height:34px; display:grid; place-items:center; color:var(--ye); font-size:13px; border:1px solid transparent; } .rew li:before { content:"▮"; display:block; font-size:8px; } .rew li { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  .rew li.cur { border-color:var(--red); } .rew li.off { color:var(--dred); }
+  .scr { margin-top:10px; font:700 17px var(--fj); color:var(--cy); } .scr::before { content:"🖱 "; filter:grayscale(1) sepia(1) hue-rotate(150deg) saturate(5); }
+
+  /* tabs + tree */
+  .center { position:relative; padding:12px 0 0; min-width:0; min-height:0; display:flex; flex-direction:column; align-items:center; }
+  .subs { display:flex; gap:6px; z-index:3; } .sb { all:unset; cursor:pointer; padding:7px 54px; font:700 17px var(--fj); color:var(--red); border:1.5px solid var(--red); border-bottom:0; clip-path:polygon(0 100%,0 22%,12% 0,88% 0,100% 22%,100% 100%); background:rgba(80,10,14,.35); } .sb.on { color:#ff6f6f; background:rgba(255,60,60,.14); text-shadow:0 0 8px var(--red); }
+  .tree { position:relative; width:min(100%, calc((100vh - 170px) * 1.72)); aspect-ratio:100/58; margin-top:10px; }
+  .tree svg { position:absolute; inset:0; width:100%; height:100%; }
+  .tree path { fill:none; stroke:var(--dred); stroke-width:3; vector-effect:non-scaling-stroke; stroke-linejoin:round; } .tree path.on { stroke:var(--ye); filter:drop-shadow(0 0 3px rgba(245,197,24,.7)); } .tree path.in { stroke-dasharray:6 4; }
+  .nd { all:unset; position:absolute; width:8.6%; aspect-ratio:1; transform:translate(-50%,-50%); cursor:pointer; color:var(--red); animation:pop .5s calc(var(--i)*55ms + .2s) both; }
+  .nd .f { position:absolute; inset:0; border:2px solid currentColor; background:#2a080b; clip-path:polygon(0 0,86% 0,100% 14%,100% 100%,14% 100%,0 86%); box-shadow:inset 0 0 18px rgba(255,60,60,.25); display:flex; flex-direction:column; align-items:center; justify-content:center; text-shadow:0 0 12px currentColor; }
+  .nd .g { font-size:clamp(20px,3.6vw,40px); line-height:1; } .nd .dt { font:700 clamp(10px,1.2vw,14px)/1 var(--fb); letter-spacing:.1em; margin-top:4px; color:#fff; opacity:.85; text-shadow:none; }
+  .nd .ct { position:absolute; right:-4%; top:-16%; font:700 clamp(10px,1.1vw,13px) var(--fb); color:#fff; opacity:.9; }
+  .nd.done { color:var(--ye); } .nd.done .f { background:#3a2a04; box-shadow:inset 0 0 20px rgba(245,197,24,.3), 0 0 14px rgba(245,197,24,.18); }
+  .nd.cur::after { content:""; position:absolute; inset:-5%; border:3px solid var(--cy); box-shadow:0 0 12px var(--cy); animation:blink 1s steps(2) infinite; pointer-events:none; }
+  .nd:hover { filter:brightness(1.4); } .nd:focus-visible::after { content:""; position:absolute; inset:-5%; border:3px solid #fff; }
+  .nd.future .f { opacity:.35; }
+  .tip { position:absolute; z-index:6; width:min(34%,330px); background:rgba(14,4,6,.95); border:1.5px solid var(--red); pointer-events:none; display:none; box-shadow:0 0 22px rgba(255,60,60,.25); }
+  .tip.show { display:block; animation:fade .15s both; }
+  .tip h3 { font:700 21px var(--fj); padding:6px 14px; background:rgba(255,60,60,.12); color:#ff6a6a; border-bottom:1px solid var(--dred); display:flex; justify-content:space-between; align-items:center; }
+  .tip h3 em { font:700 11px var(--fj); color:#fff; background:#555; padding:0 8px; font-style:normal; }
+  .tip .t1 { padding:6px 14px 0; font:700 15px var(--fj); color:#fff; } .tip .t2 { padding:2px 14px 10px; font:500 14px/1.5 var(--fj); color:var(--cy); white-space:pre-wrap; max-height:6.5em; overflow:hidden; } .tip .t2 b { color:#fff; font:700 12px var(--fb); margin-right:8px; }
+
+  /* log / calendar views */
+  .view { position:absolute; inset:46px 0 0; overflow:auto; padding:6px 10px 20px; }
+  .ent { all:unset; display:block; cursor:pointer; margin:0 auto 10px; max-width:760px; padding:8px 16px; border:1px solid var(--dred); border-left:4px solid var(--red); background:rgba(40,6,8,.6); animation:fade .3s calc(var(--i)*40ms) both; }
+  .ent:hover { background:rgba(255,60,60,.12); } .ent small { font:700 13px var(--fb); letter-spacing:.2em; color:var(--cy); } .ent p { font:500 14px/1.6 var(--fj); color:#f3c4c4; max-height:3.3em; overflow:hidden; white-space:pre-wrap; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:8px; max-width:640px; margin:12px auto; } .cal div { aspect-ratio:1.3; display:grid; place-items:center; font:600 22px var(--fb); border:1.5px solid var(--dred); background:rgba(40,6,8,.6); clip-path:polygon(0 0,86% 0,100% 18%,100% 100%,0 100%); }
+  .cal .dow { border:0; background:none; color:var(--cy); font-size:13px; letter-spacing:.2em; aspect-ratio:auto; } .cal .done { color:var(--ye); border-color:var(--ye); background:rgba(80,56,0,.4); } .cal .today { box-shadow:inset 0 0 0 2px var(--cy); } .cal [data-go] { cursor:pointer; }
+  .vh { text-align:center; font:700 13px var(--fb); letter-spacing:.3em; color:var(--red); margin-bottom:8px; }
+
+  /* editor modal */
+  #ed { position:fixed; inset:0; z-index:40; display:none; place-items:center; background:rgba(2,0,0,.72); backdrop-filter:blur(2px); padding:14px; }
+  #ed.show { display:grid; }
+  .win { width:min(640px,100%); max-height:92vh; display:flex; flex-direction:column; background:rgba(14,4,6,.97); border:1.5px solid var(--red); box-shadow:0 0 40px rgba(255,60,60,.3); animation:pop .25s both; }
+  .win h3 { display:flex; justify-content:space-between; align-items:baseline; padding:8px 18px; font:700 22px var(--fj); color:#ff6a6a; background:rgba(255,60,60,.12); border-bottom:1px solid var(--dred); } .win h3 small { font:700 13px var(--fb); color:var(--cy); letter-spacing:.2em; }
+  .win .in { padding:12px 18px 16px; display:flex; flex-direction:column; gap:10px; min-height:0; }
+  .lb { font:700 12px var(--fb); letter-spacing:.3em; color:var(--cy); }
+  .moods { display:flex; gap:6px; flex-wrap:wrap; list-style:none; padding:0; } .moods button { all:unset; cursor:pointer; padding:5px 14px; border:1.5px solid var(--dred); font:700 14px var(--fj); color:var(--red); clip-path:polygon(0 0,88% 0,100% 28%,100% 100%,0 100%); } .moods button span { font:600 10px var(--fb); letter-spacing:.2em; margin-left:6px; opacity:.7; }
+  .moods button:hover { border-color:var(--red); } .moods button.on { background:var(--ye); color:#000; border-color:var(--ye); }
+  textarea { min-height:160px; resize:vertical; width:100%; color:#ffd7d7; font:500 16px/1.8 var(--fj); background:rgba(60,8,10,.35); border:1.5px solid var(--dred); padding:8px 12px; outline:0; } textarea:focus { border-color:var(--cy); box-shadow:0 0 12px rgba(70,240,255,.25); }
+  .acts { display:flex; gap:12px; align-items:center; }
+  .save { all:unset; cursor:pointer; padding:8px 34px; background:var(--red); color:#000; font:700 18px var(--fb); letter-spacing:.2em; clip-path:polygon(0 0,90% 0,100% 30%,100% 100%,0 100%); } .save:hover { background:var(--ye); }
+  .close { all:unset; cursor:pointer; padding:7px 16px; border:1.5px solid var(--cy); color:var(--cy); font:700 14px var(--fj); } .close kbd { background:var(--cy); color:#000; padding:0 6px; margin-right:6px; font:700 11px var(--fb); }
+  .hint { color:var(--ye); font:500 12px var(--fj); }
+  .esc { position:fixed; right:30px; bottom:18px; z-index:5; display:flex; gap:8px; align-items:center; font:700 15px var(--fj); color:var(--cy); } .esc kbd { background:var(--cy); color:#000; padding:0 6px; font:700 11px var(--fb); }
+  button:focus-visible, textarea:focus-visible { outline:2px solid var(--cy); outline-offset:2px; }
+
+  /* upload overlay */
+  #up { position:fixed; inset:0; z-index:70; display:none; place-content:center; text-align:center; background:rgba(3,0,1,.88); cursor:pointer; }
+  #up.show { display:grid; animation:fade .2s both, ovOut .4s 2.5s forwards; }
+  #up b { display:block; font:700 clamp(38px,9vw,92px) var(--fb); letter-spacing:.1em; color:var(--ye); text-shadow:3px 0 var(--red), -3px 0 var(--cy); animation:glitch .35s steps(2) 6; } #up small { font:700 16px var(--fj); letter-spacing:.3em; color:var(--cy); }
+  @keyframes glitch { 25% { transform:translate(4px,-2px); clip-path:inset(10% 0 40% 0); } 50% { transform:translate(-5px,2px); } 75% { transform:translate(2px,0); clip-path:inset(50% 0 10% 0); } }
+  @keyframes fade { from { opacity:0; } } @keyframes pop { from { opacity:0; transform:translate(-50%,-50%) scale(.7); } } .win { animation-name:popw; } @keyframes popw { from { opacity:0; transform:scale(.94); } }
+  @keyframes blink { 50% { opacity:.35; } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width: 860px) {
+    body { overflow-y:auto; } .app { height:auto; min-height:100%; } .hud { grid-template-columns:1fr; gap:6px; padding:10px 14px; } .nav { flex-wrap:wrap; justify-content:center; } .key { display:none; } .res { justify-self:start; font-size:18px; }
+    .stage { grid-template-columns:1fr; } .side { padding:12px 14px; flex-direction:row; flex-wrap:wrap; gap:10px; } .rew, .scr { display:none; } .tree { width:100%; } .sb { padding:6px 22px; } .tip { width:60%; } .nd .dt { display:none; }
+    .stage, .center, #main { min-width:0; max-width:100vw; } .center { overflow:hidden; } .tip { left:15% !important; } body { overflow-x:hidden; } .hud { overflow:hidden; } .tip { width:70%; }
+    .view { position:static; } .esc { display:none; } .dots { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="dots l"></div><div class="dots r"></div>
+<div class="app">
+  <div class="hud">
+    <div class="lv"><div class="a"><span id="lvN">1</span><small>レベル</small><i><b id="lvB" style="width:0"></b></i></div><div class="b"><span id="cred">0</span><small>クレド</small><i><b id="crB" style="width:0"></b></i></div></div>
+    <div class="nav"><span class="key">1</span>
+      <button class="nb on" data-t="0">ジャーナル</button><button class="nb" data-t="1">ログ</button><button class="nb" data-t="2">カレンダー</button>
+    <span class="key">3</span></div>
+    <div class="res"><span data-i="⚖" id="wt">0/220</span><span data-i="€$" id="ed2">0</span></div>
+  </div>
+
+  <div class="stage">
+    <div class="side">
+      <div>
+        <div class="pt">ポイント<b id="ptN">0</b> 記録<div class="sub">連続日数ボーナス</div></div>
+        <div class="perk"><i>▦</i><span id="perkN">0</span><small>ストリーク<br>使用可能</small></div>
+      </div>
+      <div>
+        <div class="prog"><b class="n" id="rkN">1</b><b class="t">ジャーナル</b>
+          <div class="bar"><div id="xpB"></div></div>
+          <div class="nums"><span id="xpT"></span><span id="xpP"></span></div>
+          <div class="ml"><span>MODEL LINE 1.2001A</span><span id="mlN"></span></div></div>
+        <div class="rew"><h4>スキル進行報酬</h4><ol id="rew"></ol></div>
+        <div class="scr">スクロール</div>
+      </div>
+    </div>
+    <div class="center">
+      <div class="subs" id="subs"><button class="sb on" data-p="0">直近</button><button class="sb" data-p="1">過去</button></div>
+      <div id="main" style="width:100%;display:flex;flex-direction:column;align-items:center;flex:1;min-height:0"></div>
+    </div>
+    <div></div>
+  </div>
+</div>
+<div class="esc"><kbd>ESC</kbd>閉じる</div>
+
+<div id="ed"><div class="win"><h3><span id="eT"></span><small id="eS"></small></h3><div class="in">
+  <div class="lb">MOOD</div><ul class="moods" id="moods"></ul>
+  <div class="lb">LOG ─ 今日の出来事</div><textarea id="body" placeholder="今日の出来事を記録…"></textarea>
+  <div class="acts"><button class="save" id="save">UPLOAD</button><button class="close" id="cl"><kbd>ESC</kbd>閉じる</button><span class="hint" id="hint"></span></div>
+</div></div></div>
+<div id="up"><div><b id="upT"></b><small id="upS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="cyberpunk"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "EXCELLENT", "✦"], ["良い", "GOOD", "◈"], ["普通", "NORMAL", "◇"], ["微妙", "TIRED", "▽"], ["最悪", "SLUMP", "☠"]];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// tree: x%, y% (of 100 x 58 box), parent index. node 0 = today.
+const N = [[50,88,-1],[35,72,0],[63,72,0],[22,52,1],[43,52,1],[62,50,2],[81,52,2],[10,32,3],[30,30,3],[50,30,4],[69,28,5],[89,32,6],[22,10,8],[50,10,9],[78,10,10]];
+let data = load(), tab = 0, page = 0, cur = 0, selected = ymd(new Date()), mood = null, upTimer;
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const cur = new Date(k + "T00:00:00");
+    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = cur;
+  }
+  return xp;
+}
+const dayOf = i => { const d = new Date(); d.setDate(d.getDate() - (page * 15 + i)); return ymd(d); };
+
+function hud() {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, st = streakCount(), n = Object.keys(data).length;
+  const chars = Object.values(data).reduce((s, e) => s + e.text.length, 0), into = xp % XP_PER_RANK, pct = Math.round(into / XP_PER_RANK * 100);
+  $("lvN").textContent = lv; $("lvB").style.width = pct + "%"; $("cred").textContent = Math.min(n, 99); $("crB").style.width = Math.min(n % 10 * 10 + 10, 100) + "%";
+  $("wt").textContent = `${chars}/${Math.max(220, Math.ceil(chars / 220) * 220)}`; $("ed2").textContent = xp.toLocaleString();
+  $("ptN").textContent = n; $("perkN").textContent = st;
+  $("rkN").textContent = lv; $("xpB").style.width = pct + "%"; $("xpT").textContent = `${into}/${XP_PER_RANK}`; $("xpP").textContent = pct + "%"; $("mlN").textContent = (xp * 7 + 4801252).toString();
+  $("rew").innerHTML = Array.from({length:8}, (_, i) => { const l = lv - 3 + i + 1; return `<li class="${i === 3 ? "cur" : i > 3 ? "off" : ""}">${Math.max(l, 1)}</li>`; }).join("");
+}
+
+function tree() {
+  const today = ymd(new Date());
+  let lines = "", nodes = "";
+  N.forEach(([x, y, p], i) => {
+    const k = dayOf(i), e = data[k], d = new Date(k + "T00:00:00");
+    if (p >= 0) { const [px, py] = N[p], my = (py + y) / 2; lines += `<path class="${e && data[dayOf(p)] ? "on" : e || data[dayOf(p)] ? "on in" : ""}" d="M${px} ${py} V${my} H${x} V${y}"/>`; }
+    const m = e && MOODS.find(m => m[0] === e.mood);
+    nodes += `<button class="nd ${e ? "done" : ""} ${i === cur ? "cur" : ""}" data-i="${i}" style="left:${x}%;top:${y}%;--i:${i}" aria-label="${k}">
+      <span class="ct">${e ? 1 : 0}/1</span><span class="f"><span class="g">${e ? (m ? m[2] : "◆") : "＋"}</span><span class="dt">${d.getMonth()+1}/${d.getDate()}${k === today ? " ★" : ""}</span></span></button>`;
+  });
+  $("main").innerHTML = `<div class="tree" id="tr"><svg viewBox="0 0 100 100" preserveAspectRatio="none">${lines}</svg>${nodes}<div class="tip" id="tip"></div></div>`;
+  tipFor(cur);
+}
+function tipFor(i) {
+  const k = dayOf(i), e = data[k], d = new Date(k + "T00:00:00"), [x, y] = N[i], t = $("tip"); if (!t) return;
+  t.innerHTML = `<h3>${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）<em>${e ? "最大" : "未習得"}</em></h3><div class="t1">${e ? "パッシブ ─ " + esc(e.mood || "-") : "未記録のパーク"}</div>
+    <div class="t2"><b>LV ${e ? streakAt(k) : 0}</b>${e ? esc(e.text) : "クリックして記録をアップロードする"}</div>`;
+  t.style.left = (x > 60 ? x - 7 - 33 : x + 6.5) + "%"; t.style.top = Math.max(2, Math.min(y - 12, 62)) + "%"; t.classList.add("show");
+}
+function logView() {
+  const keys = Object.keys(data).sort().reverse();
+  $("main").innerHTML = `<div class="view" style="width:100%"><div class="vh">JOURNAL ─ ${keys.length} ENTRIES</div>${keys.length ? keys.map((k, i) =>
+    `<button class="ent" data-go="${k}" style="--i:${Math.min(i, 14)}"><small>${k.replace(/-/g, ".")} ／ ${esc(data[k].mood || "-")} ／ ${data[k].text.length}字</small><p>${esc(data[k].text)}</p></button>`).join("") : `<div class="ent"><p>まだ記録がありません。ジャーナルの＋から最初の一日をアップロードしよう。</p></div>`}</div>`;
+}
+function calView() {
+  const now = new Date(), y = now.getFullYear(), mo = now.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+  let h = DOW.map(c => `<div class="dow">${c}</div>`).join("") + "<div style='visibility:hidden'></div>".repeat(first);
+  for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); h += `<div data-go="${k}" class="${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}">${i}</div>`; }
+  $("main").innerHTML = `<div class="view" style="width:100%"><div class="vh">${y}.${String(mo + 1).padStart(2, "0")}</div><div class="cal">${h}</div></div>`;
+}
+function render() {
+  document.querySelectorAll(".nb").forEach(b => b.classList.toggle("on", +b.dataset.t === tab));
+  document.querySelectorAll(".sb").forEach(b => b.classList.toggle("on", +b.dataset.p === page));
+  $("subs").style.visibility = tab === 0 ? "visible" : "hidden";
+  hud(); [tree, logView, calView][tab]();
+}
+
+function openEd(k) {
+  selected = k; const e = data[k], d = new Date(k + "T00:00:00"); mood = e ? e.mood : null;
+  $("eT").textContent = `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; $("eS").textContent = k.replace(/-/g, ".") + (e ? " ─ UPDATE" : " ─ NEW");
+  $("moods").innerHTML = MOODS.map(([m, t]) => `<li><button data-m="${m}" class="${m === mood ? "on" : ""}">${m}<span>${t}</span></button></li>`).join("");
+  $("body").value = e ? e.text : ""; $("hint").textContent = k === ymd(new Date()) ? "" : "過去の日付を編集中";
+  $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
+}
+const closeEd = () => $("ed").classList.remove("show");
+function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data);
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("upT").textContent = up ? "LEVEL UP" : "UPLOAD COMPLETE"; $("upS").textContent = isNew ? `${streakCount()} DAY STREAK` : "UPDATED";
+  const u = $("up"); u.classList.remove("show"); void u.offsetWidth; u.classList.add("show");
+  clearTimeout(upTimer); upTimer = setTimeout(() => u.classList.remove("show"), 3000);
+  closeEd(); render();
+}
+
+document.addEventListener("click", e => {
+  const nb = e.target.closest(".nb"); if (nb) { tab = +nb.dataset.t; return render(); }
+  const sb = e.target.closest(".sb"); if (sb) { page = +sb.dataset.p; cur = 0; return render(); }
+  const nd = e.target.closest(".nd"); if (nd) { cur = +nd.dataset.i; return openEd(dayOf(cur)); }
+  const go = e.target.closest("[data-go]"); if (go) return openEd(go.dataset.go);
+  const mb = e.target.closest("#moods button"); if (mb) { mood = mb.dataset.m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b === mb)); return; }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#cl")) return closeEd();
+  if (e.target.closest("#up")) $("up").classList.remove("show");
+  if (e.target.id === "ed") closeEd();
+});
+document.addEventListener("mouseover", e => { const nd = e.target.closest(".nd"); if (nd && tab === 0) { cur = +nd.dataset.i; document.querySelectorAll(".nd").forEach(n => n.classList.toggle("cur", n === nd)); tipFor(cur); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && $("ed").classList.contains("show")) { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if ($("ed").classList.contains("show")) closeEd(); else $("up").classList.remove("show"); return; }
+  if ($("ed").classList.contains("show") || /TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key === "1" || e.key === "q") { tab = (tab + 2) % 3; return render(); }
+  if (e.key === "3" || e.key === "e") { tab = (tab + 1) % 3; return render(); }
+  if (tab !== 0) return;
+  if (e.key === "Enter") return openEd(dayOf(cur));
+  const dir = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!dir) return;
+  e.preventDefault(); const [cx, cy] = N[cur]; let best = -1, bs = 1e9;
+  N.forEach(([x, y], i) => { if (i === cur) return; const dx = x - cx, dy = y - cy, along = dx * dir[0] + dy * dir[1]; if (along <= 0) return; const s = Math.hypot(dx, dy) + Math.abs(dx * dir[1] + dy * dir[0]) * 1.5; if (s < bs) { bs = s; best = i; } });
+  if (best >= 0) { cur = best; document.querySelectorAll(".nd").forEach(n => n.classList.toggle("cur", +n.dataset.i === cur)); tipFor(cur); }
+});
+render();
+</script>
+</body>
+</html>

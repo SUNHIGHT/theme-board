@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gravity Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Notice-list screen (category pills + rounded list pills) and ornate arch detail screen, on a dark aurora background with gold stars */
+  :root { --gold:#f2c14e; --gold2:#ffe9a0; --org:#ff9a1a; --pk:#ff3d9a; --navy:#0b1030; --tx:#fff; --dim:#b9bfe0; --f:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--tx); overflow:hidden; background:#04050c; }
+  .bg { position:fixed; inset:0; background:
+      radial-gradient(ellipse at 18% 100%, rgba(255,120,40,.45), transparent 45%),
+      radial-gradient(ellipse at 88% 85%, rgba(40,200,170,.35), transparent 42%),
+      radial-gradient(ellipse at 70% 10%, rgba(120,60,220,.38), transparent 50%),
+      radial-gradient(ellipse at 30% 20%, rgba(30,70,180,.35), transparent 50%),
+      linear-gradient(180deg,#05060f,#0a0818 60%,#0a0a10); }
+  .bg::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 35%, rgba(0,0,0,.65)); }
+  .wing { position:fixed; right:6%; top:6%; width:42%; height:70%; background:radial-gradient(ellipse at 30% 40%, rgba(0,0,0,.65), transparent 65%); clip-path:polygon(40% 0,100% 20%,80% 60%,100% 100%,30% 80%,0 40%); filter:blur(4px); pointer-events:none; }
+  .st { position:fixed; pointer-events:none; color:var(--gold); text-shadow:0 0 8px rgba(255,200,80,.8); animation:tw var(--d,3s) ease-in-out infinite alternate; }
+  .app { position:relative; z-index:3; height:100%; display:grid; grid-template-rows:auto 1fr auto; }
+
+  .top { position:relative; display:grid; place-items:center; padding:14px 20px 4px; }
+  .pill { display:inline-block; padding:5px 34px; background:linear-gradient(180deg,#191f4a,#0a0e2a); border:2px solid var(--gold); border-radius:30px; box-shadow:0 0 0 2px #0a0e2a, 0 0 14px rgba(242,193,78,.35); font-weight:900; font-size:16px; letter-spacing:.1em; }
+  .hud { position:absolute; right:190px; top:10px; display:flex; align-items:center; gap:10px; z-index:5; }
+  .gem { font:900 22px var(--f); color:#ff7ac8; text-shadow:0 0 8px rgba(255,61,154,.7); display:flex; align-items:center; gap:4px; } .gem::before { content:""; width:14px; height:18px; background:linear-gradient(135deg,#ff9ad8,#c0207a); clip-path:polygon(50% 0,100% 30%,80% 100%,20% 100%,0 30%); }
+  .bolt { width:52px; height:44px; filter:drop-shadow(0 0 8px rgba(255,200,40,.8)); } .bolt b { position:absolute; margin:10px 0 0 -38px; font:900 14px var(--f); color:#2a1a00; }
+
+  .main { position:relative; overflow:auto; min-height:0; display:grid; place-items:center; padding:6px 4%; }
+  .list { width:min(1100px,100%); height:100%; display:grid; grid-template-columns:minmax(220px,32%) 1fr; gap:26px; align-items:start; padding-top:10px; animation:fade .5s both; }
+  .cats { border:2px solid var(--gold); border-radius:18px; background:linear-gradient(180deg,rgba(26,30,80,.9),rgba(8,10,34,.95)); padding:14px 12px; display:flex; flex-direction:column; gap:7px; box-shadow:0 0 18px rgba(242,193,78,.2); }
+  .cat { all:unset; box-sizing:border-box; cursor:pointer; position:relative; height:34px; display:flex; align-items:center; justify-content:center; border:2px solid #9ba2d8; border-radius:20px; background:linear-gradient(180deg,#171c4a,#080b26); font-weight:700; font-size:14px; letter-spacing:.2em; transition:.12s; }
+  .cat:hover { border-color:var(--gold2); } .cat.cur { background:linear-gradient(180deg,#ffe08a,#f0a020); color:#2a1700; border-color:#fff2c0; box-shadow:0 0 14px rgba(255,190,60,.7); }
+  .cat.cur::after { content:""; position:absolute; right:10px; width:14px; height:14px; border-radius:50%; background:radial-gradient(circle,#ff3d3d 0 35%,#fff 36% 50%,#d02020 51%); }
+  .bd { position:absolute; left:-10px; top:-6px; min-width:20px; height:20px; padding:0 5px; border-radius:50%; background:var(--pk); color:#fff; font:900 12px/20px var(--f); text-align:center; letter-spacing:0; box-shadow:0 0 8px rgba(255,61,154,.8); }
+  .rl { position:relative; display:flex; flex-direction:column; gap:8px; height:100%; max-height:calc(100vh - 170px); overflow:auto; padding-right:34px; scrollbar-width:none; } .rl::-webkit-scrollbar { display:none; }
+  .sb { position:absolute; right:12px; top:4px; width:2px; bottom:4px; background:rgba(255,255,255,.7); } .sb i { position:absolute; left:-4px; width:10px; height:10px; border-radius:50%; background:#fff; box-shadow:0 0 8px #fff; top:0; }
+  .ro { all:unset; box-sizing:border-box; cursor:pointer; position:relative; flex:none; min-height:56px; display:flex; align-items:center; gap:14px; padding:6px 22px 6px 14px; border:2px solid #d9b05a; border-radius:30px; background:linear-gradient(180deg,#1b2050,#080b28); box-shadow:inset 0 0 0 2px rgba(0,0,0,.5); animation:slide .35s calc(var(--i)*35ms) both; transition:.12s; }
+  .ro:hover { border-color:var(--gold2); filter:brightness(1.15); }
+  .ro.cur { background:linear-gradient(180deg,#ffe9a0,#f3a82a); color:#2a1700; border-color:#fff; box-shadow:0 0 18px rgba(255,190,60,.7); }
+  .em { width:40px; height:40px; flex:none; border-radius:50%; background:radial-gradient(circle at 40% 35%,#ffbe5a,#e0680a); border:2px solid #fff3c8; display:grid; place-items:center; } .em::after { content:""; width:20px; height:22px; background:#2a1200; clip-path:polygon(0 100%,10% 30%,30% 50%,50% 0,70% 50%,90% 30%,100% 100%); }
+  .ro.new .em { background:radial-gradient(circle at 40% 35%,#ff9ad8,#c0207a); } .ro.new .em::after { clip-path:none; background:none; content:"＋"; color:#fff; font:900 24px/1 var(--f); width:auto; height:auto; }
+  .ro .t { min-width:0; flex:1; } .ro small { display:block; font-size:12px; font-weight:700; color:var(--gold2); } .ro.cur small { color:#6a3a00; }
+  .ro b { display:block; font-size:16px; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; letter-spacing:.04em; }
+  .ro .ex { position:absolute; right:-8px; top:-8px; width:20px; height:20px; border-radius:50%; background:var(--pk); font:900 13px/20px var(--f); text-align:center; box-shadow:0 0 8px rgba(255,61,154,.8); }
+  .none { padding:30px; color:var(--dim); text-align:center; }
+
+  /* detail */
+  .det { width:min(760px,100%); display:none; flex-direction:column; align-items:center; gap:10px; animation:fade .45s both; }
+  .main.dv .list { display:none; } .main.dv .det { display:flex; }
+  .arch { position:relative; width:min(380px,70vw); aspect-ratio:1.18; } .arch svg.fr { position:absolute; inset:0; width:100%; height:100%; overflow:visible; filter:drop-shadow(0 0 6px rgba(242,193,78,.5)); }
+  .pic { position:absolute; left:26%; right:26%; top:14%; bottom:2%; border-radius:12px; border:3px solid #cfc9bd; background:#111; overflow:hidden; box-shadow:0 0 0 3px #0a0a14; display:grid; place-items:center; }
+  .pic i { position:absolute; inset:0; background:var(--pc); } .pic b { position:relative; font:900 clamp(42px,9vw,74px) var(--f); text-shadow:0 0 18px rgba(255,255,255,.7); } .pic small { position:absolute; bottom:6px; font-weight:900; letter-spacing:.3em; font-size:12px; text-shadow:0 0 6px #000; }
+  .cap { display:inline-block; min-width:min(420px,90%); text-align:center; padding:4px 30px; border-radius:30px; background:linear-gradient(180deg,#ffe9a0,#f3b030); color:#2a1700; font-weight:900; font-size:17px; border:2px solid #fff3c8; box-shadow:0 0 14px rgba(255,190,60,.6); letter-spacing:.06em; }
+  .moods { display:flex; gap:7px; flex-wrap:wrap; justify-content:center; list-style:none; padding:0; } .mb { all:unset; cursor:pointer; padding:3px 18px; border:2px solid #9ba2d8; border-radius:20px; background:linear-gradient(180deg,#171c4a,#080b26); font-weight:700; font-size:13px; letter-spacing:.1em; } .mb:hover { border-color:var(--gold2); } .mb.on { background:linear-gradient(180deg,#ffe08a,#f0a020); color:#2a1700; border-color:#fff2c0; }
+  textarea { width:min(640px,100%); min-height:130px; resize:none; background:rgba(5,6,20,.55); border:1px solid rgba(242,193,78,.35); border-radius:14px; color:#fff; font:500 15px/1.9 var(--f); padding:10px 16px; outline:0; text-align:center; } textarea:focus { border-color:var(--gold2); box-shadow:0 0 14px rgba(242,193,78,.4); }
+  .btns { display:flex; gap:12px; align-items:center; flex-wrap:wrap; justify-content:center; }
+  .bt { all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:5px 26px; border:2px solid var(--gold); border-radius:30px; background:linear-gradient(180deg,#191f4a,#0a0e2a); font-weight:900; font-size:14px; letter-spacing:.1em; box-shadow:0 0 12px rgba(242,193,78,.3); transition:.12s; } .bt:hover { filter:brightness(1.3); transform:scale(1.04); }
+  .bt::before { content:"○"; display:grid; place-items:center; width:20px; height:20px; border:2px solid var(--org); border-radius:50%; font-size:11px; color:var(--org); line-height:1; } .bt.s { border-color:#fff2c0; background:linear-gradient(180deg,#ffe08a,#f0a020); color:#2a1700; } .bt.s::before { border-color:#2a1700; color:#2a1700; }
+  .dt { background:#0b1030; color:#fff; border:2px solid #9ba2d8; border-radius:14px; font:700 12px var(--f); padding:3px 8px; color-scheme:dark; }
+  .hint { font-size:12px; color:var(--gold2); min-height:15px; }
+
+  .foot { display:grid; place-items:center; padding:4px 0 14px; } .foot .bt::before { content:"OPTIONS"; width:auto; height:auto; border-radius:6px; font-size:8px; padding:1px 4px; line-height:1.2; }
+  button:focus-visible, textarea:focus-visible { outline:2px solid #fff; outline-offset:3px; }
+
+  #ov { position:fixed; inset:0; z-index:70; display:none; place-content:center; text-align:center; background:radial-gradient(ellipse at center, rgba(40,20,90,.9), rgba(2,3,10,.96)); }
+  #ov.show { display:grid; animation:fade .25s both, ovOut .4s 2.4s forwards; cursor:pointer; }
+  #ov .cap { font-size:clamp(22px,5vw,38px); padding:10px 50px; animation:pop .5s both; } #ov .g { margin-top:18px; font:900 26px var(--f); color:#ff7ac8; text-shadow:0 0 12px rgba(255,61,154,.8); animation:pop .5s .25s both; } #ov .star { font-size:60px; color:var(--gold); text-shadow:0 0 22px #ffc850; animation:spin 1.2s both; }
+  @keyframes fade { from { opacity:0; } } @keyframes slide { from { opacity:0; transform:translateX(26px); } } @keyframes tw { to { opacity:.2; transform:scale(.6); } } @keyframes pop { from { opacity:0; transform:scale(.6); } } @keyframes spin { from { transform:rotate(-360deg) scale(0); } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:760px) {
+    body { overflow-y:auto; overflow-x:hidden; } .app { height:auto; min-height:100%; } .list { grid-template-columns:1fr; } .rl { max-height:none; padding-right:10px; } .sb { display:none; } .cats { flex-direction:row; flex-wrap:wrap; } .cat { flex:1 1 40%; } .hud { right:12px; top:50px; } .top { padding-top:50px; } .pic { left:22%; right:22%; }
+  }
+</style>
+</head>
+<body>
+<div class="bg"></div><div class="wing"></div><div id="stars"></div>
+<div class="app">
+  <div class="top"><span class="pill" id="ttl">日記一覧</span>
+    <div class="hud"><span class="gem" id="gem">0</span><svg class="bolt" viewBox="0 0 52 44"><path d="M30 2 12 24h12l-6 18 22-26H28Z" fill="#ffd23a" stroke="#fff3c0" stroke-width="2" stroke-linejoin="round"/></svg></div></div>
+  <div class="main" id="main">
+    <div class="list"><div class="cats" id="cats"></div><div style="position:relative;min-height:0;height:100%"><div class="rl" id="rl"></div><div class="sb"><i id="dot"></i></div></div></div>
+    <div class="det" id="det"></div>
+  </div>
+  <div class="foot"><button class="bt" id="back">ゲームへ戻る</button></div>
+</div>
+<div id="ov"><div><div class="star">★</div><div class="cap" id="ovT"></div><div class="g" id="ovG"></div></div></div>
+
+<script src="theme-switch.js" data-theme="gd2"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const PIC = { "最高": "linear-gradient(135deg,#ffb84a,#e0409a 60%,#4a2a9a)", "良い": "linear-gradient(135deg,#3ad8b0,#2a7ae0 70%,#1a2a7a)", "普通": "linear-gradient(135deg,#6a7ad8,#2a2a6a)", "微妙": "linear-gradient(135deg,#8a6ab8,#2a1a4a)", "最悪": "linear-gradient(135deg,#8a2a3a,#1a0a1a)", "": "linear-gradient(135deg,#3a3a5a,#10101a)" };
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+let data = load(), cat = 0, row = 0, detail = null, mood = null, draft = null, ovTimer;
+// twinkling gold stars
+(() => { let h = ""; const r = n => Math.random() * n; for (let i = 0; i < 26; i++) h += `<span class="st" style="left:${r(98)}%;top:${r(96)}%;font-size:${6 + r(12)}px;--d:${2 + r(3)}s;animation-delay:-${r(3)}s">★</span>`; $("stars").innerHTML = h; })();
+
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const CATS = ["全ての記録", ...MOODS, "調子なし"];
+const inCat = (k, c) => c === 0 ? true : c === 6 ? !data[k].mood : data[k].mood === MOODS[c - 1];
+const keysFor = c => Object.keys(data).filter(k => inCat(k, c)).sort().reverse();
+
+function render() {
+  $("gem").textContent = Math.floor(totalXp() / 10);
+  $("main").classList.toggle("dv", detail !== null);
+  $("ttl").textContent = detail ? "日記" : "日記一覧";
+  $("back").textContent = detail ? "閉じる" : "ゲームへ戻る";
+  if (detail === null) renderList(); else renderDetail();
+}
+function renderList() {
+  $("cats").innerHTML = CATS.map((c, i) => { const n = keysFor(i).length; return `<button class="cat ${i === cat ? "cur" : ""}" data-c="${i}">${c}${n && i ? `<span class="bd">${n}</span>` : ""}</button>`; }).join("");
+  const keys = keysFor(cat), t = today(), newRow = cat === 0;
+  const rows = [];
+  if (newRow) rows.push(`<button class="ro new ${row === 0 ? "cur" : ""}" data-r="0" style="--i:0"><span class="em"></span><span class="t"><small>${data[t] ? "今日の日記を編集" : "NEW ─ 今日の日記"}</small><b>新しい日記を書く</b></span>${data[t] ? "" : `<span class="ex">!</span>`}</button>`);
+  keys.forEach((k, i) => { const j = i + (newRow ? 1 : 0); rows.push(`<button class="ro ${row === j ? "cur" : ""}" data-r="${j}" data-k="${k}" style="--i:${Math.min(j, 8)}"><span class="em"></span><span class="t"><small>${dl(k)}　${esc(data[k].mood || "-")}　${data[k].text.length}字</small><b>${esc(data[k].text.replace(/\s+/g, " "))}</b></span></button>`); });
+  $("rl").innerHTML = rows.join("") || `<div class="none">該当する日記はありません</div>`;
+  const cur = $("rl").querySelector(".cur"); if (cur) cur.scrollIntoView({ block: "nearest" });
+  upDot();
+}
+function upDot() { const r = $("rl"), m = r.scrollHeight - r.clientHeight; $("dot").style.top = (m > 0 ? r.scrollTop / m * 100 : 0) + "%"; $("dot").style.transform = `translateY(-${m > 0 ? r.scrollTop / m * 100 : 0}%)`; }
+$("rl").addEventListener("scroll", upDot);
+
+function renderDetail() {
+  const k = detail, e = data[k]; if (mood === null && e && draft === null) mood = e.mood;
+  const d = new Date(k + "T00:00:00");
+  $("det").innerHTML = `<div class="arch"><svg class="fr" viewBox="0 0 400 340" fill="none" stroke="#f2c14e" stroke-width="2.5" stroke-linecap="round">
+      <path d="M18 330V150C18 70 100 12 200 12S382 70 382 150V330"/><path d="M34 330V152C34 82 108 30 200 30S366 82 366 152V330" stroke-width="1.5" opacity=".7"/>
+      <path d="M18 190C0 200-6 240 12 262 28 282 46 270 44 252" /><path d="M382 190C400 200 406 240 388 262 372 282 354 270 356 252"/><circle cx="200" cy="12" r="5" fill="#f2c14e"/></svg>
+    <div class="pic"><i style="--pc:${PIC[mood || ""]}"></i><b>${d.getDate()}</b><small>${d.getMonth() + 1}月 ${DOW[d.getDay()]}曜日</small></div></div>
+    <div class="cap">${dl(k)}</div>
+    <ul class="moods" id="moods">${MOODS.map(m => `<li><button class="mb ${m === mood ? "on" : ""}" data-m="${m}">${m}</button></li>`).join("")}</ul>
+    <textarea id="ta" placeholder="今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+    <div class="btns"><input type="date" class="dt" id="dt" value="${k}" max="${today()}"><button class="bt s" id="save">保存</button></div>
+    <div class="hint">${k === today() ? "" : "過去の日付を編集中"}</div>`;
+}
+function openDetail(k) { detail = k; mood = null; draft = null; render(); setTimeout(() => { const t = $("ta"); if (t && !data[k]) t.focus(); }, 50); }
+function closeDetail() { detail = null; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[detail];
+  data[detail] = { mood, text }; store(data);
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "ランクアップ！" : "日記を記録しました"; $("ovG").textContent = isNew ? `+${XP_PER} ジェム獲得` : "更新しました";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2900);
+  draft = null; closeDetail();
+}
+function activate(j) {
+  const keys = keysFor(cat); if (cat === 0 && j === 0) return openDetail(today());
+  const k = keys[j - (cat === 0 ? 1 : 0)]; if (k) openDetail(k);
+}
+
+document.addEventListener("click", e => {
+  const c = e.target.closest(".cat"); if (c) { cat = +c.dataset.c; row = 0; return render(); }
+  const r = e.target.closest(".ro"); if (r) { row = +r.dataset.r; return activate(row); }
+  const mb = e.target.closest(".mb"); if (mb) { mood = mb.dataset.m; draft = $("ta").value; return renderDetail(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#close")) return closeDetail();
+  if (e.target.closest("#back")) { if (detail) return closeDetail(); location.href = "index.html"; return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; const m = mood; detail = e.target.value; mood = data[detail] ? data[detail].mood : m; renderDetail(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter" && detail) { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); if ($("ov").classList.contains("show")) $("ov").classList.remove("show"); else if (detail) closeDetail(); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName) || detail) return;
+  const n = keysFor(cat).length + (cat === 0 ? 1 : 0);
+  if (e.key === "ArrowDown") { e.preventDefault(); row = Math.min(row + 1, n - 1); render(); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); row = Math.max(row - 1, 0); render(); }
+  else if (e.key === "ArrowLeft") { cat = (cat + 6) % 7; row = 0; render(); }
+  else if (e.key === "ArrowRight") { cat = (cat + 1) % 7; row = 0; render(); }
+  else if (e.key === "Enter") { e.preventDefault(); activate(row); }
+});
+render();
+</script>
+</body>
+</html>

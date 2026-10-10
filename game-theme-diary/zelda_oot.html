@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hyrule Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mochiy+Pop+One&display=swap" rel="stylesheet">
+<style>
+  /* 64-bit era pause screen: 4:3 frame, coarse low-poly mossy stone pages that rotate like a box, round coloured buttons, faceted hearts */
+  :root { --stone:#5b5a2e; --stone2:#7a7a3e; --stone3:#35351a; --gold:#e8b830; --ink:#25250f; --font:'Mochiy Pop One','Hiragino Maru Gothic ProN',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; background:#000; }
+  body { font-family:var(--font); color:#fff; overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .stage { position:relative; width:min(1040px,100vw,133.33vh); aspect-ratio:4/3; container-type:inline-size; overflow:hidden; background:#10140c; image-rendering:pixelated; }
+  .back { position:absolute; inset:0; width:100%; height:100%; filter:brightness(.6) saturate(.9) blur(1.2px); }
+  .glow { position:absolute; left:14%; top:-6%; width:30%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,rgba(255,255,255,.95),rgba(190,210,255,.5) 40%,transparent 70%); animation:glow 3s ease-in-out infinite alternate; filter:blur(3px); } @keyframes glow { to { transform:scale(1.12); opacity:.75; } }
+  .out { text-shadow:-2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000, 0 3px 0 #000, 0 -3px 0 #000, 3px 0 0 #000, -3px 0 0 #000; }
+
+  /* HUD */
+  .hearts { position:absolute; left:4.5%; top:3.6%; display:flex; gap:.6cqw; z-index:6; } .hearts i { display:block; width:3.1cqw; height:2.9cqw; background:linear-gradient(135deg,#3a2a30 0 50%,#241a20 50%); clip-path:polygon(50% 100%,0 55%,0 22%,24% 0,50% 22%,76% 0,100% 22%,100% 55%); } .hearts i.f { background:linear-gradient(135deg,#ff5050 0 50%,#b00c18 50%); }
+  .btns { position:absolute; left:42%; top:3.4%; display:flex; gap:.8cqw; z-index:6; }
+  .cb { all:unset; cursor:pointer; position:relative; width:7.8cqw; height:7.8cqw; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2.2cqw; white-space:nowrap; line-height:1; text-align:center; letter-spacing:-.04em; box-shadow:inset 0 -.5cqw 0 rgba(0,0,0,.35), 0 .5cqw 0 rgba(0,0,0,.4); transition:.08s; } .cb:hover { filter:brightness(1.25); transform:translateY(-1px); } .cb:active { transform:translateY(2px); }
+  .cb.r { background:radial-gradient(circle at 35% 30%,#e84040,#9a1010); } .cb.g { background:radial-gradient(circle at 35% 30%,#40c850,#0e6a1c); } .cb.b { background:radial-gradient(circle at 35% 30%,#4a70ff,#1432a0); } .cb span { margin:0 -1cqw; }
+  .cnt { position:absolute; left:5.4%; bottom:4.6%; display:flex; align-items:center; gap:1.2cqw; font-size:4.6cqw; z-index:6; } .cnt i { width:4.4cqw; height:3.4cqw; background:linear-gradient(120deg,#9aff7a 0 50%,#3aa84a 50%); clip-path:polygon(0 60%,55% 0,100% 20%,70% 100%,20% 85%); }
+
+  /* box: pages */
+  .box { position:absolute; left:0; right:0; top:16%; height:64%; perspective:160cqw; z-index:3; }
+  .pg { position:absolute; left:8.5%; right:8.5%; top:0; bottom:0; transform-style:preserve-3d; }
+  .page { position:absolute; inset:0; padding:2.4cqw 3.4cqw 2cqw; background-size:100% 100%; box-shadow:inset 0 0 0 .5cqw #1d1d0c, inset 0 0 0 .9cqw rgba(160,160,80,.28), 0 1cqw 3cqw rgba(0,0,0,.7); clip-path:polygon(1.2cqw 0,calc(100% - 1.2cqw) 0,100% 1.2cqw,100% calc(100% - 1.2cqw),calc(100% - 1.2cqw) 100%,1.2cqw 100%,0 calc(100% - 1.2cqw),0 1.2cqw); }
+  .page.spin-l { animation:spinL .42s cubic-bezier(.2,.8,.3,1); } .page.spin-r { animation:spinR .42s cubic-bezier(.2,.8,.3,1); }
+  @keyframes spinL { from { transform:rotateY(-62deg) translateX(-18%); opacity:.3; } } @keyframes spinR { from { transform:rotateY(62deg) translateX(18%); opacity:.3; } }
+  .side { position:absolute; top:3%; bottom:3%; width:9%; background-size:100% 100%; box-shadow:inset 0 0 0 .4cqw #1d1d0c; opacity:.9; filter:brightness(.7); } .side.l { left:0; transform-origin:right center; transform:rotateY(58deg); } .side.r { right:0; transform-origin:left center; transform:rotateY(-58deg); }
+  .side b { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%) rotate(-90deg); font-weight:400; font-size:2.4cqw; color:#25250f; text-shadow:0 .2cqw 0 rgba(200,200,120,.3); white-space:nowrap; }
+  h2 { text-align:center; font-weight:400; font-size:4.4cqw; line-height:1; color:#1d1d0c; text-shadow:0 .3cqw 0 rgba(190,190,110,.35); margin-bottom:1.4cqw; letter-spacing:.06em; }
+  .pb { position:absolute; left:3.4cqw; right:3.4cqw; top:8.4cqw; bottom:2cqw; }
+
+  /* shared carved bits */
+  .slot { all:unset; box-sizing:border-box; cursor:pointer; position:relative; display:flex; align-items:center; justify-content:center; background:rgba(20,20,8,.28); box-shadow:inset 0 0 0 .35cqw #2a2a12, inset .3cqw .3cqw 0 .35cqw rgba(0,0,0,.25); transition:.08s; } .slot:hover { background:rgba(255,255,200,.12); }
+  .slot.sel::before, .slot.sel::after { content:""; position:absolute; inset:-.8cqw; pointer-events:none; background:
+      linear-gradient(#fff,#fff) 0 0/1.4cqw .35cqw no-repeat, linear-gradient(#fff,#fff) 0 0/.35cqw 1.4cqw no-repeat, linear-gradient(#fff,#fff) 100% 0/1.4cqw .35cqw no-repeat, linear-gradient(#fff,#fff) 100% 0/.35cqw 1.4cqw no-repeat,
+      linear-gradient(#fff,#fff) 0 100%/1.4cqw .35cqw no-repeat, linear-gradient(#fff,#fff) 0 100%/.35cqw 1.4cqw no-repeat, linear-gradient(#fff,#fff) 100% 100%/1.4cqw .35cqw no-repeat, linear-gradient(#fff,#fff) 100% 100%/.35cqw 1.4cqw no-repeat; }
+  .slot.sel::after { display:none; }
+  .gem { width:42%; aspect-ratio:1; background:linear-gradient(135deg,var(--c) 0 50%,var(--c2) 50%); clip-path:polygon(50% 0,100% 30%,80% 100%,20% 100%,0 30%); filter:drop-shadow(0 .3cqw 0 rgba(0,0,0,.4)); }
+  .lb { font-size:1.9cqw; color:#25250f; text-align:center; line-height:1.2; } .lb small { display:block; font-size:1.4cqw; color:#4a4a22; }
+  textarea { display:block; width:100%; height:100%; resize:none; border:0; outline:none; padding:0 1.4cqw; font:400 2.3cqw/4.2cqw var(--font); letter-spacing:.04em; color:#1a1a0a; background:repeating-linear-gradient(transparent 0 3.6cqw, rgba(30,30,12,.55) 3.6cqw 3.9cqw); text-shadow:0 .2cqw 0 rgba(200,200,120,.3); } textarea::placeholder { color:rgba(40,40,16,.6); }
+  .dp { display:flex; align-items:center; justify-content:center; gap:1.2cqw; font-size:2.4cqw; color:#25250f; } .dp button { all:unset; cursor:pointer; padding:0 1cqw; color:#25250f; font-size:2.6cqw; } .dp button:hover { color:#fff; text-shadow:0 0 .6cqw #000; }
+  .plq { all:unset; cursor:pointer; position:absolute; left:50%; bottom:3.2%; transform:translateX(-50%); width:36%; padding:1.4cqw 0; text-align:center; font-size:3.2cqw; color:var(--gold); background-size:100% 100%; box-shadow:inset 0 0 0 .4cqw #101830, 0 .6cqw 0 rgba(0,0,0,.5); text-shadow:-.2cqw -.2cqw 0 #3a2a00, .2cqw -.2cqw 0 #3a2a00, -.2cqw .2cqw 0 #3a2a00, .2cqw .2cqw 0 #3a2a00; z-index:6; transition:.08s; } .plq:hover { filter:brightness(1.2); }
+  .zt, .rt { all:unset; cursor:pointer; position:absolute; top:46%; z-index:7; width:6%; height:8%; background:#566086; color:#c8d0f0; display:flex; align-items:center; justify-content:center; font-size:2.2cqw; clip-path:polygon(0 50%,35% 0,100% 0,100% 100%,35% 100%); box-shadow:inset 0 0 0 .3cqw #2a3050; } .zt { left:2.6%; } .rt { right:2.6%; transform:scaleX(-1); } .rt span { transform:scaleX(-1); } .zt:hover, .rt:hover { filter:brightness(1.3); }
+
+  /* page specifics */
+  .oc { display:grid; grid-template-columns:30% 1fr 36%; grid-template-rows:auto 1fr; gap:1.4cqw 2cqw; height:100%; }
+  .oc .slots { grid-column:1 / 3; grid-row:1; display:flex; gap:1.4cqw; align-items:flex-start; } .oc .slots .slot { flex:1 1 0; max-width:17%; aspect-ratio:1; } .oc .staff { grid-column:1 / 3; grid-row:2; display:flex; flex-direction:column; min-height:0; } .oc .staff .tx { flex:1; min-height:0; position:relative; padding-left:4cqw; } .oc .staff .tx::before { content:"♪"; position:absolute; left:0; top:-.4cqw; font-size:5cqw; color:rgba(30,30,12,.65); }
+  .oc .med { grid-column:3; grid-row:1 / 3; position:relative; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:1cqw; } .oc .med svg { width:100%; max-height:84%; }
+  .it { display:grid; grid-template-columns:1.1fr 1fr; gap:2cqw; height:100%; } .it .grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.2cqw; align-content:start; overflow:auto; padding:.8cqw; } .it .grid .slot { aspect-ratio:1; flex-direction:column; } .it .grid .slot b { font-weight:400; font-size:2.6cqw; color:#25250f; text-shadow:0 .2cqw 0 rgba(200,200,120,.3); } .it .det { background:rgba(20,20,8,.22); box-shadow:inset 0 0 0 .35cqw #2a2a12; padding:1.4cqw 1.8cqw; overflow:auto; font-size:2cqw; line-height:1.8; color:#1a1a0a; } .it .det h3 { font-weight:400; font-size:2.6cqw; color:#10300a; margin-bottom:.6cqw; } .it .det p { white-space:pre-wrap; } .it .det .go { all:unset; cursor:pointer; display:inline-block; margin-top:1cqw; padding:.4cqw 2cqw; background:#3a4a78; color:var(--gold); box-shadow:inset 0 0 0 .3cqw #101830; } .it .det .go:hover { filter:brightness(1.3); }
+  .mp { height:100%; display:flex; flex-direction:column; gap:1cqw; } .mp .mh { display:flex; justify-content:center; align-items:center; gap:2cqw; font-size:2.8cqw; color:#25250f; } .mp .mh button { all:unset; cursor:pointer; padding:0 1.4cqw; } .mp .mh button:hover { color:#fff; text-shadow:0 0 .6cqw #000; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:.8cqw; flex:1; align-content:start; } .cal div { display:flex; align-items:center; justify-content:center; aspect-ratio:1.5; font-size:2.2cqw; color:#25250f; background:rgba(20,20,8,.25); box-shadow:inset 0 0 0 .3cqw #2a2a12; } .cal .dow { aspect-ratio:auto; background:none; box-shadow:none; font-size:1.6cqw; } .cal .d { cursor:pointer; } .cal .d:hover { background:rgba(255,255,200,.2); } .cal .done { position:relative; color:#1a1a0a; } .cal .done::after { content:""; position:absolute; inset:18% 30%; background:linear-gradient(120deg,#ffe58a 50%,#a8841c 50%); clip-path:polygon(50% 0,100% 100%,0 100%); z-index:0; opacity:.9; } .cal .done span { position:relative; z-index:1; font-size:1.8cqw; } .cal .today { box-shadow:inset 0 0 0 .5cqw #fff; }
+  .sv { display:grid; grid-template-columns:1fr 40%; gap:2cqw; height:100%; } .sv .ls { display:flex; flex-direction:column; gap:1cqw; } .sv .ln { display:flex; justify-content:space-between; padding:.8cqw 1.4cqw; font-size:2.4cqw; color:#25250f; background:rgba(20,20,8,.22); box-shadow:inset 0 0 0 .3cqw #2a2a12; } .sv .ln b { font-weight:400; color:#10300a; }
+
+  /* overlay */
+  #ov { position:absolute; inset:0; z-index:30; display:none; flex-direction:column; align-items:center; justify-content:center; gap:1.4cqw; background:rgba(0,0,0,.82); } #ov.show { display:flex; animation:fade .2s; }
+  #ov .tri { width:22cqw; aspect-ratio:1.1; background:linear-gradient(120deg,#ffe58a 50%,#a8841c 50%); clip-path:polygon(50% 0,100% 100%,0 100%); filter:drop-shadow(0 0 3cqw rgba(255,220,100,.9)); animation:itemget 1.2s cubic-bezier(.2,.9,.3,1); } #ov .rays { position:absolute; left:50%; top:42%; width:90cqw; aspect-ratio:1; margin:-45cqw 0 0 -45cqw; background:repeating-conic-gradient(rgba(255,230,120,.22) 0 6deg,transparent 6deg 18deg); -webkit-mask-image:radial-gradient(circle,#000,transparent 68%); mask-image:radial-gradient(circle,#000,transparent 68%); animation:spin 8s linear infinite; }
+  #ovT { position:relative; font-size:5.2cqw; color:var(--gold); } #ovS { position:relative; font-size:2.4cqw; color:#fff; }
+  @keyframes fade { from { opacity:0; } } @keyframes spin { to { transform:rotate(360deg); } } @keyframes itemget { from { transform:translateY(8cqw) scale(.2); opacity:0; } 60% { transform:translateY(-2cqw) scale(1.15); opacity:1; } }
+  .slot:focus-visible, .cb:focus-visible, .plq:focus-visible, textarea:focus-visible { outline:3px solid #fff; outline-offset:2px; }
+  @media (max-width:760px) { body { align-items:flex-start; overflow:auto; } .stage { width:100vw; aspect-ratio:auto; min-height:100vh; height:auto; } .box { position:relative; top:auto; height:auto; margin-top:34cqw; } .pg { position:relative; left:3%; right:3%; min-height:90cqw; margin:0 3%; } .page { position:relative; min-height:90cqw; } .side { display:none; } .pb { position:relative; left:0; right:0; top:0; } .oc { grid-template-columns:1fr; } .oc .staff { grid-column:1; } .oc .med { display:none; } .it, .sv { grid-template-columns:1fr; } .hearts, .btns, .cnt { position:absolute; } .plq { position:relative; left:auto; transform:none; margin:5cqw auto; display:block; bottom:auto; } .cb { font-size:3cqw; width:11cqw; height:11cqw; } .btns { left:32%; } .zt, .rt { display:none; } .hearts i { width:4.5cqw; height:4.2cqw; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <svg class="back" id="back" viewBox="0 0 1000 750" preserveAspectRatio="none" aria-hidden="true"></svg><div class="glow"></div>
+  <div class="hearts" id="hearts"></div>
+  <div class="btns"><button class="cb r out" data-b="back"><span>もどる</span></button><button class="cb g out" data-b="save"><span>セーブ</span></button><button class="cb b out" data-b="ok"><span>けってい</span></button></div>
+  <div class="cnt out"><i></i><span id="cnt">0</span></div>
+  <div class="box"><div class="side l" id="sl"><b id="slt"></b></div><div class="pg"><div class="page" id="page"><h2 id="pt"></h2><div class="pb" id="pb"></div></div></div><div class="side r" id="sr"><b id="srt"></b></div>
+    <button class="zt" data-pg="-1"><span>Z</span></button><button class="rt" data-pg="1"><span>R</span></button></div>
+  <button class="plq out" id="plq"></button>
+  <div id="ov"><div class="rays"></div><div class="tri"></div><div id="ovT" class="out"></div><div id="ovS" class="out"></div></div>
+</div>
+
+<script src="theme-switch.js" data-theme="zelda_oot"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高","太陽の歌","#ffe58a","#c8941c"],["良い","サリアの歌","#8aff9a","#2a9a44"],["普通","エポナの歌","#ffb070","#a85a1c"],["微妙","嵐の歌","#8ab4ff","#2a4aa8"],["最悪","影のノクターン","#c88aff","#5a2a98"]];
+const RANKS = ["コキリ族","ハイリア人","剣士","賢者","時の勇者","騎士","伝説"];
+const PAGES = ["オカリナ", "アイテム", "マップ", "ステータス"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmt = k => k.replace(/-/g, ".");
+const addDays = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const moodOf = m => MOODS.find(x => x[0] === m);
+
+// ---- coarse low-poly textures (triangle meshes as data-URI backgrounds) ----
+function mesh(w, h, cols, rows, pal, seed, jit = .35) {
+  let s = seed; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const pts = []; for (let j = 0; j <= rows; j++) for (let i = 0; i <= cols; i++) pts.push([i / cols * w + (i && i < cols ? (r() - .5) * jit * w / cols : 0), j / rows * h + (j && j < rows ? (r() - .5) * jit * h / rows : 0)]);
+  const P = (i, j) => pts[j * (cols + 1) + i]; let out = "";
+  for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) for (const t of [[P(i, j), P(i + 1, j), P(i, j + 1)], [P(i + 1, j), P(i + 1, j + 1), P(i, j + 1)]]) {
+    const c = pal[Math.floor(r() * pal.length)]; out += `<polygon points="${t.map(p => p[0].toFixed(0) + "," + p[1].toFixed(0)).join(" ")}" fill="${c}" stroke="${c}" stroke-width="1"/>`; }
+  return out;
+}
+const uri = (w, h, body) => `url("data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 ${w} ${h}' preserveAspectRatio='none'>${body}</svg>`)}")`;
+const STONE = ["#5b5a2e", "#66652f", "#53522a", "#6c6b34", "#4a4a24", "#5f5e30"], PLAQ = ["#3a4a78", "#34447a", "#415282", "#2e3e6c"], SIDE = ["#3a3a1c", "#42421f", "#33331a"];
+function skin() {
+  $("page").style.backgroundImage = uri(500, 380, mesh(500, 380, 10, 8, STONE, 7)); $("sl").style.backgroundImage = $("sr").style.backgroundImage = uri(100, 380, mesh(100, 380, 2, 8, SIDE, 3)); $("plq").style.backgroundImage = uri(300, 60, mesh(300, 60, 8, 2, PLAQ, 5));
+  $("back").innerHTML = mesh(1000, 750, 14, 10, ["#1c2a18", "#223018", "#18241a", "#2a3a20", "#1a2218", "#2c3a2a", "#203420"], 11, .5);
+}
+
+let data = load(), selected = ymd(new Date()), mood = null, draft = "", pg = 0, itIdx = 0, calOff = 0, overlayTimer;
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function totalXp() { let xp = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; } return xp; }
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
+
+function hud() {
+  const st = streakCount(), rk = rankOf(totalXp()), n = 3 + rk; $("hearts").innerHTML = Array.from({ length: n }, (_, k) => `<i class="${k < Math.max(1, st) ? "f" : ""}"></i>`).join(""); $("cnt").textContent = Object.keys(data).length;
+  $("plq").textContent = PAGES[(pg + 1) % 4] + "画面へ"; $("slt").textContent = PAGES[(pg + 3) % 4]; $("srt").textContent = PAGES[(pg + 1) % 4];
+}
+const medal = (lit) => { const cx = [150, 60, 60, 150, 240, 240], cy = [24, 80, 190, 246, 190, 80]; return `<svg viewBox="0 0 300 270"><polygon points="150,10 270,78 270,192 150,260 30,192 30,78" fill="none" stroke="#25250f" stroke-width="7"/><polygon points="150,100 190,170 110,170" fill="${lit > 5 ? "#e8c030" : "none"}" stroke="#25250f" stroke-width="6"/>` +
+  cx.map((x, i) => `<circle cx="${x}" cy="${cy[i]}" r="22" fill="${i < lit ? ["#7aff6a", "#ff8a3a", "#4aa8ff", "#c88aff", "#ffe030", "#ff6a9a"][i] : "#3a3a1c"}" stroke="#25250f" stroke-width="5"/>`).join("") + `</svg>`; };
+
+function renderPage() {
+  hud(); $("pt").textContent = PAGES[pg]; const pb = $("pb"), xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length;
+  if (pg === 0) {
+    const d = new Date(selected + "T00:00:00");
+    pb.innerHTML = `<div class="oc"><div class="slots">${MOODS.map(([m, t, c, c2]) => `<button class="slot ${m === mood ? "sel" : ""}" data-m="${m}"><i class="gem" style="--c:${c};--c2:${c2}"></i></button>`).join("")}</div><div class="med"><div class="dp"><button data-ad="-1">◀</button><span>${fmt(selected)}（${DOW[d.getDay()]}）</span><button data-ad="1">▶</button></div>${medal(rk + 1 > 6 ? 6 : rk)}<div class="lb">${mood ? moodOf(mood)[1] : "気分を選んでください"}</div></div>
+      <div class="staff"><div class="tx"><textarea id="body" placeholder="今日の冒険を、五線譜に記そう…"></textarea></div></div></div>`;
+    $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; });
+  } else if (pg === 1) {
+    const keys = Object.keys(data).sort().reverse(); if (itIdx >= keys.length) itIdx = 0; const k = keys[itIdx];
+    pb.innerHTML = `<div class="it"><div class="grid">${keys.length ? keys.map((x, i) => `<button class="slot ${i === itIdx ? "sel" : ""}" data-it="${i}"><b>${+x.slice(8)}</b></button>`).join("") : `<div class="lb" style="grid-column:1/-1">まだ記録がありません</div>`}</div>
+      <div class="det">${k ? `<h3>${fmt(k)} ─ ${(moodOf(data[k].mood) || [0, "—"])[1]}</h3><p>${esc(data[k].text)}</p><button class="go" data-edit="${k}">なおす</button>` : "最初の記録を書こう。"}</div></div>`;
+  } else if (pg === 2) {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth(), first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let h = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden'></div>".repeat(first);
+    for (let i = 1; i <= last; i++) { const k = ymd(new Date(y, mo, i)); h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""}" data-d="${k}"><span>${i}</span></div>`; }
+    pb.innerHTML = `<div class="mp"><div class="mh"><button data-cal="-1">◀</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button data-cal="1">▶</button></div><div class="cal">${h}</div></div>`;
+  } else {
+    pb.innerHTML = `<div class="sv"><div class="ls"><div class="ln"><span>称号</span><b>${RANKS[rk]}</b></div><div class="ln"><span>ハート（連続）</span><b>${st} 日</b></div><div class="ln"><span>記録の数</span><b>${n} 件</b></div><div class="ln"><span>ルピー</span><b>${(xp * 5).toLocaleString()}</b></div></div><div>${medal(Math.min(6, rk + (st ? 1 : 0)))}</div></div>`;
+  }
+}
+function go(d) {
+  pg = (pg + d + 4) % 4; if (pg === 0) { selected = ymd(new Date()); loadDay(); } renderPage();
+  const p = $("page"); p.classList.remove("spin-l", "spin-r"); void p.offsetWidth; p.classList.add(d > 0 ? "spin-r" : "spin-l");
+}
+
+function overlay(up, isNew) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("ovT").textContent = up ? "ハートのうつわ！" : "トライフォースを手に入れた！"; $("ovS").textContent = `${moodOf(mood) ? moodOf(mood)[1] + " ─ " : ""}${isNew ? streakCount() + " DAYS" : "UPDATED"}`;
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2700);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+function save() {
+  if (pg !== 0) { pg = 0; loadDay(); renderPage(); return; }
+  const text = draft.trim(); if (!text) { $("body").focus(); return; } if (!mood) { $("pt").textContent = "気分を選んでね"; setTimeout(() => $("pt").textContent = PAGES[0], 1400); return; }
+  const before = rankOf(totalXp()), isNew = !data[selected]; data[selected] = { mood, text }; store(data); renderPage(); overlay(rankOf(totalXp()) > before, isNew);
+}
+function openDay(k) { selected = k; loadDay(); pg = 0; renderPage(); }
+
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-b]"); if (b) { if (b.dataset.b === "back") location.href = "index.html"; else if (b.dataset.b === "save") save(); else if (pg === 1) { const k = Object.keys(data).sort().reverse()[itIdx]; if (k) openDay(k); } return; }
+  const g = e.target.closest("[data-pg]"); if (g) return go(+g.dataset.pg); if (e.target.closest("#plq")) return go(1);
+  const m = e.target.closest("[data-m]"); if (m) { mood = m.dataset.m; document.querySelectorAll(".slot[data-m]").forEach(x => x.classList.toggle("sel", x.dataset.m === mood)); const lb = document.querySelector(".lb"); if (lb) lb.textContent = moodOf(mood)[1]; return; }
+  const ad = e.target.closest("[data-ad]"); if (ad) { selected = addDays(selected, +ad.dataset.ad); if (selected > ymd(new Date())) selected = ymd(new Date()); loadDay(); return renderPage(); }
+  const it = e.target.closest("[data-it]"); if (it) { itIdx = +it.dataset.it; return renderPage(); }
+  const ed = e.target.closest("[data-edit]"); if (ed) return openDay(ed.dataset.edit);
+  const dd = e.target.closest("[data-d]"); if (dd) return openDay(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; renderPage(); }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea")) { if (e.key === "Escape") e.target.blur(); else if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) save(); return; }
+  if (e.key === "Escape") { if ($("ov").classList.contains("show")) return $("ov").classList.remove("show"); location.href = "index.html"; return; }
+  if (e.key === "ArrowRight" || e.key === "e") go(1); else if (e.key === "ArrowLeft" || e.key === "q") go(-1);
+  else if (pg === 1 && (e.key === "ArrowDown" || e.key === "ArrowUp")) { const n = Object.keys(data).length; if (n) { e.preventDefault(); itIdx = (itIdx + (e.key === "ArrowDown" ? 1 : -1) + n) % n; renderPage(); } }
+});
+
+loadDay(); skin(); renderPage();
+</script>
+</body>
+</html>

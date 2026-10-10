@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Persona 3 Diary</title>
+<style>
+  :root { --deep:#00122e; --blue:#0a58c8; --sky:#5ec8ff; --ice:#d9f4ff; --white:#fff; }
+  * { box-sizing:border-box; margin:0; }
+  body {
+    min-height:100vh; color:var(--ice); overflow-x:hidden;
+    font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:700;
+    background:
+      radial-gradient(circle at 82% 18%, rgba(217,244,255,.95) 0 70px, rgba(94,200,255,.25) 72px 150px, transparent 152px),
+      repeating-linear-gradient(115deg, rgba(94,200,255,.06) 0 2px, transparent 2px 26px),
+      linear-gradient(160deg, #0a58c8 0%, #052b6b 45%, var(--deep) 100%);
+    background-attachment:fixed;
+  }
+  main { max-width:860px; margin:0 auto; padding:24px 16px 60px; }
+
+  header { display:flex; align-items:flex-end; gap:18px; flex-wrap:wrap; margin-bottom:18px; }
+  .date { font-size:clamp(56px,13vw,110px); line-height:.9; font-weight:900; color:var(--white);
+    letter-spacing:-.04em; text-shadow:0 0 18px rgba(94,200,255,.8); }
+  .date small { font-size:.32em; letter-spacing:.05em; color:var(--sky); margin-left:6px; }
+  .moon { font-size:44px; filter:drop-shadow(0 0 10px var(--sky)); }
+  .dark { margin-left:auto; text-align:right; font-size:12px; letter-spacing:.35em; color:var(--sky); }
+
+  /* thin-bordered angular panel */
+  .panel { position:relative; background:rgba(0,18,46,.72); border:2px solid var(--sky); padding:16px 20px;
+    margin-bottom:22px; clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,22px 100%,0 calc(100% - 22px));
+    box-shadow:0 0 22px rgba(94,200,255,.25); }
+  .ttl { display:inline-block; background:var(--white); color:var(--blue); padding:2px 18px 2px 12px;
+    font-size:13px; letter-spacing:.25em; font-weight:900; clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%); margin-bottom:10px; }
+
+  .stats { display:flex; flex-wrap:wrap; gap:12px; }
+  .stat { flex:1 1 150px; border-left:4px solid var(--sky); padding-left:12px; }
+  .stat b { display:block; font-size:11px; letter-spacing:.3em; color:var(--sky); }
+  .stat i { font-style:normal; font-size:34px; font-weight:900; color:var(--white); }
+  .bar { height:6px; background:rgba(94,200,255,.25); margin-top:4px; }
+  .bar div { height:100%; width:0; background:var(--sky); box-shadow:0 0 8px var(--sky); transition:width .6s; }
+
+  .moods { display:flex; flex-direction:column; gap:3px; margin-bottom:12px; }
+  .moods button { font:inherit; font-size:17px; text-align:left; cursor:pointer; padding:7px 22px;
+    color:var(--ice); background:transparent; border:0; border-bottom:1px solid rgba(94,200,255,.3); transition:.12s; }
+  .moods button:hover { padding-left:30px; }
+  .moods button.on { background:var(--white); color:var(--blue); font-weight:900; padding-left:30px;
+    clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%); box-shadow:0 0 14px var(--sky); }
+
+  textarea { width:100%; min-height:170px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.8;
+    color:var(--white); background:rgba(94,200,255,.1); border:0; border-left:4px solid var(--sky); outline:none; }
+  textarea:focus { background:rgba(94,200,255,.18); }
+  textarea::placeholder { color:rgba(217,244,255,.5); }
+  .hint { font-size:12px; color:var(--sky); margin-top:6px; min-height:1em; }
+
+  .save { display:block; margin:14px 0 0 auto; font:inherit; font-size:20px; font-weight:900; letter-spacing:.3em;
+    cursor:pointer; padding:8px 40px 8px 34px; color:var(--blue); background:var(--white); border:0;
+    clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%); transition:.12s; }
+  .save:hover { background:var(--sky); box-shadow:0 0 18px var(--sky); }
+
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:13px;
+    border:1px solid rgba(94,200,255,.3); }
+  .cal .dow { aspect-ratio:auto; border:0; color:var(--sky); font-size:11px; letter-spacing:.2em; }
+  .cal .done { background:var(--sky); color:var(--deep); font-weight:900; }
+  .cal .today { outline:2px solid var(--white); outline-offset:1px; }
+  .cal .sel { box-shadow:0 0 12px var(--white); }
+
+  .entry { padding:10px 16px; margin-bottom:10px; border-left:4px solid var(--sky); background:rgba(0,18,46,.6); }
+  .entry small { color:var(--sky); letter-spacing:.2em; }
+  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.7; }
+
+  /* overlay after saving */
+  #stamp { position:fixed; inset:0; z-index:10; display:none; align-items:center; justify-content:center;
+    background:rgba(0,10,30,.82); }
+  #stamp.show { display:flex; }
+  #stamp .box { width:100%; padding:30px 16px; text-align:center; background:linear-gradient(90deg,transparent,var(--blue) 15%,var(--blue) 85%,transparent);
+    border-top:2px solid var(--white); border-bottom:2px solid var(--white); animation:slide .45s ease-out; }
+  #stamp .big { font-size:clamp(36px,10vw,80px); font-weight:900; letter-spacing:.1em; color:var(--white); text-shadow:0 0 22px var(--sky); }
+  #stamp .sub { margin-top:6px; letter-spacing:.3em; color:var(--ice); }
+  @keyframes slide { from { transform:translateX(-100%); opacity:0; } }
+
+  /* ===== animation ===== */
+  body::before, body::after { content:""; position:fixed; z-index:0; left:82%; top:18%; border-radius:50%; pointer-events:none; }
+  body::before { width:340px; height:340px; margin:-170px; border:1px dashed rgba(94,200,255,.55); animation:spin 50s linear infinite; }
+  body::after  { width:460px; height:460px; margin:-230px; border:1px solid rgba(94,200,255,.25); border-top-color:var(--sky); animation:spin 28s linear infinite reverse; }
+  main { position:relative; z-index:1; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  @keyframes panelIn { from { opacity:0; transform:translateX(-70px) skewX(10deg); } }
+  @keyframes sweep { to { transform:translateX(120%); } }
+  @keyframes dateIn { from { opacity:0; transform:translateX(-50px) skewX(-12deg); letter-spacing:.2em; } }
+  @keyframes glow { 50% { filter:drop-shadow(0 0 22px var(--ice)); } }
+  @keyframes flash { 0% { background:var(--sky); transform:translateX(14px); } }
+  @keyframes rise { from { opacity:0; transform:translateY(14px) scale(.7); } }
+  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
+  @keyframes wipe { 0% { transform:translateX(-100%); } 60% { transform:translateX(0); } 100% { transform:translateX(100%); } }
+  @keyframes zoomIn { from { letter-spacing:.6em; opacity:0; transform:scale(1.5); } }
+  .date { animation:dateIn .7s cubic-bezier(.2,.9,.3,1) both; }
+  .moon { animation:glow 3.5s ease-in-out infinite; }
+  .dark { animation:dateIn .8s .2s both; }
+  main > section.panel { animation:panelIn .6s cubic-bezier(.2,.9,.3,1) both; }
+  main > section.panel:nth-of-type(1) { animation-delay:.15s; }
+  main > section.panel:nth-of-type(2) { animation-delay:.3s; }
+  main > section.panel:nth-of-type(3) { animation-delay:.45s; }
+  .panel::after { content:""; position:absolute; inset:0; pointer-events:none; transform:translateX(-120%);
+    background:linear-gradient(100deg,transparent 40%,rgba(217,244,255,.3) 50%,transparent 60%); animation:sweep 1.1s .7s ease-out forwards; }
+  .moods button.on { animation:flash .3s ease-out; }
+  .cal div[data-d] { animation:rise .35s calc(var(--i) * 18ms + .5s) cubic-bezier(.3,1.6,.5,1) backwards; transition:.15s; }
+  .cal div[data-d]:hover { background:rgba(94,200,255,.35); transform:scale(1.15); }
+  .entry { animation:entryIn .4s calc(var(--i) * 60ms) ease-out backwards; }
+  .save:active { transform:scale(.95); }
+  #stamp.show { animation:fade .25s; }
+  #stamp .box { position:relative; overflow:hidden; }
+  #stamp .box::after { content:""; position:absolute; inset:0; background:var(--white); animation:wipe .7s ease-in-out forwards; pointer-events:none; }
+  #stamp .big { animation:zoomIn .6s .15s cubic-bezier(.2,.9,.3,1) backwards; }
+  @keyframes fade { from { opacity:0; } }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+
+  /* ===== typography ===== */
+  body { font-family:"Zen Kaku Gothic New","Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:500; }
+  .date, .stat i, .ttl, .stat b, .save, #stamp .big, #stamp .sub, .dark, .entry small, .cal, .cal .dow {
+    font-family:"Barlow Condensed","Zen Kaku Gothic New",sans-serif; font-style:italic; }
+  .date { font-weight:800; font-size:clamp(84px,19vw,160px); letter-spacing:-.02em; line-height:.85;
+    -webkit-text-stroke:1px rgba(94,200,255,.6); text-shadow:0 0 24px rgba(94,200,255,.9), 6px 6px 0 rgba(0,40,110,.8); }
+  .date small { font-size:.3em; font-weight:600; letter-spacing:.12em; text-shadow:none; -webkit-text-stroke:0; }
+  .ttl { font-weight:800; font-size:16px; letter-spacing:.3em; }
+  .stat i { font-weight:800; font-size:52px; line-height:1; letter-spacing:.02em; text-shadow:0 0 12px rgba(94,200,255,.7); }
+  .stat b { font-weight:600; font-size:14px; }
+  .moods button { font-weight:900; letter-spacing:.12em; }
+  .save { font-weight:800; font-size:28px; letter-spacing:.3em; }
+  #stamp .big { font-weight:800; font-size:clamp(56px,16vw,130px); letter-spacing:.08em; }
+  .cal div { font-size:18px; font-weight:600; }
+  .entry small { font-weight:600; font-size:14px; }
+  .entry p, textarea { font-weight:500; }
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,600;1,800&family=Zen+Kaku+Gothic+New:wght@500;900&display=swap" rel="stylesheet">
+</head>
+<body>
+<main>
+  <header>
+    <div class="date" id="dateBig"></div>
+    <div class="moon" id="moon"></div>
+    <div class="dark">DIARY ─ 日記<br>THE DARK HOUR</div>
+  </header>
+
+  <section class="panel">
+    <span class="ttl">STATUS</span>
+    <div class="stats">
+      <div class="stat"><b>RANK</b><i id="lv">I</i><div class="bar"><div id="xp"></div></div></div>
+      <div class="stat"><b>STREAK 連続</b><i id="streak">0</i></div>
+      <div class="stat"><b>TOTAL 記録</b><i id="total">0</i></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <span class="ttl">MOOD 今日の気分</span>
+    <div class="moods" id="moods"></div>
+    <span class="ttl">TODAY'S STORY</span>
+    <textarea id="body" placeholder="今日はどんな一日だった？"></textarea>
+    <div class="hint" id="hint"></div>
+    <button class="save" id="save">SAVE</button>
+  </section>
+
+  <section class="panel">
+    <span class="ttl">CALENDAR</span>
+    <div class="cal" id="cal"></div>
+  </section>
+
+  <span class="ttl" style="margin-left:4px">MEMORIES</span>
+  <div id="list"></div>
+</main>
+
+<div id="stamp"><div class="box"><div class="big" id="stampBig"></div><div class="sub" id="stampSub"></div></div></div>
+
+<script src="theme-switch.js" data-theme="p3"></script>
+<script>
+const KEY = "diary-shared-v1";
+const MOODS = ["最高","良い","普通","微妙","最悪"];
+const ROMAN = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const $ = id => document.getElementById(id);
+const countUp = (el, to) => {
+  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
+  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
+  const t0 = performance.now();
+  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+};
+let stampTimer;
+
+
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+let data = load();
+let selected = ymd(new Date());
+let mood = null;
+
+// moon phase from a known new moon (2000-01-06 18:14 UTC)
+function moonOf(d) {
+  const age = (((d - Date.UTC(2000,0,6,18,14)) / 864e5) % 29.530588 + 29.530588) % 29.530588;
+  return ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"][Math.round(age / 29.530588 * 8) % 8];
+}
+function streakCount() {
+  let n = 0, d = new Date();
+  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
+  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const cur = new Date(k + "T00:00:00");
+    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = cur;
+  }
+  return xp;
+}
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), ROMAN.length - 1);
+
+function render() {
+  const sd = new Date(selected + "T00:00:00");
+  const dow = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
+  $("dateBig").innerHTML = `${sd.getMonth()+1}/${sd.getDate()}<small>${dow}</small>`;
+  $("moon").textContent = moonOf(sd);
+
+  const xp = totalXp(), rk = rankOf(xp);
+  $("lv").textContent = ROMAN[rk];
+  $("xp").style.width = rk >= ROMAN.length - 1 ? "100%" : (xp % XP_PER_RANK) / XP_PER_RANK * 100 + "%";
+  countUp($("streak"), streakCount());
+  countUp($("total"), Object.keys(data).length);
+
+  const e = data[selected];
+  $("body").value = e ? e.text : "";
+  mood = e ? e.mood : null;
+  $("moods").innerHTML = MOODS.map(m => `<button data-m="${m}" class="${m===mood?"on":""}">${m}</button>`).join("");
+  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
+
+  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
+  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
+  h += "<div style='visibility:hidden'></div>".repeat(first);
+  for (let d = 1; d <= last; d++) {
+    const k = ymd(new Date(y, mo, d));
+    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+  }
+  $("cal").innerHTML = h;
+
+  const keys = Object.keys(data).sort().reverse();
+  $("list").innerHTML = keys.length ? keys.map((k, i) =>
+    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ MOOD: ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
+    : `<div class="entry"><p>まだ記録がありません。最初の一行を書こう。</p></div>`;
+}
+
+$("moods").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  mood = b.dataset.m;
+  [...$("moods").children].forEach(x => x.classList.toggle("on", x === b));
+};
+$("cal").onclick = e => {
+  const c = e.target.closest("[data-d]"); if (!c) return;
+  selected = c.dataset.d; render();
+};
+$("save").onclick = () => {
+  const text = $("body").value.trim();
+  if (!text) { $("body").focus(); return; }
+  const before = rankOf(totalXp()), isNew = !data[selected];
+  data[selected] = { mood, text };
+  store(data);
+  const up = rankOf(totalXp()) > before;
+  $("stampBig").textContent = up ? "RANK UP!" : "RECORDED";
+  $("stampSub").textContent = isNew ? `${streakCount()}日連続` : "更新しました";
+  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
+  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2000);
+  render();
+};
+$("stamp").onclick = () => $("stamp").classList.remove("show");
+render();
+</script>
+</body>
+</html>
