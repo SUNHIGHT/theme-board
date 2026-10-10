@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunter's Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  /* Inventory-style screen: gold serif title, icon tab row, thumbnail column, framed item panel with description box, status column, guide bar */
+  :root { --bg:#0a0c0f; --line:#8c8c86; --dim:#7b7f82; --gold:#c9a96a; --tx:#d8d8d2; --hi:#fff; --f:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --fs:'Cormorant Garamond','Zen Kaku Gothic New',serif; --glow:#8fb8d8; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--tx); overflow:hidden; background:var(--bg); }
+  body::before { content:""; position:fixed; inset:0; background:radial-gradient(ellipse at 20% 30%, rgba(60,70,80,.35), transparent 55%), radial-gradient(ellipse at 85% 80%, rgba(40,50,60,.3), transparent 50%), linear-gradient(180deg,#14171b,#07090b); }
+  body::after { content:""; position:fixed; inset:0; pointer-events:none; z-index:50; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.65)); }
+  .grain { position:fixed; inset:0; z-index:49; pointer-events:none; opacity:.09; background-image:repeating-radial-gradient(circle at 23% 41%, #fff 0 .5px, transparent .5px 3px); animation:gr .5s steps(2) infinite; }
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto auto 1fr auto; padding:0 2.4%; }
+
+  .head { display:flex; justify-content:space-between; align-items:flex-start; padding-top:8px; }
+  .head h1 { font:italic 600 24px var(--fs); color:var(--gold); letter-spacing:.04em; text-shadow:0 0 8px rgba(0,0,0,.8); }
+  .res { display:flex; flex-direction:column; align-items:flex-end; gap:2px; margin-right:150px; font-size:15px; opacity:.85; } .res span { display:flex; gap:10px; align-items:center; } .res i { color:#c04a4a; font-style:normal; } .res b { font:600 17px var(--fs); min-width:50px; text-align:right; }
+  .tabs { display:flex; gap:6px; margin-top:4px; align-items:flex-end; flex-wrap:wrap; } .tl { width:100%; font-size:14px; color:var(--tx); margin-bottom:-2px; }
+  .tb { all:unset; box-sizing:border-box; cursor:pointer; width:62px; height:54px; border:1px solid #55585a; background:linear-gradient(180deg,#1b1f23,#0e1114); display:grid; place-items:center; font-size:26px; color:#9a9c98; position:relative; transition:.12s; }
+  .tb:hover { border-color:#aaa; color:#ddd; } .tb.on { border:2px solid #fff; background:linear-gradient(180deg,#2c3a48,#121820); color:#fff; box-shadow:0 0 14px rgba(150,190,230,.55); } .tb:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+
+  .main { display:grid; grid-template-columns:minmax(0,1fr) 270px; gap:10px; margin-top:10px; min-height:0; }
+  .fr { position:relative; border:1px solid var(--line); background:rgba(8,10,12,.82); box-shadow:inset 0 0 0 4px rgba(8,10,12,.9), inset 0 0 0 5px rgba(140,140,134,.5); min-height:0; }
+  .fr::before, .fr::after { content:""; position:absolute; width:14px; height:14px; border:1px solid var(--gold); opacity:.8; } .fr::before { left:-3px; top:-3px; border-right:0; border-bottom:0; } .fr::after { right:-3px; bottom:-3px; border-left:0; border-top:0; }
+  .left { display:grid; grid-template-columns:62px 1fr; gap:10px; padding:9px 10px 9px 9px; }
+  .th { display:flex; flex-direction:column; gap:8px; overflow:auto; scrollbar-width:none; min-height:0; } .th::-webkit-scrollbar { display:none; }
+  .tn { all:unset; box-sizing:border-box; cursor:pointer; flex:none; width:50px; height:50px; border:1px solid #555; background:radial-gradient(circle at 50% 40%, #3a3d40, #121416); display:grid; place-items:center; text-align:center; font:600 15px/1 var(--fs); color:#bbb; position:relative; animation:fade .3s calc(var(--i)*30ms) both; } .tn small { display:block; font:500 9px var(--f); color:var(--dim); margin-top:2px; }
+  .tn.rec { color:#fff; background:radial-gradient(circle at 50% 40%, #5a6168, #181a1d); } .tn:hover { border-color:#bbb; }
+  .tn.cur { border:2px solid #fff; width:58px; margin-left:-4px; box-shadow:0 0 10px rgba(255,255,255,.4); }
+  .tn:focus-visible { outline:2px solid var(--gold); }
+  .item { display:grid; grid-template-columns:38% 1fr; gap:14px; min-height:0; padding:4px 10px 0 4px; }
+  .item.one { grid-template-columns:1fr; }
+  .pic { position:relative; height:calc(100% - 100px); min-height:150px; border:1px solid #444; background:radial-gradient(ellipse at 50% 55%, var(--mc,#37485a) 0, #121519 60%, #0a0c0e 100%); overflow:hidden; display:grid; place-items:center; } .pic svg { width:62%; height:92%; filter:drop-shadow(0 6px 10px #000); } .pic::after { content:""; position:absolute; inset:0; background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.6)); }
+  .cnt { margin-top:14px; font-size:14px; } .cnt div { display:flex; justify-content:space-between; padding:3px 4px; margin:0 8px; } .cnt span:last-child { font:600 16px var(--fs); letter-spacing:.1em; }
+  .txt { display:flex; flex-direction:column; min-height:0; }
+  .ti { font:600 17px var(--f); color:var(--gold); padding:4px 4px 2px; letter-spacing:.06em; } .orn { height:10px; margin:0 0 8px; position:relative; border-bottom:1px solid rgba(201,169,106,.5); } .orn::after { content:"❖"; position:absolute; left:6px; top:2px; font-size:10px; color:var(--gold); background:#0b0d10; padding:0 6px; }
+  .desc { flex:1; min-height:0; border:1px solid #4a4d4f; padding:12px 16px; display:flex; flex-direction:column; gap:8px; background:rgba(0,0,0,.2); overflow:auto; }
+  textarea { flex:1; min-height:120px; resize:none; width:100%; background:transparent; border:0; outline:0; color:var(--tx); font:500 16px/1.9 var(--f); padding:0; } textarea::placeholder { color:#666; } textarea:focus { background:rgba(255,255,255,.025); }
+  .moods { display:flex; gap:6px; flex-wrap:wrap; list-style:none; padding:0; } .mb { all:unset; cursor:pointer; padding:2px 14px; border:1px solid #55585a; font:500 14px var(--f); color:#aaa; } .mb:hover { border-color:#aaa; color:#fff; } .mb.on { border-color:#fff; color:#fff; background:rgba(150,190,230,.2); box-shadow:0 0 8px rgba(150,190,230,.4); }
+  .acts { display:flex; gap:12px; align-items:center; flex-wrap:wrap; } .save { all:unset; cursor:pointer; padding:3px 26px; border:1px solid var(--gold); color:var(--gold); font:700 15px var(--f); letter-spacing:.2em; } .save:hover { background:rgba(201,169,106,.2); color:#fff; } .dte { background:#0d1013; color:#ccc; border:1px solid #55585a; font:500 13px var(--f); padding:2px 6px; color-scheme:dark; } .hint { font-size:12px; color:#c9a96a; }
+  .ls { display:flex; flex-direction:column; gap:6px; overflow:auto; flex:1; min-height:0; } .rw { display:flex; justify-content:space-between; align-items:center; padding:6px 10px; border-bottom:1px solid #2a2d30; font-size:15px; } .rw b { font:600 18px var(--fs); } .rw .br { flex:1; margin:0 14px; height:4px; background:#25282b; } .rw .br i { display:block; height:100%; background:var(--gold); }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:5px; max-width:480px; } .cal div { aspect-ratio:1.3; display:grid; place-items:center; font:600 17px var(--fs); border:1px solid #33363a; color:#888; } .cal .dow { border:0; font:500 12px var(--f); color:var(--gold); aspect-ratio:auto; } .cal .done { color:#fff; border-color:#9a9c98; background:rgba(150,190,230,.12); } .cal .today { outline:2px solid var(--gold); } .cal [data-go] { cursor:pointer; }
+  .big { all:unset; cursor:pointer; display:block; border:1px solid #55585a; padding:10px 16px; font:700 15px var(--f); margin-bottom:8px; } .big:hover { border-color:#fff; background:rgba(255,255,255,.05); } .big small { display:block; color:var(--dim); font-weight:400; font-size:12px; }
+
+  .right { padding:10px 12px; display:flex; flex-direction:column; gap:6px; overflow:hidden; }
+  .orbs { display:flex; gap:7px; } .ob { all:unset; cursor:pointer; flex:1; aspect-ratio:1; border-radius:50%; border:2px solid #444; background:radial-gradient(circle at 50% 40%, #555a5e, #1a1c1e 70%); box-shadow:inset 0 0 12px rgba(0,0,0,.7); display:grid; place-items:center; font:600 14px var(--fs); color:#ccc; transition:.12s; } .ob:hover { border-color:#aaa; } .ob.cur { border-color:#fff; box-shadow:0 0 12px rgba(255,255,255,.5); } .ob.tdy { background:radial-gradient(circle at 50% 40%, #6fd8e0, #12434a 70%); border-color:#7fe; color:#fff; } .ob.no { opacity:.5; }
+  .nm { padding:4px 2px 6px; border-bottom:1px solid #3a3d40; font:500 15px var(--fs); letter-spacing:.06em; }
+  .st { display:flex; align-items:center; gap:8px; padding:5px 2px; border-bottom:1px solid rgba(255,255,255,.07); font-size:15px; } .st i { width:18px; text-align:center; font-style:normal; color:#c04a4a; } .st span { flex:1; } .st b { font:600 18px var(--fs); } .st.sp { margin-top:14px; } .st.g i { color:#7fc88a; } .st.b i { color:#6aa0d8; } .st.y i { color:#d8b85a; }
+
+  .foot { padding:8px 4px 10px; } .foot p { font-size:14px; margin-bottom:6px; } .gd { display:flex; gap:20px; flex-wrap:wrap; font-size:13px; } .gd span { display:flex; align-items:center; gap:5px; } .gd i { width:18px; height:18px; border-radius:50%; display:grid; place-items:center; font:700 10px var(--f); font-style:normal; color:#fff; } .c1 { background:#c03a3a; } .c2 { background:#3a5ac8; } .c3 { background:#a03ac0; } .c4 { background:#3aa070; }
+  button:focus-visible, textarea:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+
+  #ov { position:fixed; inset:0; z-index:60; display:none; place-items:center; background:rgba(0,0,0,.5); }
+  #ov.show { display:grid; animation:fade .3s both, ovOut .6s 2.6s forwards; cursor:pointer; }
+  #ov .bd { width:100%; padding:46px 0; text-align:center; background:linear-gradient(180deg,transparent,rgba(0,0,0,.85) 30%,rgba(0,0,0,.85) 70%,transparent); } #ov b { display:block; font:700 clamp(30px,6vw,60px) var(--f); color:var(--gold); letter-spacing:.5em; padding-left:.5em; text-shadow:0 0 18px rgba(201,169,106,.5); animation:expand 2.8s both; } #ov small { font:italic 600 16px var(--fs); color:#bbb; letter-spacing:.2em; }
+  @keyframes fade { from { opacity:0; } } @keyframes gr { to { transform:translate(2px,1px); } } @keyframes expand { from { letter-spacing:.2em; opacity:0; } 20% { opacity:1; } to { letter-spacing:.7em; } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:900px) { body { overflow-y:auto; overflow-x:hidden; } .app { height:auto; min-height:100%; } .res { display:none; } .main { grid-template-columns:1fr; } .left { grid-template-columns:54px 1fr; } .item { grid-template-columns:1fr; } .pic { height:180px; } .tb { width:46px; height:42px; font-size:20px; } .foot .gd { font-size:11px; gap:10px; } .head h1 { font-size:20px; } }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<div class="app">
+  <div class="head"><h1>Inventory</h1><div class="res"><span><i>⚜</i>血の遺志<b id="r1">0</b></span><span><i>◉</i>啓蒙<b id="r2">0</b></span></div></div>
+  <div class="tabs"><div class="tl" id="tl">日記</div><div id="tbs" style="display:flex;gap:6px;flex-wrap:wrap"></div></div>
+  <div class="main">
+    <div class="fr left"><div class="th" id="th"></div><div class="item" id="item"></div></div>
+    <div class="fr right" id="right"></div>
+  </div>
+  <div class="foot"><p id="msg">操作するアイテムを選択してください</p><div class="gd"><span><i class="c1">↕</i>：選択</span><span><i class="c1">○</i>：決定 (Ctrl+Enter)</span><span><i class="c2">✕</i>：戻る (Esc)</span><span><i class="c3">□</i>：表示切替 (Q/E)</span><span><i class="c4">△</i>：ステータス表示の切替</span></div></div>
+</div>
+<div id="ov"><div class="bd"><b id="ovT"></b><small id="ovS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="bb"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MC = { "最高": "#6a5a2a", "良い": "#2a4a5a", "普通": "#37485a", "微妙": "#3a3a4a", "最悪": "#5a2a2a", "": "#37485a" };
+const TABS = [["日記", "✎"], ["記録", "▤"], ["暦", "▦"], ["調子", "◐"], ["実績", "✦"], ["設定", "⚙"]];
+const MS = [3, 7, 14, 30, 60, 100];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+let data = load(), tab = 0, selected = today(), idx = 0, mood = null, draft = null, ovTimer;
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function maxStreak() { let b = 0, run = 0, prev = null; for (const k of Object.keys(data).sort()) { const c = new Date(k + "T00:00:00"); run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1; b = Math.max(b, run); prev = c; } return b; }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const chalice = `<svg viewBox="0 0 100 160"><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#5a4a2a"/><stop offset=".45" stop-color="#d8c08a"/><stop offset="1" stop-color="#4a3a1e"/></linearGradient></defs>
+  <path d="M10 8h80c0 40-14 56-34 62v38c14 3 22 10 22 18H22c0-8 8-15 22-18V70C24 64 10 48 10 8Z" fill="url(#g)" stroke="#2a2010" stroke-width="2"/><path d="M12 24h76M16 38h68" stroke="#2a2010" stroke-width="3" opacity=".6"/><path d="M20 28h4v8h-4Zm12 0h4v8h-4Zm12 0h4v8h-4Zm12 0h4v8h-4Zm12 0h4v8h-4Z" fill="#2a2010" opacity=".5"/><ellipse cx="50" cy="8" rx="40" ry="5" fill="#1a1408"/><ellipse cx="50" cy="146" rx="28" ry="4" fill="#fff" opacity=".12"/></svg>`;
+
+function thumbs() {
+  const t = today(), ks = Object.keys(data);
+  if (tab === 0) return Array.from({ length: 8 }, (_, i) => { const k = shift(t, -i); return { k, t: new Date(k + "T00:00:00").getDate(), s: DOW[new Date(k + "T00:00:00").getDay()], rec: !!data[k] }; });
+  if (tab === 1) { const a = ks.sort().reverse(); return a.map(k => ({ k, t: new Date(k + "T00:00:00").getDate(), s: new Date(k + "T00:00:00").getMonth() + 1 + "月", rec: true })); }
+  if (tab === 2) return Array.from({ length: 6 }, (_, i) => { const d = new Date(new Date().getFullYear(), new Date().getMonth() - i, 1); return { m: [d.getFullYear(), d.getMonth()], t: d.getMonth() + 1, s: "月", rec: true }; });
+  if (tab === 3) return MOODS.map(m => ({ m, t: m, s: ks.filter(k => data[k].mood === m).length + "", rec: true }));
+  if (tab === 4) return MS.map(n => ({ n, t: n, s: "日", rec: streakCount() >= n }));
+  return [{ t: "⌂", s: "テーマ", rec: true }, { t: "⇩", s: "書出", rec: true }, { t: "⇧", s: "読込", rec: true }];
+}
+function center(th, i) {
+  const all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0);
+  if (tab <= 1) {
+    const k = tab === 0 ? th[i].k : (th[i] ? th[i].k : selected); selected = k; const e = data[k];
+    if (tab === 0 && mood === null && e && draft === null) mood = e.mood;
+    const m = tab === 0 ? mood : (e ? e.mood : null);
+    const right = tab === 0 ? `<ul class="moods">${MOODS.map(x => `<li><button class="mb ${x === mood ? "on" : ""}" data-m="${x}">${x}</button></li>`).join("")}</ul>
+      <textarea id="ta" placeholder="今宵の狩りの記録を…">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+      <div class="acts"><button class="save" id="save">記録する</button><input type="date" class="dte" id="dt" value="${k}" max="${today()}"><span class="hint">${k === today() ? "" : "過去の日付を編集中"}</span></div>`
+      : `<div style="flex:1;line-height:1.9;white-space:pre-wrap;font-size:16px">${e ? esc(e.text) : "記録がありません"}</div><div class="acts"><button class="save" id="edit">編集する</button></div>`;
+    return `<div class="item"><div><div class="pic" style="--mc:${MC[m || ""]}">${chalice}</div><div class="cnt"><div><span>文字数</span><span>${e ? e.text.length : 0} / ${ch}</span></div><div><span>記録数</span><span>${all.length} / 9999</span></div><div><span>連続</span><span>${streakAt(k)} / 30</span></div></div></div>
+      <div class="txt"><div class="ti">${dl(k)}${m ? "　─　" + esc(m) : ""}</div><div class="orn"></div><div class="desc">${right}</div></div></div>`;
+  }
+  if (tab === 2) {
+    const [y, mo] = th[i].m, first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); c += `<div data-go="${k}" class="${data[k] ? "done" : ""} ${k === today() ? "today" : ""}">${d}</div>`; }
+    return `<div class="item one"><div class="txt"><div class="ti">${y}年${mo + 1}月</div><div class="orn"></div><div class="desc"><div class="cal">${c}</div></div></div></div>`;
+  }
+  if (tab === 3) { const m = MOODS[i], c = all.filter(k => data[k].mood === m); return `<div class="item one"><div class="txt"><div class="ti">${m}</div><div class="orn"></div><div class="desc"><div class="ls"><div class="rw"><span>回数</span><div class="br"><i style="width:${all.length ? c.length / all.length * 100 : 0}%"></i></div><b>${c.length}</b></div><div class="rw"><span>割合</span><b>${all.length ? Math.round(c.length / all.length * 100) : 0}%</b></div><div class="rw"><span>最後の記録</span><b>${c.length ? c.sort().pop() : "−"}</b></div></div></div></div></div>`; }
+  if (tab === 4) { const n = MS[i], st = streakCount(); return `<div class="item one"><div class="txt"><div class="ti">${n}日連続</div><div class="orn"></div><div class="desc"><div class="ls"><div class="rw"><span>${st >= n ? "達成済み" : "進行中"}</span><div class="br"><i style="width:${Math.min(st / n, 1) * 100}%"></i></div><b>${Math.min(st, n)} / ${n}</b></div></div></div></div></div>`; }
+  return `<div class="item one"><div class="txt"><div class="ti">${["テーマ選択", "書き出し", "読み込み"][i]}</div><div class="orn"></div><div class="desc">${[`<button class="big" id="theme">テーマ選択画面へ戻る<small>他のゲームのUIでも記録は共通です</small></button>`, `<button class="big" id="exp">記録を書き出す<small>JSONファイルとして保存</small></button>`, `<button class="big" id="imp">記録を読み込む<small>JSONファイルから復元</small></button>`][i]}</div></div></div>`;
+}
+function rightPanel() {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, all = Object.keys(data), st = streakCount(), month = today().slice(0, 7);
+  const cnt = f => all.filter(f).length, t = today();
+  const orbs = [3, 2, 1, 0].map(n => { const k = shift(t, -n); return `<button class="ob ${data[k] ? "" : "no"} ${n === 0 ? "tdy" : ""} ${k === selected ? "cur" : ""}" data-k="${k}">${new Date(k + "T00:00:00").getDate()}</button>`; }).join("");
+  const S = (ic, n, v, c = "") => `<div class="st ${c}"><i>${ic}</i><span>${n}</span><b>${v}</b></div>`;
+  return `<div class="orbs">${orbs}</div><div class="nm">狩人の日記</div>${S("☾", "レベル", lv, "y")}${S("⚜", "血の遺志", xp)}${S("◉", "啓蒙", st, "b").replace('class="st b"', 'class="st b" style="margin-top:12px"')}
+    ${S("♥", "体力（記録数）", all.length)}${S("◆", "持久力（今月）", cnt(k => k.startsWith(month)), "g")}${S("✊", "筋力（最高）", cnt(k => data[k].mood === "最高"))}${S("✦", "技術（良い）", cnt(k => data[k].mood === "良い"), "b")}${S("✹", "血質（不調）", cnt(k => ["微妙", "最悪"].includes(data[k].mood)))}${S("★", "神秘（最大連続）", maxStreak(), "y")}`;
+}
+function render() {
+  const xp = totalXp(); $("r1").textContent = xp; $("r2").textContent = streakCount();
+  $("tl").textContent = TABS[tab][0];
+  $("tbs").innerHTML = TABS.map(([n, ic], i) => `<button class="tb ${i === tab ? "on" : ""}" data-t="${i}" title="${n}">${ic}</button>`).join("");
+  const th = thumbs(); idx = Math.max(0, Math.min(idx, th.length - 1));
+  $("th").innerHTML = th.map((x, i) => `<button class="tn ${i === idx ? "cur" : ""} ${x.rec ? "rec" : ""}" data-i="${i}" style="--i:${Math.min(i, 8)}"><span>${x.t}<small>${x.s}</small></span></button>`).join("");
+  const cur = $("th").querySelector(".cur"); if (cur) cur.scrollIntoView({ block: "nearest" });
+  $("item").outerHTML = center(th, idx).replace('class="item', 'id="item" class="item');
+  $("right").innerHTML = rightPanel();
+}
+function setTab(n) { tab = (n + TABS.length) % TABS.length; idx = 0; mood = null; draft = null; if (tab === 0) { selected = today(); const e = data[selected]; mood = e ? e.mood : null; } render(); }
+function pickDay(k) { tab = 0; const th = thumbs(); const i = th.findIndex(x => x.k === k); if (i < 0) { selected = k; idx = 0; /* older day: inject */ } else idx = i; selected = k; draft = null; const e = data[k]; mood = e ? e.mood : null; if (i < 0) { render(); const ta = $("ta"); } else render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const k = $("dt") ? $("dt").value : selected, before = Math.floor(totalXp() / XP_PER_RANK), x0 = totalXp(), isNew = !data[k];
+  data[k] = { mood, text }; store(data); draft = null; selected = k;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "啓蒙を得た" : "狩りを記録した"; $("ovS").textContent = `血の遺志 +${totalXp() - x0}　${isNew ? streakCount() + "日連続" : "UPDATED"}`;
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 3200);
+  render();
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest(".tb"); if (t) return setTab(+t.dataset.t);
+  const tn = e.target.closest(".tn"); if (tn) { idx = +tn.dataset.i; mood = null; draft = null; if (tab === 5) { render(); return; } if (tab === 0) { selected = thumbs()[idx].k; const x = data[selected]; mood = x ? x.mood : null; } return render(); }
+  const ob = e.target.closest(".ob"); if (ob) return pickDay(ob.dataset.k);
+  const g = e.target.closest("[data-go]"); if (g) return pickDay(g.dataset.go);
+  const mb = e.target.closest(".mb"); if (mb) { mood = mb.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#edit")) return pickDay(selected);
+  if (e.target.closest("#theme")) { location.href = "index.html"; return; }
+  if (e.target.closest("#exp")) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "diary-backup.json"; a.click(); return; }
+  if (e.target.closest("#imp")) { const f = document.createElement("input"); f.type = "file"; f.accept = "application/json"; f.onchange = () => f.files[0] && f.files[0].text().then(t => { try { const o = JSON.parse(t); for (const k in o) if (o[k] && typeof o[k].text === "string") data[k] = { mood: o[k].mood || null, text: o[k].text }; store(data); render(); } catch { alert("読み込みに失敗しました"); } }); f.click(); return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; selected = e.target.value; const x = data[selected]; if (x) mood = x.mood; const th = thumbs(), i = th.findIndex(y => y.k === selected); if (i >= 0) idx = i; render(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); $("ov").classList.remove("show"); return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (e.key === "q" || e.key === "Q" || e.key === "ArrowLeft") setTab(tab - 1); else if (e.key === "e" || e.key === "E" || e.key === "ArrowRight") setTab(tab + 1);
+  else if (e.key === "ArrowDown" || e.key === "ArrowUp") { e.preventDefault(); const n = thumbs().length; idx = Math.max(0, Math.min(n - 1, idx + (e.key === "ArrowDown" ? 1 : -1))); mood = null; draft = null; if (tab === 0) { selected = thumbs()[idx].k; const x = data[selected]; mood = x ? x.mood : null; } render(); }
+});
+render();
+</script>
+</body>
+</html>
