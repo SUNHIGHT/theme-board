@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Theme Diary</title>
+<style>
+  * { box-sizing:border-box; margin:0; }
+  body { min-height:100vh; background:#0b0b0b; color:#fff; font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:900; overflow-x:hidden;
+    background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 2px,transparent 2px 28px); }
+  main { max-width:620px; margin:0 auto; padding:40px 16px; }
+  h1 { font-size:clamp(36px,9vw,64px); font-style:italic; letter-spacing:-.02em; transform:rotate(-2deg); margin-bottom:6px; animation:in .6s cubic-bezier(.2,.9,.3,1) both; }
+  p.sub { letter-spacing:.3em; font-size:12px; opacity:.7; margin-bottom:28px; }
+  .card { display:flex; align-items:center; gap:18px; margin-bottom:14px; padding:18px 22px; color:#fff; text-decoration:none; background:#171717;
+    border-left:14px solid var(--a); clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);
+    animation:in .5s calc(var(--i)*100ms + .2s) cubic-bezier(.2,.9,.3,1) both; transition:.15s; }
+  .card:hover { background:var(--a); color:var(--b); padding-left:40px; }
+  .card i { width:48px; height:48px; flex:none; background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%); border:3px solid #fff; transform:skew(-10deg); }
+  .card b { display:block; font-size:26px; letter-spacing:.1em; }
+  .card span { font-size:13px; opacity:.85; }
+  button.card { width:100%; font:inherit; text-align:left; cursor:pointer; border-top:0; border-right:0; border-bottom:0; }
+  .back { background:none; border:0; color:#fff; font:900 12px sans-serif; letter-spacing:.2em; cursor:pointer; margin-bottom:12px; opacity:.8; }
+  .back:hover { opacity:1; text-decoration:underline; }
+  .card { cursor:pointer; }
+  .card em { margin-left:auto; font-style:normal; font-size:11px; letter-spacing:.2em; background:#fff; color:#111; padding:2px 10px; transform:skew(-12deg); }
+  #last { display:none; margin-top:20px; font-size:13px; opacity:.8; }
+  @keyframes in { from { opacity:0; transform:translateX(-70px) skewX(8deg); } }
+  @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
+</style>
+</head>
+<body>
+<main>
+  <h1>GAME THEME DIARY</h1>
+  <p class="sub">GAME THEME DIARY ─ 好きなゲームのUIで日記を書く</p>
+  <p class="sub" id="step" style="color:#ff9;margin-top:-18px"></p>
+  <div id="cards"></div>
+  <div id="last"></div>
+</main>
+<script src="theme-switch.js"></script>
+<script>
+const GAMES = window.DIARY_THEMES;
+let last = null; try { last = localStorage.getItem("diary-theme"); } catch {}
+const $ = id => document.getElementById(id);
+const sw = (g, i, extra) => `style="--a:${g.c1};--b:${g.c2};--i:${i}"`;
+
+function showGames() {
+  $("step").textContent = "STEP 1 ─ SELECT GAME ─ ゲームを選ぶ";
+  $("cards").innerHTML = GAMES.map((g, i) =>
+    `<button class="card" data-g="${g.id}" ${sw(g, i)}><i></i><div><b>${g.name}</b><span>${g.sub}</span></div>${g.titles.some(t => t.id === last) ? "<em>前回</em>" : ""}</button>`).join("");
+}
+function showTitles(g) {
+  $("step").textContent = `STEP 2 ─ ${g.name} ─ ナンバリングを選ぶ`;
+  $("cards").innerHTML = `<button class="back" data-back="1">◀ BACK ─ ゲーム選択へ</button>` + g.titles.map((t, i) =>
+    `<a class="card" href="${t.file}" ${sw(g, i)}><i></i><div><b>${t.name}</b><span>${t.sub}</span></div>${t.id === last ? "<em>前回</em>" : ""}</a>`).join("");
+}
+$("cards").onclick = e => {
+  if (e.target.closest("[data-back]")) return showGames();
+  const b = e.target.closest("[data-g]");
+  if (b) showTitles(GAMES.find(g => g.id === b.dataset.g));
+};
+showGames();
+</script>
+</body>
+</html>
