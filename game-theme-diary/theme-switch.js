@@ -36,6 +36,21 @@
       ] },
     { id: "chrono",  name: "CHRONO TRIGGER",   sub: "クロノ・トリガー",         c1: "#ffe27a", c2: "#1b2a8a",
       titles: [ { id: "chrono", file: "chrono.html", name: "CHRONO TRIGGER", sub: "時の旅人" } ] },
+    { id: "edf",     name: "EARTH DEFENSE FORCE", sub: "地球防衛軍",           c1: "#ffb000", c2: "#0b100b",
+      titles: [ { id: "edf6", file: "edf6.html", name: "EDF 6", sub: "地球防衛軍6" } ] },
+    { id: "fallout", name: "FALLOUT",           sub: "フォールアウト",           c1: "#3dff7a", c2: "#010502",
+      titles: [
+        { id: "fallout3", file: "fallout3.html", name: "FALLOUT 3", sub: "キャピタル・ウェイストランド" },
+        { id: "fallout4", file: "fallout4.html", name: "FALLOUT 4", sub: "コモンウェルス" }
+      ] },
+    { id: "zzz",    name: "ZENLESS ZONE ZERO", sub: "ゼンレスゾーンゼロ",       c1: "#e1ff00", c2: "#09090a",
+      titles: [ { id: "zzz", file: "zzz.html", name: "ZENLESS ZONE ZERO", sub: "ニューエリー都" } ] },
+    { id: "ff",     name: "FINAL FANTASY",     sub: "ファイナルファンタジー",   c1: "#6dffc4", c2: "#0c1d82",
+      titles: [ { id: "ff7", file: "ff7.html", name: "FINAL FANTASY VII", sub: "ミッドガル" } ] },
+    { id: "cyberpunk", name: "CYBERPUNK 2077", sub: "サイバーパンク2077",       c1: "#fcee0a", c2: "#08070b",
+      titles: [ { id: "cyberpunk", file: "cyberpunk.html", name: "CYBERPUNK 2077", sub: "ナイトシティ" } ] },
+    { id: "mh",     name: "MONSTER HUNTER",    sub: "モンスターハンター",       c1: "#f08a24", c2: "#241709",
+      titles: [ { id: "mh2g", file: "mh2g.html", name: "MONSTER HUNTER 2G", sub: "ドンドルマ" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
