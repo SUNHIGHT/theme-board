@@ -59,7 +59,10 @@
     { id: "splatoon", name: "SPLATOON",      sub: "スプラトゥーン",           c1: "#ff6a00", c2: "#3b2bff",
       titles: [ { id: "splatoon3", file: "splatoon3.html", name: "SPLATOON 3", sub: "バンカラ地方" } ] },
     { id: "mario",  name: "SUPER MARIO",       sub: "スーパーマリオ",           c1: "#e83800", c2: "#5c94fc",
-      titles: [ { id: "mario", file: "mario.html", name: "SUPER MARIO BROS.", sub: "キノコ王国 1-1" } ] },
+      titles: [
+        { id: "mario", file: "mario.html", name: "SUPER MARIO BROS.", sub: "キノコ王国 1-1" },
+        { id: "mario_rpg", file: "mario_rpg.html", name: "SUPER MARIO RPG", sub: "切り株のバトル" }
+      ] },
     { id: "zelda",  name: "THE LEGEND OF ZELDA", sub: "ゼルダの伝説",         c1: "#f5d76e", c2: "#08170d",
       titles: [ { id: "zelda_oot", file: "zelda_oot.html", name: "OCARINA OF TIME", sub: "時のオカリナ" } ] },
     { id: "danganronpa", name: "DANGANRONPA", sub: "ダンガンロンパ",           c1: "#ff2d7a", c2: "#0a0a0a",
@@ -127,7 +130,7 @@
     darksouls: ["アクション", "RPG"], eldenring: ["アクション", "RPG"], resident: ["ホラー", "アクション"],
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
-    splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
+    splatoon: ["シューター", "アクション"], mario: ["アクション", "RPG"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
     papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"], bokunatsu: ["アドベンチャー", "シミュレーション"], endfield: ["RPG", "シミュレーション"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
