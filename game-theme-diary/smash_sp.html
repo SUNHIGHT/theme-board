@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Smash Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap" rel="stylesheet">
+<style>
+  /* Slanted color-panel menu with a round hub, dark right side bar with clock, subtitle strip; red sub-menu with a yellow-framed selected tile */
+  :root { --red:#d8200c; --bl:#1a86e8; --pk:#e8409a; --or:#f08a14; --gr:#20a028; --ye:#ffe600; --f:'M PLUS Rounded 1c','Hiragino Maru Gothic ProN',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { background:#000; color:#fff; font-family:var(--f); overflow:hidden; display:grid; place-items:center; }
+  .stage { position:relative; width:min(100vw, 177.7vh); aspect-ratio:16/9; container-type:inline-size; background:#111; overflow:hidden; }
+  svg.menu { position:absolute; left:0; top:0; width:89.5cqw; height:calc(56.25cqw - 11cqw); }
+  svg text { font-family:var(--f); font-weight:900; }
+  .pnl { cursor:pointer; transition:filter .15s; } .pnl polygon { transition:.15s; } .pnl:hover { filter:brightness(1.12); } .pnl.dim { filter:brightness(.9); }
+  .pnl.sel polygon.f { stroke:#fff; stroke-width:5; } .pnl.sel { filter:drop-shadow(0 0 6px rgba(255,255,255,.7)); animation:sl .25s both; }
+  .t1 { fill:#000; stroke:#fff; stroke-width:6; paint-order:stroke; } .t2 { fill:#fff; stroke:rgba(0,0,0,.6); stroke-width:4; paint-order:stroke; } .rb { font-size:9px; fill:#fff; stroke:#000; stroke-width:2.4; paint-order:stroke; text-anchor:middle; }
+  .hub { cursor:pointer; } .hub .spin { transform-origin:276px 176px; animation:sp 18s linear infinite; }
+  .side { position:absolute; right:0; top:0; bottom:0; width:10.5cqw; background:linear-gradient(90deg,#2a2c30,#18191c); border-left:.3cqw solid #444; display:flex; flex-direction:column; align-items:center; padding:5.6cqw 0 1cqw; gap:1.5cqw; z-index:5; border-radius:1.6cqw 0 0 1.6cqw; }
+  .sb { all:unset; cursor:pointer; position:relative; width:6cqw; height:6cqw; border-radius:1cqw; background:#3a3c42; display:grid; place-items:center; font-size:3.4cqw; color:#e8e8ec; transition:.12s; } .sb:hover { background:#555860; transform:scale(1.08); } .sb.w { background:#e8e8ec; color:#222; } .sb b { position:absolute; right:-.6cqw; top:-.6cqw; width:2.2cqw; height:2.2cqw; border-radius:50%; background:#ff5a1a; font:900 1.6cqw/2.2cqw var(--f); text-align:center; }
+  .clk { margin-top:auto; font:800 2.4cqw var(--f); letter-spacing:.04em; }
+  .subt { position:absolute; left:0; right:0; bottom:0; height:11cqw; background:#000; display:grid; place-items:center; text-align:center; font:800 2.6cqw var(--f); padding:0 12cqw 0 2cqw; z-index:4; letter-spacing:.04em; white-space:nowrap; } .subt rt { font-size:1.2cqw; }
+
+  .pg { position:absolute; left:0; top:0; right:10.5cqw; bottom:11cqw; display:flex; flex-direction:column; padding:2.4cqw 3.4cqw 1.6cqw; gap:1.2cqw; background:var(--pc); animation:fd .25s both; overflow:hidden; }
+  .pg::before { content:""; position:absolute; inset:0; background:linear-gradient(115deg, transparent 0 55%, rgba(0,0,0,.18) 55% 100%), repeating-linear-gradient(115deg, rgba(255,255,255,.06) 0 3cqw, transparent 3cqw 7cqw); pointer-events:none; }
+  .ph { position:relative; display:flex; align-items:center; gap:1.6cqw; font:900 3.6cqw/1 var(--f); text-shadow:.2cqw .2cqw 0 rgba(0,0,0,.4); } .ph i { width:4.6cqw; height:4.6cqw; border-radius:50%; background:#fff; color:var(--pc); font-style:normal; display:grid; place-items:center; font-size:2.6cqw; }
+  .cd { position:relative; flex:1; min-height:0; background:rgba(20,6,8,.78); border:.4cqw solid rgba(255,255,255,.85); border-radius:1.2cqw; padding:1.6cqw 2cqw; display:flex; flex-direction:column; gap:1.2cqw; transform:skewX(-2deg); } .cd > * { transform:skewX(2deg); }
+  .days { display:flex; gap:.8cqw; overflow-x:auto; scrollbar-width:none; flex:none; } .days::-webkit-scrollbar { display:none; } .dy { all:unset; cursor:pointer; flex:none; min-width:6cqw; text-align:center; padding:.5cqw .8cqw; background:#3a0a10; border:.3cqw solid #666; border-radius:1cqw; font:900 2.4cqw/1.1 var(--f); } .dy small { display:block; font-size:1.2cqw; opacity:.8; } .dy.rec { background:#7a1a22; } .dy.on { border-color:var(--ye); background:#000; box-shadow:0 0 0 .3cqw var(--ye); } .dy:hover { filter:brightness(1.3); }
+  .moods { display:flex; gap:.9cqw; flex-wrap:wrap; list-style:none; padding:0; flex:none; } .mb { all:unset; cursor:pointer; padding:.6cqw 2.2cqw; background:#3a0a10; border:.3cqw solid #777; border-radius:1cqw; font:900 2.4cqw var(--f); } .mb:hover { border-color:#fff; } .mb.on { background:#000; border-color:var(--ye); color:var(--ye); box-shadow:0 0 0 .3cqw var(--ye); }
+  textarea { flex:1; min-height:0; resize:none; width:100%; background:rgba(0,0,0,.55); border:.3cqw solid #777; border-radius:1cqw; color:#fff; font:800 2.6cqw/1.7 var(--f); padding:1cqw 1.6cqw; outline:0; } textarea:focus { border-color:var(--ye); }
+  .ac { display:flex; gap:1.2cqw; align-items:center; flex:none; flex-wrap:wrap; } .ok { all:unset; cursor:pointer; padding:.7cqw 5cqw; background:var(--ye); color:#000; border-radius:1cqw; font:900 3cqw var(--f); box-shadow:0 .4cqw 0 #a89a00; } .ok:hover { filter:brightness(1.1); transform:translateY(-1px); } .dte { font:800 2cqw var(--f); background:#000; color:#fff; border:.3cqw solid #777; border-radius:.8cqw; padding:.3cqw .8cqw; color-scheme:dark; } .hint { font:800 1.8cqw var(--f); color:var(--ye); }
+  .ls { display:flex; flex-direction:column; gap:.8cqw; overflow:auto; flex:1; min-height:0; } .rw { all:unset; cursor:pointer; box-sizing:border-box; display:grid; grid-template-columns:7cqw 1fr auto; gap:1.4cqw; align-items:center; background:#3a0a10; border:.3cqw solid #666; border-radius:1cqw; padding:.6cqw 1.4cqw; flex:none; animation:fd .25s calc(var(--i)*30ms) both; } .rw:hover { border-color:var(--ye); } .rw .d { font:900 3cqw/1 var(--f); text-align:center; } .rw .d small { display:block; font-size:1.2cqw; } .rw .x { font:800 2.2cqw var(--f); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .rw .m { font:900 1.8cqw var(--f); background:var(--pc); padding:.2cqw 1.2cqw; border-radius:1cqw; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:.8cqw; max-width:56cqw; } .cal div { aspect-ratio:1.5; display:grid; place-items:center; background:#3a0a10; border:.3cqw solid #666; border-radius:1cqw; font:900 2.4cqw var(--f); } .cal .dow { background:none; border:0; font-size:1.8cqw; aspect-ratio:auto; opacity:.8; } .cal .done { background:var(--pc); border-color:#fff; } .cal .today { outline:.5cqw solid var(--ye); } .cal [data-go] { cursor:pointer; }
+  .bars { display:flex; flex-direction:column; gap:1cqw; overflow:auto; } .br { display:grid; grid-template-columns:12cqw 1fr 8cqw; gap:1.4cqw; align-items:center; font:900 2.4cqw var(--f); } .br .tr { height:3cqw; background:#000; border:.3cqw solid #777; border-radius:1.5cqw; overflow:hidden; } .br .tr i { display:block; height:100%; background:var(--pc); transition:width .8s; } .br b { text-align:right; }
+  .st { display:grid; grid-template-columns:repeat(auto-fit,minmax(18cqw,1fr)); gap:1.2cqw; } .sbx { background:#3a0a10; border:.3cqw solid #666; border-radius:1.2cqw; padding:.8cqw 1.6cqw; } .sbx small { display:block; font:800 1.6cqw var(--f); opacity:.8; } .sbx b { font:900 5cqw/1.1 var(--f); }
+  .bg2 { all:unset; cursor:pointer; box-sizing:border-box; display:block; width:100%; background:#3a0a10; border:.3cqw solid #777; border-radius:1.2cqw; padding:1.2cqw 2cqw; font:900 2.6cqw var(--f); } .bg2:hover { border-color:var(--ye); background:#000; } .bg2 small { display:block; font:800 1.6cqw var(--f); opacity:.8; }
+  button:focus-visible, textarea:focus-visible { outline:.5cqw solid var(--ye); outline-offset:.3cqw; }
+
+  .ovl { position:absolute; inset:0; z-index:40; display:none; place-content:center; text-align:center; background:rgba(0,0,0,.72); } .ovl.show { display:grid; animation:fd .2s both, oo .4s 2.2s forwards; cursor:pointer; }
+  .ovl b { display:block; font:900 14cqw/1 var(--f); color:#fff; -webkit-text-stroke:1cqw #000; paint-order:stroke fill; text-shadow:0 1cqw 0 var(--red); animation:pp .5s cubic-bezier(.3,1.6,.5,1) both; transform:skewX(-8deg); } .ovl small { font:900 3cqw var(--f); background:var(--ye); color:#000; padding:.4cqw 3cqw; border-radius:1cqw; display:inline-block; margin-top:1.4cqw; }
+  @keyframes sl { from { transform:scale(.98); } } @keyframes sp { to { transform:rotate(360deg); } } @keyframes fd { from { opacity:0; } } @keyframes pp { from { opacity:0; transform:scale(.3) skewX(-8deg); } } @keyframes oo { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div id="scr"></div>
+  <div class="side">
+    <button class="sb w" data-s="home" title="トップへ">⌂</button><button class="sb" data-s="status" title="ステータス">▣</button><button class="sb" data-s="play" title="いろんなあそび">◧</button>
+    <button class="sb" data-s="mail" title="未記録の日">✉<b id="mailb">0</b></button><button class="sb" data-s="online" title="せってい">⚙</button><button class="sb" data-s="help" title="ヘルプ">?</button><div class="clk" id="clk">12:34</div>
+  </div>
+  <div class="subt" id="subt"></div>
+  <div class="ovl" id="ov"><div><b id="ovT"></b><small id="ovS"></small></div></div>
+</div>
+
+<script src="theme-switch.js" data-theme="smsp"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MS = [3, 7, 14, 30, 60, 100];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+const TOP = [
+  { id: "smash", c: "#d8200c", pts: "0,0 306,0 262,214 0,214", lbl: [[34, 160, "大乱闘", 38, "t1"]], rb: [[78, 128, "だいらんとう"]], sub: "まずはここから 基本の<ruby>遊<rt>あそ</rt></ruby>び！", nb: { r: "play", d: "secret", rd: "coll" } },
+  { id: "play", c: "#1a86e8", pts: "318,0 573,0 573,120 304,120", lbl: [[420, 88, "いろんなあそび", 21, "t2"]], sub: "ちょうしや れんぞくの きろくを チェックしよう！", nb: { l: "smash", d: "coll" } },
+  { id: "coll", c: "#e8409a", pts: "410,126 573,126 573,196 396,196", lbl: [[440, 183, "コレクション", 19, "t2"]], sub: "これまでに 書いた日記を ふりかえろう！", nb: { l: "smash", u: "play", d: "online" } },
+  { id: "online", c: "#f08a14", pts: "296,202 573,202 573,320 282,320", lbl: [[348, 304, "オンライン", 26, "t2"]], sub: "テーマの切りかえや データの書き出しは ここから！", nb: { l: "secret", u: "coll" } },
+  { id: "secret", c: "#20a028", pts: "0,220 270,220 270,320 0,320", lbl: [[40, 300, "ステータス", 24, "t2"]], sub: "ランクや けいけんちを かくにんしよう！", nb: { u: "smash", r: "online" } }
+];
+const ICON = { smash: "✎", play: "❖", coll: "▤", online: "⚙", secret: "★" };
+const ICONPOS = { smash: [150, 110, 40], play: [492, 60, 34], coll: [490, 156, 26], online: [440, 250, 38], secret: [140, 262, 36] };
+const SUBM = [
+  { id: "normal", pts: "70,48 380,48 366,138 56,138", big: true, lbl: "通常戦", rb: "つうじょうせん", sub: "今日の日記を 書く 基本のきろく！", ic: "✎" },
+  { id: "team", pts: "58,148 178,148 168,236 48,236", lbl: "団体戦", rb: "だんたいせん", sub: "日付を えらんで 書く！", ic: "☗" },
+  { id: "tourn", pts: "196,164 372,164 366,224 190,224", lbl: "トーナメント", sub: "カレンダーから 日記を えらぶ！", ic: "▦" },
+  { id: "special", pts: "176,238 340,238 334,286 170,286", lbl: "スペシャル乱闘", rb: "らんとう", sub: "過去の日記を ランダムに ふりかえる！", ic: "✦" }
+];
+let data = load(), scr = "top", cur = "smash", sub = "normal", page = null, selected = today(), mood = null, draft = null, ovTimer, rndKey = null;
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const unrec = () => Array.from({ length: 7 }, (_, i) => shift(today(), -i)).filter(k => !data[k]);
+
+function topSvg() {
+  const d = new Date();
+  let h = `<svg class="menu" viewBox="0 0 573 320" preserveAspectRatio="none"><rect width="573" height="320" fill="#222"/>`;
+  TOP.forEach(p => {
+    const [ix, iy, is] = ICONPOS[p.id];
+    h += `<g class="pnl ${p.id === cur ? "sel" : "dim"}" data-id="${p.id}"><polygon class="f" points="${p.pts}" fill="${p.c}"/><text x="${ix}" y="${iy}" font-size="${is}" fill="#fff" text-anchor="middle" opacity=".95">${ICON[p.id]}</text>`;
+    (p.rb || []).forEach(([x, y, t]) => h += `<text class="rb" x="${x}" y="${y}">${t}</text>`);
+    p.lbl.forEach(([x, y, t, fs, cl]) => h += `<text class="${cl}" x="${x}" y="${y}" font-size="${fs}">${t}</text>`);
+    h += `</g>`;
+  });
+  h += `<g class="hub" data-id="hub"><circle cx="276" cy="176" r="56" fill="#fff"/><circle cx="276" cy="176" r="49" fill="#111"/><g class="spin"><circle cx="276" cy="176" r="46" fill="none" stroke="#d8200c" stroke-width="14" stroke-dasharray="36 36"/><circle cx="276" cy="176" r="32" fill="none" stroke="#1a86e8" stroke-width="12" stroke-dasharray="26 26"/></g><circle cx="276" cy="176" r="20" fill="#ffe600"/><text x="276" y="184" font-size="22" fill="#111" text-anchor="middle" style="font-weight:900">${d.getDate()}</text><path d="M214 170 L226 176 L214 182Z" fill="#000" transform="rotate(0 214 176)"/></g></svg>`;
+  return h;
+}
+function subSvg() {
+  let h = `<div class="pg" style="--pc:#c4160a;padding:0;background:#c4160a"><svg class="menu" style="position:absolute;left:0;top:0;width:89.5cqw;height:calc(56.25cqw - 11cqw)" viewBox="0 0 573 320" preserveAspectRatio="none"><rect width="573" height="320" fill="#c4160a"/><polygon points="0,0 573,0 573,320 520,320" fill="#a30e06"/>
+    <polygon points="400,0 573,0 573,182 380,182" fill="#3a1a5a"/><g opacity=".6">${Array.from({ length: 14 }, (_, i) => `<line x1="486" y1="96" x2="${400 + i * 14}" y2="${i % 2 ? 0 : 182}" stroke="${i % 3 ? "#ffb02a" : "#fff"}" stroke-width="3"/>`).join("")}</g>
+    <text x="52" y="30" font-size="15" fill="#fff" style="font-weight:900" stroke="#000" stroke-width="3" paint-order="stroke">大乱闘</text><circle cx="36" cy="24" r="10" fill="#fff"/><text x="36" y="30" font-size="14" fill="#c4160a" text-anchor="middle" style="font-weight:900">✎</text>`;
+  SUBM.forEach(s => {
+    const on = s.id === sub; const [a] = s.pts.split(" ").map(p => p.split(",").map(Number));
+    const xs = s.pts.split(" ").map(p => +p.split(",")[0]), ys = s.pts.split(" ").map(p => +p.split(",")[1]), cx = (Math.min(...xs) + Math.max(...xs)) / 2 + 14, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+    h += `<g class="pnl ${on ? "sel" : ""}" data-sub="${s.id}"><polygon points="${s.pts}" fill="${on ? "#000" : "#4a0c10"}" stroke="${on ? "#ffe600" : "#2a0508"}" stroke-width="${on ? 6 : 2}"/><text x="${Math.min(...xs) + (s.big ? 36 : 18)}" y="${cy + (s.big ? 8 : 5)}" font-size="${s.big ? 22 : 14}" fill="#fff" text-anchor="middle">${s.ic}</text>`;
+    if (s.rb) h += `<text class="rb" x="${cx + 14}" y="${cy - (s.big ? 22 : 14)}" font-size="7">${s.rb}</text>`;
+    h += `<text x="${cx + (s.big ? 20 : 16)}" y="${cy + (s.big ? 16 : 7)}" font-size="${s.big ? 38 : (s.lbl.length > 5 ? 12 : s.lbl.length > 3 ? 14 : 18)}" fill="#fff" text-anchor="middle" style="font-weight:900">${s.lbl}</text></g>`;
+  });
+  return h + `</svg></div>`;
+}
+function pageHtml() {
+  const all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0);
+  const COL = { write: "#c4160a", cal: "#c4160a", log: "#e8409a", play: "#1a86e8", online: "#f08a14", status: "#20a028", rnd: "#c4160a", help: "#555", mail: "#c4160a" };
+  const TT = { write: "通常戦", cal: "トーナメント", log: "コレクション", play: "いろんなあそび", online: "オンライン", status: "ステータス", rnd: "スペシャル乱闘", help: "ヘルプ", mail: "未記録の日" };
+  let b = "";
+  if (page === "write") {
+    const e = data[selected]; if (mood === null && e && draft === null) mood = e.mood;
+    const days = Array.from({ length: 10 }, (_, i) => shift(today(), -i)); if (!days.includes(selected)) days.unshift(selected);
+    b = `<div class="days">${days.map(k => `<button class="dy ${k === selected ? "on" : ""} ${data[k] ? "rec" : ""}" data-d="${k}">${new Date(k + "T00:00:00").getDate()}<small>${DOW[new Date(k + "T00:00:00").getDay()]}</small></button>`).join("")}</div>
+      <ul class="moods">${MOODS.map(m => `<li><button class="mb ${m === mood ? "on" : ""}" data-m="${m}">${m}</button></li>`).join("")}</ul>
+      <textarea id="ta" placeholder="今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+      <div class="ac"><button class="ok" id="save">OK</button><input type="date" class="dte" id="dt" value="${selected}" max="${today()}"><span class="hint">${selected === today() ? "" : "過去の日付を編集中"}</span></div>`;
+  } else if (page === "log") {
+    const ks = all.sort().reverse();
+    b = `<div class="ls">${ks.length ? ks.map((k, i) => `<button class="rw" data-go="${k}" style="--i:${Math.min(i, 10)}"><div class="d">${new Date(k + "T00:00:00").getDate()}<small>${new Date(k + "T00:00:00").getMonth() + 1}月</small></div><div class="x">${esc(data[k].text.replace(/\s+/g, " "))}</div><div class="m">${esc(data[k].mood || "-")}</div></button>`).join("") : `<div class="x">まだ きろくがありません</div>`}</div>`;
+  } else if (page === "cal") {
+    const n = new Date(), y = n.getFullYear(), mo = n.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); c += `<div data-go="${k}" class="${data[k] ? "done" : ""} ${k === today() ? "today" : ""}">${d}</div>`; }
+    b = `<div style="font:900 3cqw var(--f)">${y}年${mo + 1}月</div><div class="cal">${c}</div>`;
+  } else if (page === "play") {
+    const mc = m => all.filter(k => data[k].mood === m).length, mx = Math.max(1, ...MOODS.map(mc)), st = streakCount();
+    b = `<div class="bars">${MOODS.map(m => `<div class="br"><span>${m}</span><div class="tr"><i style="width:${mc(m) / mx * 100}%"></i></div><b>${mc(m)}</b></div>`).join("")}${MS.map(n => `<div class="br"><span>${n}日</span><div class="tr"><i style="width:${Math.min(st / n, 1) * 100}%"></i></div><b>${st >= n ? "★" : Math.min(st, n)}</b></div>`).join("")}</div>`;
+  } else if (page === "status") {
+    const xp = totalXp();
+    b = `<div class="st"><div class="sbx"><small>ランク</small><b>${Math.floor(xp / XP_PER_RANK) + 1}</b></div><div class="sbx"><small>けいけんち</small><b>${xp}</b></div><div class="sbx"><small>れんぞく</small><b>${streakCount()}</b></div><div class="sbx"><small>きろく数</small><b>${all.length}</b></div><div class="sbx"><small>ぜんぶの文字数</small><b>${ch}</b></div></div>`;
+  } else if (page === "online") {
+    b = `<button class="bg2" id="theme">テーマ選択にもどる<small>ほかのゲームの見た目でも きろくは共通です</small></button><button class="bg2" id="exp">きろくを書き出す<small>JSONファイルで保存</small></button><button class="bg2" id="imp">きろくを読み込む<small>JSONファイルから復元</small></button>`;
+  } else if (page === "rnd") {
+    const ks = all; if (!rndKey || !data[rndKey]) rndKey = ks.length ? ks[Math.floor(Math.random() * ks.length)] : null; const e = rndKey && data[rndKey];
+    b = e ? `<div class="sbx" style="flex:1;overflow:auto"><small>${dl(rndKey)}　${esc(e.mood || "-")}</small><div style="font:800 2.8cqw/1.8 var(--f);white-space:pre-wrap">${esc(e.text)}</div></div><div class="ac"><button class="ok" id="again">もういちど</button><button class="ok" id="editr" style="background:#fff">この日を編集</button></div>` : `<div class="x" style="font:800 2.6cqw var(--f)">まだ ふりかえる きろくがありません</div>`;
+  } else if (page === "mail") {
+    const u = unrec(); b = `<div class="ls">${u.length ? u.map((k, i) => `<button class="rw" data-go="${k}" style="--i:${i}"><div class="d">${new Date(k + "T00:00:00").getDate()}<small>${DOW[new Date(k + "T00:00:00").getDay()]}</small></div><div class="x">${dl(k)} は まだ書いていません</div><div class="m">書く</div></button>`).join("") : `<div class="x" style="font:800 2.6cqw var(--f)">ここ1週間は すべて きろく済みです！</div>`}</div>`;
+  } else b = `<div style="font:800 2.6cqw/1.9 var(--f)">↑↓←→ えらぶ ／ Enter けってい ／ Esc もどる<br>日記の画面では Ctrl+Enter で 保存します。<br>画面右のバーから ステータス・せってい・未記録の日 へ すぐに移動できます。</div>`;
+  return `<div class="pg" style="--pc:${COL[page]}"><div class="ph"><i>${{ write: "✎", cal: "▦", log: "▤", play: "❖", online: "⚙", status: "★", rnd: "✦", help: "?", mail: "✉" }[page]}</i>${TT[page]}</div><div class="cd">${b}</div></div>`;
+}
+function render() {
+  $("mailb").textContent = unrec().length; $("mailb").style.display = unrec().length ? "" : "none";
+  if (page) { $("scr").innerHTML = pageHtml(); $("subt").innerHTML = "<span>Esc キーで もどる ／ 右のバーから いつでも ほかの画面へ！</span>"; return; }
+  if (scr === "top") { $("scr").innerHTML = topSvg(); $("subt").innerHTML = "<span>" + TOP.find(p => p.id === cur).sub + "</span>"; }
+  else { $("scr").innerHTML = subSvg(); $("subt").innerHTML = "<span>" + SUBM.find(s => s.id === sub).sub + "</span>"; }
+}
+function openPage(p, k) { if (p === "write") { selected = k || today(); const e = data[selected]; mood = e ? e.mood : null; draft = null; } if (p === "rnd") rndKey = null; page = p; render(); }
+function activate(id) {
+  if (id === "smash") { scr = "sub"; sub = "normal"; page = null; return render(); }
+  if (id === "hub") return openPage("write", today());
+  openPage(id === "coll" ? "log" : id === "secret" ? "status" : id);
+}
+function activateSub(id) { sub = id; if (id === "normal") openPage("write", today()); else if (id === "team") { const u = unrec(); openPage("write", u.length ? u[u.length - 1] : shift(today(), -1)); } else if (id === "tourn") openPage("cal"); else openPage("rnd"); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data); draft = null;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "ランクアップ!" : "GAME!"; $("ovS").textContent = isNew ? `きろく完了 ─ ${streakCount()}日れんぞく` : "こうしんしました";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2800);
+  render();
+}
+const clock = () => { const n = new Date(); $("clk").textContent = `${n.getHours()}:${String(n.getMinutes()).padStart(2, "0")}`; }; clock(); setInterval(clock, 20000);
+document.addEventListener("click", e => {
+  const sd = e.target.closest(".sb"); if (sd) { const s = sd.dataset.s; if (s === "home") { page = null; scr = "top"; return render(); } if (s === "status") return openPage("status"); if (s === "play") return openPage("play"); if (s === "mail") return openPage("mail"); if (s === "online") return openPage("online"); return openPage("help"); }
+  if (!page) {
+    const sb = e.target.closest("[data-sub]"); if (sb) return activateSub(sb.dataset.sub);
+    const pn = e.target.closest("[data-id]"); if (pn) { if (cur === pn.dataset.id || pn.dataset.id === "hub") return activate(pn.dataset.id); cur = pn.dataset.id; return render(); }
+  }
+  const dy = e.target.closest(".dy"); if (dy) return openPage("write", dy.dataset.d);
+  const g = e.target.closest("[data-go]"); if (g) return openPage("write", g.dataset.go);
+  const mb = e.target.closest(".mb"); if (mb) { mood = mb.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#again")) { rndKey = null; return render(); }
+  if (e.target.closest("#editr")) return openPage("write", rndKey);
+  if (e.target.closest("#theme")) { location.href = "index.html"; return; }
+  if (e.target.closest("#exp")) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "diary-backup.json"; a.click(); return; }
+  if (e.target.closest("#imp")) { const f = document.createElement("input"); f.type = "file"; f.accept = "application/json"; f.onchange = () => f.files[0] && f.files[0].text().then(t => { try { const o = JSON.parse(t); for (const k in o) if (o[k] && typeof o[k].text === "string") data[k] = { mood: o[k].mood || null, text: o[k].text }; store(data); render(); } catch { alert("読み込みに失敗しました"); } }); f.click(); return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("mouseover", e => {
+  if (page) return;
+  if (scr === "top") { const pn = e.target.closest("[data-id]"); if (pn && pn.dataset.id !== "hub" && cur !== pn.dataset.id) { cur = pn.dataset.id; render(); } }
+  else { const sb = e.target.closest("[data-sub]"); if (sb && sub !== sb.dataset.sub) { sub = sb.dataset.sub; render(); } }
+});
+$("stage").addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; selected = e.target.value; const x = data[selected]; if (x) mood = x.mood; render(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); if ($("ov").classList.contains("show")) $("ov").classList.remove("show"); else if (page) { page = null; render(); } else if (scr === "sub") { scr = "top"; render(); } return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName) || page) return;
+  if (scr === "top") {
+    const k = { ArrowLeft: "l", ArrowRight: "r", ArrowUp: "u", ArrowDown: "d" }[e.key], nb = TOP.find(p => p.id === cur).nb;
+    if (k) { e.preventDefault(); if (nb[k]) { cur = nb[k]; render(); } } else if (e.key === "Enter") activate(cur);
+  } else {
+    const i = SUBM.findIndex(s => s.id === sub);
+    if (e.key === "ArrowDown" || e.key === "ArrowRight") { e.preventDefault(); sub = SUBM[Math.min(3, i + 1)].id; render(); } else if (e.key === "ArrowUp" || e.key === "ArrowLeft") { e.preventDefault(); sub = SUBM[Math.max(0, i - 1)].id; render(); } else if (e.key === "Enter") activateSub(sub);
+  }
+});
+render();
+</script>
+</body>
+</html>

@@ -102,6 +102,8 @@
       titles: [ { id: "pokemon_dp", file: "pokemon_dp.html", name: "POKEMON DIAMOND", sub: "にっきバトル" } ] },
     { id: "wiisports", name: "WII SPORTS", sub: "Wiiスポーツ",                  c1: "#6cc0e0", c2: "#6c6c6c",
       titles: [ { id: "wiis", file: "wiisports.html", name: "WII SPORTS", sub: "メインメニュー" } ] },
+    { id: "smash", name: "SUPER SMASH BROS.", sub: "大乱闘スマッシュブラザーズ", c1: "#d8200c", c2: "#1a86e8",
+      titles: [ { id: "smsp", file: "smash_sp.html", name: "SMASH BROS. SPECIAL", sub: "メインメニュー" } ] },
     { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
       titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
@@ -119,7 +121,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
