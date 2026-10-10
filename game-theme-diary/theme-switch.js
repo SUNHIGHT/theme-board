@@ -76,66 +76,16 @@
     rec.unshift(current); localStorage.setItem("diary-recent", JSON.stringify(rec.slice(0, 30)));
   } catch (e) {}
 
+  // Floating button that returns to the first screen (index.html) to pick another theme.
   var css = document.createElement("style");
   css.textContent =
-    "#ts-btn{position:fixed;top:12px;right:12px;z-index:50;font:900 13px/1 sans-serif;letter-spacing:.2em;cursor:pointer;" +
+    "#ts-btn{position:fixed;top:12px;right:12px;z-index:50;font:900 13px/1 sans-serif;letter-spacing:.2em;cursor:pointer;text-decoration:none;" +
     "color:#fff;background:#111;border:2px solid #fff;padding:9px 16px;clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%);transition:.15s}" +
-    "#ts-btn:hover{background:#fff;color:#111}" +
-    "#ts-ov{position:fixed;inset:0;z-index:60;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);font-family:sans-serif}" +
-    "#ts-ov.on{display:flex;animation:tsfade .2s}" +
-    "@keyframes tsfade{from{opacity:0}}@keyframes tsin{from{opacity:0;transform:translateX(-60px) skewX(8deg)}}" +
-    "#ts-box{width:min(520px,92vw);max-height:92vh;overflow-y:auto;padding:4px 6px 4px 0}" +
-    "#ts-q{width:100%;margin:0 0 12px;padding:10px 12px;font:700 14px sans-serif;color:#fff;background:#0c0c0c;border:2px solid #fff;outline:none}#ts-q:focus{border-color:#7fd4ff}" +
-    ".ts-home{display:inline-block;margin-left:14px;color:#fff;font:900 12px sans-serif;letter-spacing:.2em;opacity:.8}.ts-home:hover{opacity:1}" +
-    "#ts-box h3{color:#fff;letter-spacing:.3em;font-size:14px;margin:0 0 12px;font-weight:900}" +
-    ".ts-it{display:flex;align-items:center;gap:14px;width:100%;margin:0 0 10px;padding:14px 18px;text-decoration:none;color:#fff;font:inherit;text-align:left;cursor:pointer;border:0;" +
-    "background:#161616;border-left:10px solid var(--a);clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%);" +
-    "animation:tsin .35s calc(var(--i)*70ms) cubic-bezier(.2,.9,.3,1) backwards;transition:.15s}" +
-    ".ts-it:hover{background:var(--a);color:var(--b);padding-left:30px}" +
-    ".ts-it.cur{outline:2px solid #fff;outline-offset:-4px}" +
-    ".ts-it i{width:34px;height:34px;flex:none;background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%);border:2px solid #fff;transform:skew(-10deg)}" +
-    ".ts-it b{display:block;font-size:20px;letter-spacing:.12em;font-weight:900}" +
-    ".ts-it span{font-size:12px;opacity:.8}" +
-    ".ts-back{background:none;border:0;color:#fff;font:900 12px sans-serif;letter-spacing:.2em;cursor:pointer;margin-bottom:10px;padding:4px 0;opacity:.8}" +
-    ".ts-back:hover{opacity:1;text-decoration:underline}" +
-    "@media (prefers-reduced-motion:reduce){#ts-ov,.ts-it{animation:none!important}}";
+    "#ts-btn:hover{background:#fff;color:#111}";
   document.head.appendChild(css);
 
-  var btn = document.createElement("button");
-  btn.id = "ts-btn"; btn.type = "button"; btn.textContent = "⚙ THEME";
-  var ov = document.createElement("div"); ov.id = "ts-ov";
-  document.body.appendChild(btn); document.body.appendChild(ov);
-
-  var curGame = GAMES.filter(function (g) { return g.titles.some(function (t) { return t.id === current; }); })[0];
-
-  function norm(s) { return String(s).toLowerCase().replace(/\s+/g, ""); }
-  function gameItems(q) {
-    var n = norm(q);
-    return GAMES.filter(function (g) {
-      return !n || norm(g.name + g.sub + g.genres.join("") + g.titles.map(function (t) { return t.name + t.sub; }).join("")).indexOf(n) >= 0;
-    }).map(function (g, i) {
-      return '<button type="button" class="ts-it' + (g === curGame ? " cur" : "") + '" data-g="' + g.id + '" style="--a:' + g.c1 + ';--b:' + g.c2 + ';--i:' + Math.min(i, 8) + '">' +
-        '<i></i><div><b>' + g.name + '</b><span>' + g.sub + ' ／ ' + g.genres.join("・") + (g === curGame ? " ／ 使用中" : "") + '</span></div></button>';
-    }).join("") || '<p style="color:#fff;opacity:.7;font-size:13px">該当するゲームがありません。</p>';
-  }
-  function showGames() {
-    ov.innerHTML = '<div id="ts-box"><h3>SELECT GAME ─ ゲーム選択<a class="ts-home" href="index.html">HOME ▸</a></h3>' +
-      '<input id="ts-q" type="search" placeholder="ゲーム名・ジャンルで検索" autocomplete="off"><div id="ts-list">' + gameItems("") + "</div></div>";
-  }
-  function showTitles(g) {
-    ov.innerHTML = '<div id="ts-box"><button type="button" class="ts-back" data-back="1">◀ BACK ─ ゲーム選択へ</button><h3>' + g.name + ' ─ ナンバリング選択</h3>' +
-      g.titles.map(function (t, i) {
-        return '<a class="ts-it' + (t.id === current ? " cur" : "") + '" href="' + t.file + '" style="--a:' + g.c1 + ';--b:' + g.c2 + ';--i:' + i + '">' +
-          '<i></i><div><b>' + t.name + '</b><span>' + t.sub + (t.id === current ? " ／ 使用中" : "") + '</span></div></a>';
-      }).join("") + "</div>";
-  }
-  ov.addEventListener("click", function (e) {
-    if (e.target === ov) { ov.classList.remove("on"); return; }
-    if (e.target.closest("[data-back]")) { showGames(); return; }
-    var b = e.target.closest("[data-g]");
-    if (b) showTitles(GAMES.filter(function (g) { return g.id === b.dataset.g; })[0]);
-  });
-  ov.addEventListener("input", function (e) { if (e.target.id === "ts-q") document.getElementById("ts-list").innerHTML = gameItems(e.target.value); });
-  btn.onclick = function () { curGame ? showTitles(curGame) : showGames(); ov.classList.add("on"); };
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") ov.classList.remove("on"); });
+  var btn = document.createElement("a");
+  btn.id = "ts-btn"; btn.href = "index.html"; btn.textContent = "\u2302 THEME";
+  btn.setAttribute("aria-label", "テーマ選択に戻る");
+  document.body.appendChild(btn);
 })();
