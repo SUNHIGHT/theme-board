@@ -189,6 +189,10 @@
   .deckhd { display:flex; justify-content:space-between; align-items:center; font:700 18px var(--f); }
   .deckhd button { all:unset; cursor:pointer; padding:2px 12px; border-radius:8px; background:var(--orange); box-shadow:0 3px 0 var(--oranged); } .deckhd button:focus-visible { outline:3px solid var(--gold); }
 
+  .lang { all:unset; cursor:pointer; position:fixed; top:12px; right:132px; z-index:51; display:flex; padding:3px; gap:3px; border-radius:10px; background:var(--box); box-shadow:0 4px 0 rgba(0,0,0,.4); font:700 13px var(--f); }
+  .lang span { padding:4px 10px; border-radius:7px; color:#9aa8ab; } .lang span.on { background:var(--blue); color:#fff; box-shadow:0 3px 0 var(--blued); }
+  .lang:focus-visible { outline:3px solid var(--gold); }
+  html[lang="ja"] .chip { font-size:clamp(10px,.9vw,12px); } html[lang="ja"] .stat small { font-size:12px; white-space:nowrap; letter-spacing:-.04em; } html[lang="ja"] .blindHead { font-family:var(--fj); }
   .keys { position:absolute; left:50%; top:0; translate:-50% 0; z-index:3; white-space:nowrap; font:12px var(--fj); color:#d8e2e4; text-shadow:0 1px 2px #000; text-align:right; line-height:1.6; opacity:.85; }
 
   @keyframes chipSpin { to { transform:rotate(360deg); } }
@@ -217,7 +221,7 @@
     .handRow { grid-template-columns:1fr; } .actions { flex-direction:row; justify-content:center; align-items:center; flex-wrap:wrap; }
     .slotArea.cons { margin-top:0; } .deck { justify-self:center; width:70px; }
     .handArea { padding:28px 4px 8px; } .hand .card { margin-left:calc(var(--cw) * -.12); }
-    .keys { display:none; }
+    .keys { display:none; } .lang { right:auto; left:10px; }
   }
 </style>
 </head>
@@ -230,20 +234,20 @@
     <div class="blindHead" id="bName">Small Blind</div>
     <div class="blindInfo">
       <div class="chip"><span id="bChip">SMALL<br>BLIND</span></div>
-      <div class="target"><small>Score at least</small><b><i></i><span id="bTarget">0</span></b><em>to earn <span id="bReward">$$$</span></em></div>
+      <div class="target"><small data-i18n="Score at least|最低スコア">Score at least</small><b><i></i><span id="bTarget">0</span></b><em><span data-i18n="to earn|報酬">to earn</span> <span id="bReward">$$$</span></em></div>
       <div class="desc" id="bDesc"></div>
     </div>
-    <div class="box rscore"><small>Round<br>score</small><b><i></i><span id="rScore">0</span></b></div>
+    <div class="box rscore"><small data-i18n="Round<br>score|ラウンド<br>スコア">Round<br>score</small><b><i></i><span id="rScore">0</span></b></div>
     <div class="box handBox"><div class="handName" id="hName">High Card<small>lvl.1</small></div>
       <div class="cm"><div class="c" id="hChips">0</div><div class="x">X</div><div class="m" id="hMult">0</div></div></div>
     <div class="grid2">
-      <button class="bigbtn run" id="runInfo">Run<br>Info</button>
-      <div class="box stat"><small>Hands</small><b id="sHands" style="color:var(--blue)">0</b></div>
-      <div class="box stat"><small>Discards</small><b id="sDisc" style="color:var(--red)">0</b></div>
+      <button class="bigbtn run" id="runInfo" data-i18n="Run<br>Info|ラン<br>情報">Run<br>Info</button>
+      <div class="box stat"><small data-i18n="Hands|ハンド">Hands</small><b id="sHands" style="color:var(--blue)">0</b></div>
+      <div class="box stat"><small data-i18n="Discards|ディスカード">Discards</small><b id="sDisc" style="color:var(--red)">0</b></div>
       <div class="box money"><b id="sMoney">$0</b></div>
-      <button class="bigbtn opt" id="options">Options</button>
-      <div class="box stat"><small>Ante</small><b id="sAnte" style="color:var(--orange)">1<small>/8</small></b></div>
-      <div class="box stat"><small>Round</small><b id="sRound" style="color:var(--orange)">1</b></div>
+      <button class="bigbtn opt" id="options" data-i18n="Options|オプション">Options</button>
+      <div class="box stat"><small data-i18n="Ante|アンティ">Ante</small><b id="sAnte" style="color:var(--orange)">1<small>/8</small></b></div>
+      <div class="box stat"><small data-i18n="Round|ラウンド">Round</small><b id="sRound" style="color:var(--orange)">1</b></div>
     </div>
   </aside>
 
@@ -252,33 +256,34 @@
       <div class="slotArea" id="jokers"><span class="cnt" id="jCnt">0/5</span></div>
       <div class="slotArea cons" id="cons"><span class="cnt">2/2</span></div>
     </div>
-    <div class="center" id="center"><div class="keys">←→ カード ／ Enter 記録 ／ Q・E 8日送り ／ S 並び替え ／ R ラン情報 ／ D デッキ</div><div class="stage" id="stage"></div></div>
+    <div class="center" id="center"><div class="keys">←→ カード ／ Enter 記録 ／ Q・E 8日送り ／ S 並び替え ／ R ラン情報 ／ D デッキ ／ L 言語</div><div class="stage" id="stage"></div></div>
     <div class="handRow">
-      <div class="actions"><button class="abtn play" id="play">記録する<small>Play Hand</small></button><button class="abtn disc" id="discard">前の8日<small>Discard</small></button></div>
+      <div class="actions"><button class="abtn play" id="play">記録する<small data-i18n="Play Hand|ハンドをプレイ">Play Hand</small></button><button class="abtn disc" id="discard">前の8日<small data-i18n="Discard|ディスカード">Discard</small></button></div>
       <div class="handArea"><div class="hand" id="hand"></div><span class="cnt" id="hCnt">0/8</span></div>
       <div class="actions"><button class="abtn sort" id="sortRank">日付順</button><button class="abtn sort" id="sortSuit">調子順</button>
         <button class="deck" id="deck" aria-label="デッキ（月の記録）を見る"><div class="stack"><i></i><i></i><i></i></div><small id="dCnt">0/0</small></button></div>
     </div>
   </main>
 </div>
+<button class="lang" id="lang" aria-label="表示言語の切り替え"><span data-l="en">EN</span><span data-l="ja">日本語</span></button>
 <div id="tip"><h5 id="tipT"></h5><div class="in" id="tipB"></div><div class="tg" id="tipG"></div></div>
 
 <div class="modal" id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="mwin">
   <h3><span id="eT"></span><small id="eS"></small></h3>
   <div class="mbody">
-    <div class="lb">SUIT ─ 今日の調子</div><ul class="suits" id="suits"></ul>
-    <div class="lb">HAND ─ 日記</div><textarea id="body" placeholder="今日はどんな一日だった？"></textarea>
+    <div class="lb" data-i18n="SUIT ─ 今日の調子|スート ─ 今日の調子">SUIT ─ 今日の調子</div><ul class="suits" id="suits"></ul>
+    <div class="lb" data-i18n="HAND ─ 日記|ハンド ─ 日記">HAND ─ 日記</div><textarea id="body" placeholder="今日はどんな一日だった？"></textarea>
     <div class="preview" id="preview"></div>
-    <div class="mact"><button class="abtn play" id="save">記録する<small>Play Hand ─ Ctrl+Enter</small></button><button class="abtn disc" id="cl">やめる<small>Esc</small></button></div>
+    <div class="mact"><button class="abtn play" id="save">記録する<small data-i18n="Play Hand ─ Ctrl+Enter|ハンドをプレイ ─ Ctrl+Enter">Play Hand ─ Ctrl+Enter</small></button><button class="abtn disc" id="cl">やめる<small>Esc</small></button></div>
   </div>
 </div></div>
 <div class="modal" id="run" role="dialog" aria-modal="true" aria-label="ラン情報"><div class="mwin">
-  <h3>Run Info<small>これまでの記録</small></h3>
-  <div class="mbody"><table class="runtbl" id="runTbl"></table><div class="mact"><button class="abtn disc" data-close>Back</button></div></div>
+  <h3><span data-i18n="Run Info|ラン情報">Run Info</span><small>これまでの記録</small></h3>
+  <div class="mbody"><table class="runtbl" id="runTbl"></table><div class="mact"><button class="abtn disc" data-close data-i18n="Back|戻る">Back</button></div></div>
 </div></div>
 <div class="modal" id="deckM" role="dialog" aria-modal="true" aria-label="デッキ"><div class="mwin">
-  <h3>Deck<small>月の記録</small></h3>
-  <div class="mbody"><div class="deckhd"><button id="dPrev">◀</button><span id="dMonth"></span><button id="dNext">▶</button></div><div class="deckgrid" id="deckGrid"></div><div class="mact"><button class="abtn disc" data-close>Back</button></div></div>
+  <h3><span data-i18n="Deck|デッキ">Deck</span><small>月の記録</small></h3>
+  <div class="mbody"><div class="deckhd"><button id="dPrev">◀</button><span id="dMonth"></span><button id="dNext">▶</button></div><div class="deckgrid" id="deckGrid"></div><div class="mact"><button class="abtn disc" data-close data-i18n="Back|戻る">Back</button></div></div>
 </div></div>
 
 <script src="theme-switch.js" data-theme="balatro"></script>
@@ -286,6 +291,19 @@
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
 const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+// display language (EN / 日本語) — UI wording only; the saved data is the same
+let LANG = (() => { const q = new URLSearchParams(location.search).get("lang"); if (q === "ja" || q === "en") return q; try { return localStorage.getItem("balatro-lang") || "en"; } catch { return "en"; } })();
+const L = (en, ja) => LANG === "ja" ? ja : en;
+const JA = { "Hearts":"ハート", "Diamonds":"ダイヤ", "Clubs":"クラブ", "Spades":"スペード", "Stone":"ストーン", "Foil":"フォイル", "Holographic":"ホログラフィック", "Polychrome":"ポリクローム",
+  "Common":"コモン", "Uncommon":"アンコモン", "Rare":"レア", "Small Blind":"スモールブラインド", "Big Blind":"ビッグブラインド", "The Eye":"ジ・アイ", "The Hook":"ザ・フック", "The Wall":"ザ・ウォール",
+  "SMALL<br>BLIND":"スモール<br>ブラインド", "BIG<br>BLIND":"ビッグ<br>ブラインド", "BOSS":"ボス", "Flush Five":"フラッシュファイブ", "Straight Flush":"ストレートフラッシュ", "Five of a Kind":"ファイブカード",
+  "Four of a Kind":"フォーカード", "Full House":"フルハウス", "Straight":"ストレート", "Three of a Kind":"スリーカード", "Two Pair":"ツーペア", "Pair":"ペア", "High Card":"ハイカード" };
+const T = en => LANG === "ja" ? (JA[en] || en) : en;
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.querySelectorAll("[data-i18n]").forEach(el => { const [en, ja] = el.dataset.i18n.split("|"); el.innerHTML = LANG === "ja" ? ja : en; });
+  document.querySelectorAll("#lang span").forEach(x => x.classList.toggle("on", x.dataset.l === LANG));
+}
 // moods are suits; the worst day is a stone card
 const SUIT = { 最高:{ s:"♥", c:"var(--heart)", n:"Hearts" }, 良い:{ s:"♦", c:"var(--diamond)", n:"Diamonds" }, 普通:{ s:"♣", c:"var(--club)", n:"Clubs" }, 微妙:{ s:"♠", c:"var(--spade)", n:"Spades" }, 最悪:{ s:"◆", c:"#5d6264", n:"Stone", stone:true } };
 const DOW = ["日","月","火","水","木","金","土"], DOWE = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
@@ -380,9 +398,9 @@ function render(deal = false) {
   const today = new Date(), tk = ymd(today), b = blindOf(today), xp = totalXp(), r = rank(), all = Object.keys(data);
   document.documentElement.style.setProperty("--blind", b.c); document.documentElement.style.setProperty("--blindd", b.d);
   palette = b.pal;
-  $("bName").textContent = b.n; $("bChip").innerHTML = b.chip; $("bTarget").textContent = fmt(targetFor() * (b.chip === "BOSS" && b.n === "The Wall" ? 1.5 : 1)); $("bReward").textContent = b.reward; $("bDesc").textContent = b.desc;
+  $("bName").textContent = T(b.n); $("bChip").innerHTML = T(b.chip); $("bTarget").textContent = fmt(targetFor() * (b.chip === "BOSS" && b.n === "The Wall" ? 1.5 : 1)); $("bReward").textContent = b.reward; $("bDesc").textContent = b.desc;
   const ws = weekScore(); if (shownScore === null) $("rScore").textContent = fmt(ws);
-  const [hn, hl] = weekHand(); $("hName").innerHTML = `${hn}<small>lvl.${hl}</small>`;
+  const [hn, hl] = weekHand(); $("hName").innerHTML = `${T(hn)}<small>${L("lvl.", "Lv.")}${hl}</small>`;
   const wk = weekKeys();
   $("sHands").textContent = wk.filter(k => data[k]).length; $("sDisc").textContent = wk.filter(k => k <= tk && !data[k]).length;
   $("sMoney").textContent = `$${Math.floor(xp / 50)}`; $("sAnte").innerHTML = `${(r - 1) % 8 + 1}<small>/8</small>`; $("sRound").textContent = all.length;
@@ -392,8 +410,8 @@ function render(deal = false) {
   const unlocked = JOKERS.filter(j => j.ok(st)).length;
   $("jokers").innerHTML = JOKERS.map((j, i) => `<button class="card joker ${j.ok(st) ? "" : "locked"}" data-j="${i}" style="--jb:${j.bg}"><span class="face"><span class="jt">JOKER</span><span class="art"><svg viewBox="0 0 24 24" shape-rendering="crispEdges">${j.art}</svg></span><span class="jt b">JOKER</span><span class="q">?</span></span><span class="shine"></span></button>`).join("") + `<span class="cnt">${unlocked}/5</span>`;
   const mon = all.filter(k => k.startsWith(tk.slice(0, 7))).length;
-  $("cons").innerHTML = `<button class="card planet" data-c="0"><span class="face"><span class="ct">PLANET</span><span class="cv">${mon}</span><span class="cl">今月の記録</span></span><span class="shine"></span></button>
-    <button class="card" data-c="1"><span class="face"><span class="ct">XVII STAR</span><span class="cv">${st.best}</span><span class="cl">最長連続</span></span><span class="shine"></span></button><span class="cnt">2/2</span>`;
+  $("cons").innerHTML = `<button class="card planet" data-c="0"><span class="face"><span class="ct">${L("PLANET", "惑星")}</span><span class="cv">${mon}</span><span class="cl">今月の記録</span></span><span class="shine"></span></button>
+    <button class="card" data-c="1"><span class="face"><span class="ct">${L("XVII STAR", "XVII 星")}</span><span class="cv">${st.best}</span><span class="cl">最長連続</span></span><span class="shine"></span></button><span class="cnt">2/2</span>`;
 
   // hand
   const ks = handKeys(); if (cur >= ks.length) cur = ks.length - 1;
@@ -410,9 +428,9 @@ function renderStage(k) {
   const e = data[k], ed = editionOf(k), today = ymd(new Date());
   $("hChips").textContent = fmt(chipsOf(k)); $("hMult").textContent = fmt(multOf(k));
   const tags = [];
-  if (e && e.mood) tags.push(`<span style="--c:${SUIT[e.mood].c}">${SUIT[e.mood].n}</span>`);
-  if (ed) tags.push(`<span style="--c:${EDN[ed][1]}">${EDN[ed][0]}</span>`);
-  $("stage").innerHTML = cardHTML(k, { extra:"big" }) + `<div class="tipbox"><h4>${k === today ? "Today" : md(k)}</h4><div class="in">${e ? esc(e.text) : (k > today ? "まだ来ていない日。" : "まだ記録がない。\n「記録する」でこの日を出そう。")}${e ? `\n\n<span class="hl">+${fmt(chipsOf(k))} Chips</span>　<span class="hm">x${multOf(k)} Mult</span>` : ""}</div>${tags.length ? `<div class="tags">${tags.join("")}</div>` : ""}</div>`;
+  if (e && e.mood) tags.push(`<span style="--c:${SUIT[e.mood].c}">${T(SUIT[e.mood].n)}</span>`);
+  if (ed) tags.push(`<span style="--c:${EDN[ed][1]}">${T(EDN[ed][0])}</span>`);
+  $("stage").innerHTML = cardHTML(k, { extra:"big" }) + `<div class="tipbox"><h4>${k === today ? L("Today", "今日") : md(k)}</h4><div class="in">${e ? esc(e.text) : (k > today ? "まだ来ていない日。" : "まだ記録がない。\n「記録する」でこの日を出そう。")}${e ? `\n\n<span class="hl">+${fmt(chipsOf(k))} ${L("Chips", "チップ")}</span>　<span class="hm">x${multOf(k)} ${L("Mult", "倍率")}</span>` : ""}</div>${tags.length ? `<div class="tags">${tags.join("")}</div>` : ""}</div>`;
 }
 
 // ---------- swirling felt (low-res canvas, palette per blind) ----------
@@ -436,10 +454,10 @@ function loop(ts) { if (ts - last > 50) { swirl(ts / 1000); last = ts; } if (!re
 function showTip(el, ev) {
   let t = "", b = "", tg = "";
   if (el.dataset.k) { const k = el.dataset.k, e = data[k], ed = editionOf(k);
-    t = md(k); b = e ? `${esc(e.text.slice(0, 60))}${e.text.length > 60 ? "…" : ""}<br><b style="color:var(--blue)">+${chipsOf(k)} Chips</b> <b style="color:var(--red)">x${multOf(k)} Mult</b>` : (k > ymd(new Date()) ? "まだ来ていない日" : "未記録。クリックで記録");
-    if (e && e.mood) tg += `<span style="--c:${SUIT[e.mood].c}">${SUIT[e.mood].n}</span>`; if (ed) tg += `<span style="--c:${EDN[ed][1]}">${EDN[ed][0]}</span>`; if (ed) b += `<br><small>${EDN[ed][2]}</small>`; }
-  else if (el.dataset.j) { const j = JOKERS[+el.dataset.j], ok = !el.classList.contains("locked"); t = ok ? j.n : "???"; b = ok ? j.d : `解放条件：${j.d}`; tg = `<span style="--c:${j.rar[1]}">${j.rar[0]}</span>`; }
-  else if (el.dataset.c) { t = el.dataset.c === "0" ? "Planet" : "The Star"; b = el.dataset.c === "0" ? "今月記録した日数" : "これまでの最長連続記録"; tg = `<span style="--c:${el.dataset.c === "0" ? "#4a8ad8" : "#a87ad8"}">${el.dataset.c === "0" ? "Planet" : "Tarot"}</span>`; }
+    t = md(k); b = e ? `${esc(e.text.slice(0, 60))}${e.text.length > 60 ? "…" : ""}<br><b style="color:var(--blue)">+${chipsOf(k)} ${L("Chips", "チップ")}</b> <b style="color:var(--red)">x${multOf(k)} ${L("Mult", "倍率")}</b>` : (k > ymd(new Date()) ? "まだ来ていない日" : "未記録。クリックで記録");
+    if (e && e.mood) tg += `<span style="--c:${SUIT[e.mood].c}">${T(SUIT[e.mood].n)}</span>`; if (ed) tg += `<span style="--c:${EDN[ed][1]}">${T(EDN[ed][0])}</span>`; if (ed) b += `<br><small>${EDN[ed][2]}</small>`; }
+  else if (el.dataset.j) { const j = JOKERS[+el.dataset.j], ok = !el.classList.contains("locked"); t = ok ? j.n : "???"; b = ok ? j.d : `解放条件：${j.d}`; tg = `<span style="--c:${j.rar[1]}">${T(j.rar[0])}</span>`; }
+  else if (el.dataset.c) { t = el.dataset.c === "0" ? L("Planet", "惑星") : L("The Star", "星"); b = el.dataset.c === "0" ? "今月記録した日数" : "これまでの最長連続記録"; tg = `<span style="--c:${el.dataset.c === "0" ? "#4a8ad8" : "#a87ad8"}">${el.dataset.c === "0" ? L("Planet", "惑星") : L("Tarot", "タロット")}</span>`; }
   else return;
   $("tipT").textContent = t; $("tipB").innerHTML = b; $("tipG").innerHTML = tg;
   const r = el.getBoundingClientRect(), tip = $("tip"); tip.classList.add("show");
@@ -467,17 +485,17 @@ function setMood(m) { mood = m; document.querySelectorAll("#suits button").forEa
 function updPreview() {
   const len = $("body").value.trim().length, k = selected, prevDay = new Date(k + "T00:00:00"); prevDay.setDate(prevDay.getDate() - 1);
   const mult = Math.max(1, (data[k] ? streakAt(k) : streakAt(ymd(prevDay)) + 1));
-  $("preview").innerHTML = `<span class="c">${fmt(len)}</span><span class="x">X</span><span class="m">${mult}</span><em>= ${fmt(len * mult)} pts</em>`;
+  $("preview").innerHTML = `<span class="c">${fmt(len)}</span><span class="x">X</span><span class="m">${mult}</span><em>= ${fmt(len * mult)} ${L("pts", "点")}</em>`;
 }
 function openEd(k) {
   if (!k || k > ymd(new Date()) || busy) return;
   selected = k; const e = data[k]; mood = e ? e.mood : null;
-  $("eT").textContent = k === ymd(new Date()) ? "Today" : md(k); $("eS").textContent = e ? "書き直し" : "新しい手札";
+  $("eT").textContent = k === ymd(new Date()) ? L("Today", "今日") : md(k); $("eS").textContent = e ? "書き直し" : "新しい手札";
   $("suits").innerHTML = MOODS.map(m => `<li><button data-m="${m}" class="${SUIT[m].stone ? "stone" : ""} ${m === mood ? "on" : ""}" style="--s:${SUIT[m].c}"><b>${SUIT[m].s}</b><small>${m}</small></button></li>`).join("");
   $("body").value = e ? e.text : ""; updPreview();
   $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
 }
-const closeModals = () => document.querySelectorAll(".modal").forEach(m => m.classList.remove("show"));
+const closeModals = () => { document.querySelectorAll(".modal").forEach(m => m.classList.remove("show")); if (document.activeElement && document.activeElement.closest(".modal")) document.activeElement.blur(); };
 
 function popup(text, cls, el, dx = 0, dy = 0) {
   const r = el.getBoundingClientRect(), c = $("center").getBoundingClientRect(), p = document.createElement("div");
@@ -503,7 +521,7 @@ async function save() {
   // chips count up in steps, popups over the card
   const chips = chipsOf(k), mult = multOf(k), steps = Math.min(5, Math.max(1, Math.ceil(chips / 40)));
   for (let i = 1; i <= steps; i++) { const v = Math.round(chips * i / steps); popup(`+${v - Math.round(chips * (i - 1) / steps)}`, "c", big, (i % 2 ? -1 : 1) * 30, -i * 6); await countTo($("hChips"), Math.round(chips * (i - 1) / steps), v, 160); await sleep(110); }
-  popup(`+${mult} Mult`, "m", big, 40, 20); await countTo($("hMult"), 0, mult, 260); await sleep(250);
+  popup(`+${mult} ${L("Mult", "倍率")}`, "m", big, 40, 20); await countTo($("hMult"), 0, mult, 260); await sleep(250);
   // jokers that trigger this hand
   const st1 = { best:bestStreak(), chars:Object.values(data).reduce((s, x) => s + x.text.length, 0), total:Object.keys(data).length, good:Object.values(data).filter(x => ["最高", "良い"].includes(x.mood)).length };
   JOKERS.forEach((j, i) => { if (j.ok(st1)) { const el = $("jokers").children[i]; el.classList.remove("wiggle"); void el.offsetWidth; el.classList.add("wiggle"); } });
@@ -512,11 +530,11 @@ async function save() {
   await countTo($("rScore"), ws0, ws1, 700); shownScore = null;
   const newJ = JOKERS.filter(j => j.ok(st1) && !j.ok(st0)), xp1 = totalXp(), up = rank() > r0;
   let bn = null;
-  if (newJ.length) bn = [`JOKER GET!`, `${newJ.map(j => j.n).join("・")} を手に入れた`];
-  else if (up) bn = ["ANTE UP!", `ランク ${rank()} に上がった`];
-  else if (ws0 < target && ws1 >= target) bn = ["Blind Defeated", `今週の目標達成！ ${blindOf(new Date()).reward}`];
-  else if (isNew) bn = [`+${fmt(xp1 - xp0)} EXP`, `${streakCount()}日連続 ／ ${fmt(chips * mult)} pts`];
-  else bn = ["Rewritten", "日記を書き直した"];
+  if (newJ.length) bn = [L("JOKER GET!", "ジョーカー獲得！"), `${newJ.map(j => j.n).join("・")} を手に入れた`];
+  else if (up) bn = [L("ANTE UP!", "アンティアップ！"), `ランク ${rank()} に上がった`];
+  else if (ws0 < target && ws1 >= target) bn = [L("Blind Defeated", "ブラインド撃破！"), `今週の目標達成！ ${blindOf(new Date()).reward}`];
+  else if (isNew) bn = [`+${fmt(xp1 - xp0)} EXP`, `${streakCount()}日連続 ／ ${fmt(chips * mult)} ${L("pts", "点")}`];
+  else bn = [L("Rewritten", "書き直し"), "日記を書き直した"];
   const el = document.createElement("div"); el.className = "banner"; el.innerHTML = `${bn[0]}<small>${bn[1]}</small>`; $("center").appendChild(el);
   await sleep(1800); el.remove(); busy = false; render();
 }
@@ -524,8 +542,8 @@ async function save() {
 // ---------- run info / deck ----------
 function openRun() {
   const all = Object.keys(data), chars = Object.values(data).reduce((s, x) => s + x.text.length, 0), [hn, hl] = weekHand();
-  const rows = [["今週の役", `${hn}`, "#4a8ad8", `lvl.${hl}`], ["ランク", rank(), "var(--orange)", "Ante"], ["記録した日", all.length, "var(--blue)", "Hands"], ["連続（現在 / 最長）", `${streakCount()} / ${bestStreak()}`, "var(--red)", "Mult"], ["総文字数", fmt(chars), "var(--blue)", "Chips"], ["今週のスコア", fmt(weekScore()), "var(--green)", "Score"]]
-    .concat(MOODS.map(m => [`${SUIT[m].s} ${m}`, all.filter(k => data[k].mood === m).length, SUIT[m].c, SUIT[m].n]));
+  const rows = [["今週の役", T(hn), "#4a8ad8", `${L("lvl.", "Lv.")}${hl}`], ["ランク", rank(), "var(--orange)", L("Ante", "アンティ")], ["記録した日", all.length, "var(--blue)", L("Hands", "ハンド")], ["連続（現在 / 最長）", `${streakCount()} / ${bestStreak()}`, "var(--red)", L("Mult", "倍率")], ["総文字数", fmt(chars), "var(--blue)", L("Chips", "チップ")], ["今週のスコア", fmt(weekScore()), "var(--green)", L("Score", "スコア")]]
+    .concat(MOODS.map(m => [`${SUIT[m].s} ${m}`, all.filter(k => data[k].mood === m).length, SUIT[m].c, T(SUIT[m].n)]));
   $("runTbl").innerHTML = rows.map(([l, v, c, t]) => `<tr><td><span class="lv" style="--c:${c}">${t}</span>${l}</td><td class="v">${v}</td></tr>`).join("");
   $("run").classList.add("show"); $("run").querySelector("[data-close]").focus();
 }
@@ -549,6 +567,7 @@ document.addEventListener("click", e => {
   if (e.target.closest("#discard")) { page++; cur = HAND - 1; return render(true); }
   if (e.target.closest("#sortRank")) { sortMode = "rank"; return render(); }
   if (e.target.closest("#sortSuit")) { sortMode = "suit"; return render(); }
+  if (e.target.closest("#lang")) { LANG = LANG === "ja" ? "en" : "ja"; try { localStorage.setItem("balatro-lang", LANG); } catch {} applyLang(); return render(); }
   if (e.target.closest("#runInfo")) return openRun();
   if (e.target.closest("#options")) { location.href = "index.html"; return; }
   if (e.target.closest("#deck")) { deckMonth = new Date(); return openDeck(); }
@@ -577,8 +596,10 @@ document.addEventListener("keydown", e => {
   if (k === "s" || k === "S") { sortMode = sortMode === "rank" ? "suit" : "rank"; return render(); }
   if (k === "r" || k === "R") return openRun();
   if (k === "d" || k === "D") { deckMonth = new Date(); return openDeck(); }
+  if (k === "l" || k === "L") { LANG = LANG === "ja" ? "en" : "ja"; try { localStorage.setItem("balatro-lang", LANG); } catch {} applyLang(); return render(); }
 });
 
+applyLang();
 render(true);
 swirl(0); if (!reduced) requestAnimationFrame(loop);
 </script>
