@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Adventure Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  /* DS-era RPG battle: top = 3D grass field with floating foes and target markers + message window, bottom = navy party/command windows */
+  :root { --f:'DotGothic16','MS Gothic',monospace; --win:#0d1b4a; --win2:#14286a; --wb:#fff; --wbd:#9aa8d8; --hp:#3ad06a; --hpy:#f0c030; --hpr:#f04a3a; --mp:#4a8af0;
+    --c1:#3a6ad8; --c2:#e05a9a; --c3:#9a5ad8; --c4:#3aa85a; --c5:#d8a020; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:#fff; background:radial-gradient(ellipse at 50% 30%,#2a2f3e,#0b0d12 75%); overflow:hidden; display:grid; place-items:center; -webkit-font-smoothing:none; }
+  button { font:inherit; color:inherit; }
+  .ds { --W:min(600px,calc((100vh - 50px) / 1.6),calc(100vw - 16px)); width:var(--W); display:flex; flex-direction:column; gap:calc(var(--W) * .045); padding:calc(var(--W) * .02); background:linear-gradient(180deg,#d8dbe2,#a9aeb8); border-radius:16px; box-shadow:0 10px 30px rgba(0,0,0,.6), inset 0 2px 0 #fff; }
+  .scr { position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; background:#000; border:3px solid #222; border-radius:3px; container-type:inline-size; }
+  .scr.shake { animation:shake .4s steps(6); }
+
+  /* ---------- top: field ---------- */
+  .sky { position:absolute; inset:0; background:linear-gradient(180deg,var(--s1) 0%,var(--s2) 46%,var(--s3) 60%); transition:background 1s; }
+  .sun { position:absolute; right:12%; top:9%; width:9cqw; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,#fff8d0,#ffd86a 50%,transparent 72%); opacity:var(--sunO,1); }
+  .cloud { position:absolute; height:3cqw; border-radius:3cqw; background:rgba(255,255,255,.8); box-shadow:2cqw -1.2cqw 0 .6cqw rgba(255,255,255,.8), 5cqw 0 0 rgba(255,255,255,.8); animation:drift var(--t) linear infinite; }
+  .mtn { position:absolute; left:-5%; right:-5%; bottom:40%; height:26%; background:var(--m1); clip-path:polygon(0 100%,0 60%,8% 35%,16% 52%,26% 18%,36% 46%,44% 30%,54% 55%,64% 22%,74% 44%,84% 28%,94% 50%,100% 40%,100% 100%); }
+  .mtn.b { bottom:40%; height:16%; background:var(--m2); clip-path:polygon(0 100%,0 50%,12% 30%,22% 60%,34% 34%,48% 64%,60% 36%,72% 58%,86% 30%,100% 56%,100% 100%); }
+  .grass { position:absolute; left:0; right:0; bottom:0; height:42%; background:linear-gradient(180deg,var(--g1),var(--g2)); overflow:hidden; }
+  .grass::before { content:""; position:absolute; left:-50%; right:-50%; top:0; bottom:-40%; background:repeating-linear-gradient(90deg,transparent 0 6cqw,rgba(0,0,0,.06) 6cqw 7cqw), repeating-linear-gradient(0deg,transparent 0 3cqw,rgba(255,255,255,.05) 3cqw 3.6cqw); transform:perspective(40cqw) rotateX(55deg); transform-origin:50% 0; }
+  .tree { position:absolute; bottom:var(--b); width:var(--w); aspect-ratio:.8; translate:-50% 0; }
+  .tree::before { content:""; position:absolute; left:42%; right:42%; bottom:0; height:34%; background:linear-gradient(90deg,#4a2a14,#7a4a24,#3a1e0c); }
+  .tree::after { content:""; position:absolute; left:0; right:0; top:0; height:78%; border-radius:50%; background:radial-gradient(circle at 38% 30%,#8ad86a,#3a9a3a 50%,#1e5a22 85%); box-shadow:-1.6cqw 1cqw 0 -.4cqw #2e7a30, 1.6cqw 1.4cqw 0 -.6cqw #2e7a30; }
+  .foes { position:absolute; left:6%; right:6%; bottom:22%; height:40%; display:flex; justify-content:center; align-items:flex-end; gap:5cqw; }
+  .foe { position:relative; width:14cqw; display:flex; flex-direction:column; align-items:center; animation:hover 2s calc(var(--i) * -.4s) ease-in-out infinite; }
+  .foe svg { width:100%; filter:drop-shadow(0 1.4cqw .6cqw rgba(0,0,0,.35)); }
+  .foe .nm { margin-top:.4cqw; font-size:2.6cqw; text-shadow:0 0 3px #000,0 0 3px #000; white-space:nowrap; }
+  .foe .shadow { position:absolute; bottom:-2cqw; width:70%; height:2cqw; border-radius:50%; background:rgba(0,0,0,.3); }
+  .foe.hit svg { animation:blink .1s steps(2) 6; }
+  .foe.dead { animation:fadeDie .7s steps(7) forwards; }
+  .mark { position:absolute; top:-7cqw; left:50%; translate:-50% 0; width:4cqw; height:5.6cqw; animation:bounce .6s steps(2) infinite; }
+  .mark i { position:absolute; inset:0; background:var(--mc); clip-path:polygon(50% 0,100% 30%,50% 100%,0 30%); box-shadow:inset 0 0 0 1px #fff; }
+  .mark i::after { content:""; position:absolute; left:30%; top:12%; width:20%; height:22%; background:rgba(255,255,255,.7); }
+  .peace { position:absolute; left:50%; top:46%; translate:-50% -50%; font-size:3.6cqw; text-shadow:0 0 4px #000,0 0 4px #000; text-align:center; line-height:1.6; }
+  .dmg { position:absolute; z-index:5; font-size:6cqw; color:#fff; text-shadow:0 0 0 #000, .3cqw .3cqw 0 #000, -.3cqw .3cqw 0 #000, .3cqw -.3cqw 0 #000, -.3cqw -.3cqw 0 #000; animation:dmg 1.6s ease-out forwards; pointer-events:none; }
+  .slash { position:absolute; z-index:4; width:22cqw; height:1.2cqw; background:linear-gradient(90deg,transparent,#fff,transparent); rotate:-35deg; animation:slash .3s ease-out forwards; pointer-events:none; }
+  .flash { position:absolute; inset:0; z-index:6; background:#fff; opacity:0; pointer-events:none; }
+  .flash.go { animation:flash .4s steps(2) 2; }
+  .swirl { position:absolute; inset:0; z-index:7; pointer-events:none; background:repeating-conic-gradient(from 0deg,#000 0 10deg,transparent 10deg 20deg); animation:swirl .8s ease-in forwards; }
+  .copy { position:absolute; right:2cqw; top:1cqw; font-size:2.4cqw; text-shadow:0 0 3px #000; opacity:.9; }
+  .msg { position:absolute; left:2cqw; right:2cqw; bottom:2cqw; z-index:3; min-height:14cqw; padding:1.8cqw 3cqw; font-size:3.6cqw; line-height:1.6; text-shadow:0 .3cqw 0 #000; white-space:pre-wrap; display:none; }
+  .msg.show { display:block; }
+  .win { background:linear-gradient(180deg,rgba(20,40,110,.94),rgba(10,24,74,.94)); border:.6cqw solid var(--wb); border-radius:1.6cqw; box-shadow:0 0 0 .4cqw #0a1440, inset 0 0 0 .3cqw #0a1440; }
+
+  /* ---------- bottom: party / commands ---------- */
+  .bot { background:linear-gradient(180deg,#3a4a7a,#2a3666); }
+  .bot::before { content:""; position:absolute; inset:0; background:repeating-linear-gradient(0deg,rgba(255,255,255,.04) 0 1px,transparent 1px 3px); }
+  .top2 { position:absolute; left:2.4cqw; right:2.4cqw; top:2.4cqw; height:38%; display:grid; grid-template-columns:31% 1fr; gap:2cqw; }
+  .lead { position:relative; padding:1.4cqw 2cqw; border-color:var(--rc); }
+  .lead::before { content:""; position:absolute; inset:-.6cqw; border-radius:1.6cqw; border:.6cqw solid var(--rc); pointer-events:none; }
+  .lead .nm { font-size:3.8cqw; } .lead .job { font-size:3cqw; color:#d8e0ff; }
+  .bars { display:grid; grid-template-columns:auto 1fr; gap:.2cqw 1.6cqw; align-items:center; margin-top:.6cqw; font-size:3cqw; }
+  .bars b { font-weight:400; text-align:right; font-size:4cqw; } .bars .l { color:#ffd86a; }
+  .bar { grid-column:1 / -1; height:1cqw; background:#0a1440; border-radius:.5cqw; overflow:hidden; margin-top:-.2cqw; } .bar i { display:block; height:100%; width:var(--v); background:var(--bc); transition:width .9s steps(18); }
+  .cmds { position:relative; display:grid; grid-template-columns:1fr 1fr; align-content:center; gap:1cqw 1.4cqw; padding:1.4cqw 2cqw; min-width:0; }
+  .cmd { all:unset; cursor:pointer; position:relative; padding:.3cqw 0 .3cqw 3.6cqw; font-size:3.6cqw; white-space:nowrap; overflow:hidden; }
+  .cmd.cur::before { content:""; position:absolute; left:.4cqw; top:50%; width:0; height:0; translate:0 -50%; border-left:2.4cqw solid #fff; border-top:1.4cqw solid transparent; border-bottom:1.4cqw solid transparent; animation:cur .5s steps(2) infinite; }
+  .cmd:hover { color:#ffd86a; } .cmd:focus-visible { outline:.4cqw solid #ffd86a; outline-offset:.4cqw; }
+  .cmd small { font-size:2.1cqw; color:#aab8e8; margin-left:.5cqw; }
+  .party { position:absolute; left:2.4cqw; right:2.4cqw; top:calc(38% + 5cqw); bottom:2.4cqw; display:flex; flex-direction:column; gap:1.6cqw; }
+  .pm { all:unset; box-sizing:border-box; cursor:pointer; position:relative; flex:1; display:grid; grid-template-columns:30% 26% 1fr; align-items:center; gap:2cqw; padding:.6cqw 2cqw; border-color:var(--rc); }
+  .pm::before { content:""; position:absolute; inset:-.6cqw; border-radius:1.6cqw; border:.6cqw solid var(--rc); pointer-events:none; }
+  .pm .nm { font-size:3.4cqw; line-height:1.3; } .pm .nm small { display:block; font-size:2.6cqw; color:#d8e0ff; }
+  .pm .hm { display:grid; grid-template-columns:auto 1fr; gap:0 1cqw; font-size:2.6cqw; align-items:center; } .pm .hm b { font-weight:400; font-size:3.4cqw; text-align:right; }
+  .pm .hm .bar { height:.7cqw; }
+  .pm .say { padding:.8cqw 2cqw; background:#0a1440; border-radius:1cqw; font-size:3cqw; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; position:relative; }
+  .pm .ok { position:absolute; right:-1.2cqw; top:50%; translate:0 -50%; padding:.2cqw 1cqw; font-size:2.6cqw; color:#fff; background:linear-gradient(180deg,#ff8a3a,#e04a1a); border:.3cqw solid #fff; border-radius:1cqw; transform:rotate(-8deg); text-shadow:0 .2cqw 0 #6a1a00; }
+  .pm.empty .say { color:#8a98c8; }
+  .pm:hover .say { background:#16245a; } .pm:focus-visible { outline:.4cqw solid #ffd86a; }
+
+  /* sub windows on bottom screen */
+  .sub { position:absolute; inset:2.4cqw; z-index:5; display:none; flex-direction:column; padding:2cqw 3cqw; }
+  .sub.show { display:flex; animation:open .18s steps(3) both; }
+  .sub h3 { font-weight:400; font-size:4cqw; display:flex; justify-content:space-between; align-items:baseline; border-bottom:.4cqw solid rgba(255,255,255,.35); padding-bottom:1cqw; margin-bottom:1.2cqw; } .sub h3 small { font-size:2.8cqw; color:#aab8e8; }
+  .list { list-style:none; padding:0; flex:1; min-height:0; display:flex; flex-direction:column; gap:.6cqw; overflow:hidden; }
+  .row { all:unset; box-sizing:border-box; cursor:pointer; width:100%; display:grid; grid-template-columns:4cqw 22cqw 1fr auto; align-items:center; gap:1.4cqw; padding:.5cqw 1cqw; font-size:3.3cqw; border-radius:1cqw; }
+  .row .cr { visibility:hidden; width:0; height:0; border-left:2cqw solid #fff; border-top:1.2cqw solid transparent; border-bottom:1.2cqw solid transparent; }
+  .row.cur .cr { visibility:visible; animation:cur .5s steps(2) infinite; } .row.cur { background:rgba(255,255,255,.08); }
+  .row .tx { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .row small { font-size:2.6cqw; color:var(--mcol,#aab8e8); }
+  .row.empty .tx { color:#8a98c8; }
+  .sfoot { display:flex; justify-content:space-between; font-size:2.8cqw; color:#aab8e8; margin-top:1cqw; } .sfoot button { all:unset; cursor:pointer; } .sfoot button:hover { color:#fff; }
+  .stats { display:grid; grid-template-columns:1fr 1fr; gap:.4cqw 4cqw; font-size:3.1cqw; }
+  .stats div { display:flex; justify-content:space-between; border-bottom:.3cqw dotted rgba(255,255,255,.25); padding:.2cqw 0; } .stats b { font-weight:400; color:#ffd86a; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:.6cqw; flex:1; align-content:start; }
+  .cal span { text-align:center; font-size:2.6cqw; color:#aab8e8; }
+  .cd { all:unset; cursor:pointer; text-align:center; padding:.6cqw 0; font-size:3cqw; border-radius:.8cqw; background:rgba(255,255,255,.06); position:relative; }
+  .cd.on { background:var(--mcol); color:#0a1440; } .cd.out { opacity:.3; } .cd.fut { opacity:.35; cursor:default; } .cd.today { outline:.4cqw solid #ffd86a; } .cd.cur { box-shadow:0 0 0 .5cqw #fff; }
+  .cd:not(.fut):hover { background:rgba(255,255,255,.18); }
+
+  .keys { margin-top:6px; text-align:center; font-size:12px; color:#9aa3b5; }
+
+  /* ---------- editor (DQ window) ---------- */
+  #ed { position:fixed; inset:0; z-index:40; display:none; place-items:center; padding:12px; background:rgba(0,0,10,.6); }
+  #ed.show { display:grid; }
+  .ewin { width:min(600px,100%); max-height:94vh; overflow:auto; padding:16px 20px 18px; border:4px solid #fff; border-radius:12px; background:linear-gradient(180deg,#14286a,#0a1846); box-shadow:0 0 0 3px #0a1440, inset 0 0 0 3px #0a1440, 0 14px 40px rgba(0,0,0,.6); animation:open .2s steps(3) both; display:flex; flex-direction:column; gap:10px; }
+  .ewin h3 { font-weight:400; font-size:20px; display:flex; justify-content:space-between; align-items:baseline; } .ewin h3 small { font-size:13px; color:#aab8e8; }
+  .lb { font-size:13px; color:#aab8e8; }
+  .moods { list-style:none; padding:0; display:grid; grid-template-columns:repeat(5,1fr); gap:4px; }
+  .moods button { all:unset; box-sizing:border-box; display:block; width:100%; cursor:pointer; position:relative; padding:5px 4px 5px 20px; font-size:15px; border-radius:6px; }
+  .moods button::before { content:""; position:absolute; left:5px; top:50%; translate:0 -50%; width:0; height:0; border-left:9px solid #fff; border-top:6px solid transparent; border-bottom:6px solid transparent; visibility:hidden; }
+  .moods button.on::before { visibility:visible; animation:cur .5s steps(2) infinite; } .moods button.on { background:rgba(255,255,255,.12); color:#ffd86a; box-shadow:inset 3px 0 0 var(--mcol); }
+  .moods button small { display:block; font-size:11px; color:#aab8e8; }
+  .moods button:hover { background:rgba(255,255,255,.06); }
+  textarea { min-height:150px; resize:vertical; width:100%; background:#081236; color:#fff; border:2px solid #9aa8d8; border-radius:8px; font:16px/1.8 var(--f); padding:8px 12px; outline:0; }
+  textarea:focus { border-color:#fff; box-shadow:0 0 0 3px rgba(255,216,106,.35); }
+  .acts { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+  .btn { all:unset; cursor:pointer; padding:6px 22px; border:3px solid #fff; border-radius:8px; background:#0a1440; font-size:16px; }
+  .btn:hover, .btn:focus-visible { background:#1e3a9a; outline:0; } .btn.go { background:linear-gradient(180deg,#ff8a3a,#e04a1a); }
+  .hint { font-size:12px; color:#aab8e8; }
+  button:focus-visible, textarea:focus-visible { outline:3px solid #ffd86a; outline-offset:2px; }
+
+  @keyframes drift { from { transform:translateX(-30cqw); } to { transform:translateX(130cqw); } }
+  @keyframes hover { 50% { transform:translateY(-1.6cqw); } }
+  @keyframes bounce { 50% { transform:translateY(-1cqw); } }
+  @keyframes blink { 50% { opacity:0; } }
+  @keyframes fadeDie { to { opacity:0; filter:brightness(3); transform:scaleY(.2); } }
+  @keyframes dmg { 0% { opacity:0; transform:translateY(0); } 15% { opacity:1; transform:translateY(-3cqw); } 30% { transform:translateY(-1cqw); } 80% { opacity:1; } 100% { opacity:0; transform:translateY(-2cqw); } }
+  @keyframes slash { from { opacity:1; transform:scaleX(.1); } to { opacity:0; transform:scaleX(1.4); } }
+  @keyframes flash { 50% { opacity:.85; } }
+  @keyframes swirl { from { transform:rotate(0) scale(1.6); opacity:1; } to { transform:rotate(180deg) scale(.1); opacity:0; } }
+  @keyframes shake { 20% { transform:translate(-1.5%,1%); } 40% { transform:translate(1.5%,-1%); } 60% { transform:translate(-1%,0); } 80% { transform:translate(1%,1%); } }
+  @keyframes cur { 50% { opacity:.2; } }
+  @keyframes open { from { opacity:0; transform:scaleY(.6); } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition:none !important; } }
+  @media (max-width:560px) { body { overflow-y:auto; align-items:start; padding:54px 0 20px; } }
+</style>
+</head>
+<body>
+<div>
+<div class="ds">
+  <section class="scr" id="top" aria-label="バトル画面">
+    <div class="sky" id="sky"><div class="sun"></div></div>
+    <div id="clouds"></div>
+    <div class="mtn"></div><div class="mtn b"></div>
+    <div class="grass"></div>
+    <div id="trees"></div>
+    <div class="foes" id="foes"></div>
+    <div class="peace" id="peace" hidden></div>
+    <div class="copy">ADVENTURE LOG</div>
+    <div class="msg win" id="msg"></div>
+    <div class="flash" id="flash"></div>
+  </section>
+
+  <section class="scr bot" id="bot" aria-label="コマンド画面">
+    <div class="top2">
+      <div class="lead win" id="lead"></div>
+      <div class="cmds win" id="cmds"></div>
+    </div>
+    <div class="party" id="party"></div>
+
+    <div class="sub win" id="sList"><h3><span>じゅもん ─ ふりかえり</span><small id="lPg"></small></h3><ul class="list" id="list"></ul><div class="sfoot"><button id="lNew">◀ あたらしい</button><button data-close>✕ とじる</button><button id="lOld">ふるい ▶</button></div></div>
+    <div class="sub win" id="sStat"><h3><span>とくぎ ─ つよさ</span><small>ぼうけんのしょ</small></h3><div class="stats" id="stats"></div><div class="sfoot" style="margin-top:auto"><span></span><button data-close>✕ とじる</button><span></span></div></div>
+    <div class="sub win" id="sCal"><h3><button id="cPrev" style="all:unset;cursor:pointer">◀</button><span id="cMon"></span><button id="cNext" style="all:unset;cursor:pointer">▶</button></h3><div class="cal" id="cal"></div><div class="sfoot"><span>どうぐ ─ こよみ</span><button data-close>✕ とじる</button><span></span></div></div>
+  </section>
+</div>
+<p class="keys">矢印 えらぶ ／ Enter けってい ／ Q・E なかま ／ Esc もどる ／ Ctrl+Enter きろく</p>
+</div>
+
+<div id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="ewin">
+  <h3><span id="eT"></span><small id="eS"></small></h3>
+  <div class="lb">ちょうし（← → でえらぶ）</div><ul class="moods" id="moods"></ul>
+  <div class="lb">ぼうけんのきろく</div><textarea id="body" placeholder="きょうは どんな ぼうけんを した？"></textarea>
+  <div class="acts"><button class="btn go" id="save">きろくする</button><button class="btn" id="cl">やめる</button><span class="hint">Ctrl+Enter きろく ／ Esc やめる</span></div>
+</div></div>
+
+<script src="theme-switch.js" data-theme="dq9"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+// mood -> vocation (short label like the battle window) + row colour
+const JOB = { 最高:{ j:"バト", n:"バトルマスター", c:"var(--c5)" }, 良い:{ j:"せん", n:"せんし", c:"var(--c1)" }, 普通:{ j:"そう", n:"そうりょ", c:"var(--c4)" }, 微妙:{ j:"まほ", n:"まほうつかい", c:"var(--c3)" }, 最悪:{ j:"とう", n:"とうぞく", c:"var(--c2)" } };
+const DOW = ["日","月","火","水","木","金","土"];
+const ABC = "ABCDEFG";
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, PER = 4;
+const CMDS = [["こうげき", "きろく"], ["とくぎ", "つよさ"], ["じゅもん", "りれき"], ["どうぐ", "こよみ"], ["ぼうぎょ", "まえの4日"], ["ひっさつ", "ランダム"]];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}`; };
+const mdw = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`; };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
+
+let data = load(), page = 0, lead = 0, cmd = 0, sub = null, lpage = 0, lcur = 0, calSel = ymd(new Date()), selected = null, mood = null, busy = false, typeTimer;
+const memberDay = i => { const d = new Date(); d.setDate(d.getDate() - (page * PER + i)); return ymd(d); };
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const level = () => Math.floor(totalXp() / XP_PER_RANK) + 1;
+const hpColor = r => r > .5 ? "var(--hp)" : r > .2 ? "var(--hpy)" : "var(--hpr)";
+
+// unrecorded days of this week (up to today) are the "foes"
+function foeDays() { const now = new Date(), mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); const out = [];
+  for (let d = new Date(mon); ymd(d) <= ymd(now); d.setDate(d.getDate() + 1)) if (!data[ymd(d)]) out.push(ymd(d)); return out.slice(-4); }
+const foeSvg = (tint) => `<svg viewBox="0 0 40 46" shape-rendering="crispEdges" aria-hidden="true"><path d="M6 6h28v34H6z" fill="#2a2440" stroke="#0a0814" stroke-width="2"/><path d="M6 6h28v9H6z" fill="${tint}" stroke="#0a0814" stroke-width="2"/><path d="M12 2h4v8h-4zM24 2h4v8h-4z" fill="#8a8aa8" stroke="#0a0814" stroke-width="1.5"/><path d="M12 22l6 6M18 22l-6 6M22 22l6 6M28 22l-6 6" stroke="#f0e0ff" stroke-width="2.4"/><path d="M14 34h12" stroke="#f0e0ff" stroke-width="2"/><path d="M2 20l4 4M38 20l-4 4" stroke="#6a5a9a" stroke-width="2.4"/></svg>`;
+
+function renderTop() {
+  const h = new Date().getHours(), eve = h >= 17 || h < 5;
+  const sky = $("sky").style; sky.setProperty("--s1", eve ? "#3a2a6a" : "#5a9ae8"); sky.setProperty("--s2", eve ? "#e88a5a" : "#a8d4f8"); sky.setProperty("--s3", eve ? "#f8c87a" : "#e8f4ff"); sky.setProperty("--sunO", eve ? .6 : 1);
+  const top = $("top").style; top.setProperty("--m1", eve ? "#8a5a6a" : "#7a9ab8"); top.setProperty("--m2", eve ? "#6a4a5a" : "#5a7a98"); top.setProperty("--g1", eve ? "#7a9a3a" : "#8ac84a"); top.setProperty("--g2", eve ? "#4a6a22" : "#4a8a2a");
+  const fd = foeDays(), target = memberDay(lead);
+  $("foes").innerHTML = fd.map((k, i) => `<div class="foe" data-k="${k}" style="--i:${i}">${k === target ? `<span class="mark" style="--mc:#e85aa8"><i></i></span>` : (i === 0 && !fd.includes(target) ? "" : "")}${foeSvg(["#e85a5a", "#5a8ae8", "#e8a83a", "#5ac85a"][i % 4])}<span class="shadow"></span><span class="nm">みきろく ${ABC[i]}</span></div>`).join("");
+  $("peace").hidden = fd.length > 0; $("peace").textContent = "このしゅうの まものは\nすべて やっつけた！";
+}
+
+function renderBot() {
+  const today = ymd(new Date()), lv = level(), xp = totalXp();
+  const k = memberDay(lead), e = data[k], j = e && e.mood ? JOB[e.mood] : null;
+  const len = e ? e.text.length : 0, hpM = Math.max(40, Math.ceil(len / 40) * 40), st = e ? streakAt(k) : 0;
+  $("lead").style.setProperty("--rc", j ? j.c : "#8a98c8");
+  $("lead").innerHTML = `<div class="nm">${k === today ? "きょう" : mdw(k)}</div><div class="job">${j ? j.j : "みならい"}:Lv ${lv}</div>
+    <div class="bars"><span class="l">HP</span><b>${len}</b><div class="bar"><i style="--v:${len / hpM * 100}%;--bc:${hpColor(len / hpM)}"></i></div>
+    <span class="l">MP</span><b>${st}</b><div class="bar"><i style="--v:${Math.min(st / 30, 1) * 100}%;--bc:var(--mp)"></i></div></div>`;
+  $("cmds").innerHTML = CMDS.map(([a, b], i) => `<button class="cmd ${i === cmd ? "cur" : ""}" data-c="${i}">${a}<small>${b}</small></button>`).join("");
+  $("party").innerHTML = [0, 1, 2, 3].filter(i => i !== lead).map(i => { const mk = memberDay(i), me = data[mk], mj = me && me.mood ? JOB[me.mood] : null, ml = me ? me.text.length : 0, mh = Math.max(40, Math.ceil(ml / 40) * 40), ms = me ? streakAt(mk) : 0;
+    return `<button class="pm win ${me ? "" : "empty"}" data-m="${i}" style="--rc:${mj ? mj.c : "#6a78a8"}"><span class="nm">${mk === today ? "きょう" : mdw(mk)}<small>${mj ? mj.j : "みならい"}:Lv ${lv}</small></span>
+      <span class="hm"><span>HP</span><b>${ml}</b><span class="bar" style="grid-column:1/-1"><i style="--v:${ml / mh * 100}%;--bc:${hpColor(ml / mh)}"></i></span><span>MP</span><b>${ms}</b></span>
+      <span class="say">${me ? esc(me.text.replace(/\s+/g, " ")) : (mk > today ? "まだ こない日" : "めいれいさせろ")}${me ? `<span class="ok">OK!</span>` : ""}</span></button>`; }).join("");
+}
+function render() { renderTop(); renderBot(); }
+
+// typewriter message window on the top screen
+function say(text) {
+  clearInterval(typeTimer); const m = $("msg"); m.classList.add("show"); m.textContent = "";
+  return new Promise(res => { if (reduced) { m.textContent = text; return res(); } let i = 0; typeTimer = setInterval(() => { i++; m.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typeTimer); res(); } }, 40); });
+}
+const hideMsg = () => $("msg").classList.remove("show");
+
+function openSub(id) { sub = id; document.querySelectorAll(".sub").forEach(s => s.classList.toggle("show", s.id === id));
+  if (id === "sList") renderList(); if (id === "sStat") renderStat(); if (id === "sCal") renderCal(); }
+function closeSub() { sub = null; document.querySelectorAll(".sub").forEach(s => s.classList.remove("show")); }
+const listDay = i => { const d = new Date(); d.setDate(d.getDate() - (lpage * 7 + i)); return ymd(d); };
+function renderList() {
+  const today = ymd(new Date());
+  $("list").innerHTML = Array.from({ length: 7 }, (_, i) => { const k = listDay(i), e = data[k];
+    return `<li><button class="row ${i === lcur ? "cur" : ""} ${e ? "" : "empty"}" data-l="${i}" style="--mcol:${e && e.mood ? JOB[e.mood].c : "#aab8e8"}"><span class="cr"></span><span>${k === today ? "きょう" : mdw(k)}</span><span class="tx">${e ? esc(e.text.replace(/\s+/g, " ")) : "─ きろくなし"}</span><small>${e && e.mood ? JOB[e.mood].j : ""}</small></button></li>`; }).join("");
+  $("lPg").textContent = `${lpage + 1}ページ`;
+}
+function renderStat() {
+  const all = Object.keys(data), xp = totalXp(), chars = Object.values(data).reduce((s, x) => s + x.text.length, 0), today = ymd(new Date());
+  const best = (() => { let b = 0, r = 0, p = null; for (const k of all.sort()) { const c = new Date(k + "T00:00:00"); r = p && (c - p) / 864e5 === 1 ? r + 1 : 1; b = Math.max(b, r); p = c; } return b; })();
+  const rows = [["レベル", level()], ["つぎのレベルまで", `${XP_PER_RANK - xp % XP_PER_RANK} EX`], ["けいけんち", xp.toLocaleString()], ["ゴールド", `${Math.floor(xp / 10)} G`], ["れんぞく", `${streakCount()} 日`], ["さいちょう れんぞく", `${best} 日`],
+    ["ぼうけんした日", `${all.length} 日`], ["こんげつ", `${all.filter(k => k.startsWith(today.slice(0, 7))).length} 日`], ["かいた もじ", chars.toLocaleString()], ["やっつけた まもの", all.length]]
+    .concat(MOODS.map(m => [`${JOB[m].n}（${m}）`, all.filter(k => data[k].mood === m).length]));
+  $("stats").innerHTML = rows.map(([l, v]) => `<div><span>${l}</span><b>${v}</b></div>`).join("");
+}
+function renderCal() {
+  const sd = new Date(calSel + "T00:00:00"), y = sd.getFullYear(), m = sd.getMonth(), first = new Date(y, m, 1), start = new Date(first); start.setDate(1 - first.getDay());
+  const weeks = Math.ceil((first.getDay() + new Date(y, m + 1, 0).getDate()) / 7), today = ymd(new Date());
+  $("cMon").textContent = `${y}ねん ${m + 1}がつ`;
+  let h = DOW.map(d => `<span>${d}</span>`).join("");
+  for (let i = 0; i < weeks * 7; i++) { const d = new Date(start); d.setDate(start.getDate() + i); const k = ymd(d), e = data[k], fut = k > today;
+    h += `<button class="cd ${e ? "on" : ""} ${d.getMonth() !== m ? "out" : ""} ${fut ? "fut" : ""} ${k === today ? "today" : ""} ${k === calSel ? "cur" : ""}" ${fut ? "disabled" : `data-go="${k}"`} style="--mcol:${e && e.mood ? JOB[e.mood].c : "#cfd8ff"}">${d.getDate()}</button>`; }
+  $("cal").innerHTML = h;
+}
+
+function command(i) {
+  cmd = i; renderBot();
+  if (i === 0) return openEd(memberDay(lead));
+  if (i === 1) return openSub("sStat");
+  if (i === 2) { lpage = 0; lcur = 0; return openSub("sList"); }
+  if (i === 3) { calSel = ymd(new Date()); return openSub("sCal"); }
+  if (i === 4) { page++; lead = 0; render(); say(`${mdw(memberDay(0))} 〜 ${mdw(memberDay(3))} の なかまに いれかえた。`).then(() => setTimeout(hideMsg, 1200)); return; }
+  if (i === 5) { const ks = Object.keys(data); if (!ks.length) { say("まだ ひっさつわざは つかえない！").then(() => setTimeout(hideMsg, 1200)); return; }
+    const k = ks[Math.floor(Math.random() * ks.length)]; say(`ふりかえりの いちげき！\n${mdw(k)}：${data[k].text.replace(/\s+/g, " ").slice(0, 40)}`).then(() => setTimeout(hideMsg, 2600)); }
+}
+
+function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
+function openEd(k) {
+  if (!k || k > ymd(new Date()) || busy) return;
+  selected = k; const e = data[k]; mood = e ? e.mood : null;
+  $("eT").textContent = `${k === ymd(new Date()) ? "きょう" : mdw(k)} の ぼうけん`; $("eS").textContent = e ? "かきなおす" : "あたらしい きろく";
+  $("moods").innerHTML = MOODS.map(m => `<li><button data-m="${m}" class="${m === mood ? "on" : ""}" style="--mcol:${JOB[m].c}">${m}<small>${JOB[m].n}</small></button></li>`).join("");
+  $("body").value = e ? e.text : "";
+  $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
+}
+const closeEd = () => $("ed").classList.remove("show");
+async function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  if (busy) return; busy = true;
+  const k = selected, isNew = !data[k], xp0 = totalXp(), lv0 = level(), foesBefore = foeDays();
+  data[k] = { mood, text }; store(data); closeEd(); closeSub();
+  const name = k === ymd(new Date()) ? "きょう" : mdw(k), foeEl = [...$("foes").children].find(f => f.dataset.k === k);
+  await say(`${name}の ${mood ? JOB[mood].n : "ぼうけんしゃ"}の こうげき！`); await sleep(300);
+  if (foeEl) {
+    const r = foeEl.getBoundingClientRect(), t = $("top").getBoundingClientRect(), sl = document.createElement("i"), dm = document.createElement("span");
+    sl.className = "slash"; sl.style.left = `${r.left - t.left + r.width / 2 - t.width * .11}px`; sl.style.top = `${r.top - t.top + r.height * .4}px`; $("top").appendChild(sl);
+    $("top").classList.remove("shake"); void $("top").offsetWidth; $("top").classList.add("shake"); foeEl.classList.add("hit");
+    dm.className = "dmg"; dm.textContent = text.length; dm.style.left = `${r.left - t.left + r.width / 2 - 10}px`; dm.style.top = `${r.top - t.top - 10}px`; $("top").appendChild(dm);
+    await sleep(500); sl.remove();
+    await say(`みきろく ${ABC[foesBefore.indexOf(k)]}に ${text.length}の ダメージ！`); await sleep(500); dm.remove();
+    foeEl.classList.add("dead"); await say(`みきろく ${ABC[foesBefore.indexOf(k)]}を やっつけた！`); await sleep(700);
+  } else {
+    await say(isNew ? `${name}の ぼうけんを きろくした！` : `${name}の きろくを かきなおした！`); await sleep(700);
+  }
+  const xp1 = totalXp();
+  if (isNew) { await say(`${xp1 - xp0}ポイントの けいけんちを かくとく！\n${streakCount()}日 れんぞくで ぼうけん中！`); await sleep(1100); }
+  if (level() > lv0) { $("flash").classList.remove("go"); void $("flash").offsetWidth; $("flash").classList.add("go"); await say(`テレッテッテッテー♪\nレベルが ${level()}に あがった！`); await sleep(1300); }
+  if (isNew && foesBefore.length && !foeDays().length) { await say("このしゅうの まものを すべて やっつけた！"); await sleep(1100); }
+  hideMsg(); busy = false; render();
+}
+
+document.addEventListener("click", e => {
+  if (busy) return;
+  const c = e.target.closest(".cmd"); if (c) return command(+c.dataset.c);
+  const pm = e.target.closest(".pm"); if (pm) { lead = +pm.dataset.m; return render(); }
+  const ld = e.target.closest(".lead"); if (ld) return openEd(memberDay(lead));
+  const fo = e.target.closest(".foe"); if (fo) return openEd(fo.dataset.k);
+  const rw = e.target.closest(".row"); if (rw) { lcur = +rw.dataset.l; closeSub(); return openEd(listDay(lcur)); }
+  const g = e.target.closest("[data-go]"); if (g) { calSel = g.dataset.go; closeSub(); return openEd(calSel); }
+  const mb = e.target.closest("#moods button"); if (mb) return setMood(mood === mb.dataset.m ? null : mb.dataset.m);
+  if (e.target.closest("[data-close]")) return closeSub();
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#cl") || e.target.id === "ed") return closeEd();
+  if (e.target.closest("#lNew")) { if (lpage) { lpage--; lcur = 0; renderList(); } return; }
+  if (e.target.closest("#lOld")) { lpage++; lcur = 0; return renderList(); }
+  if (e.target.closest("#cPrev")) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() - 1); calSel = ymd(d); return renderCal(); }
+  if (e.target.closest("#cNext")) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() + 1); calSel = ymd(d) > ymd(new Date()) ? ymd(new Date()) : ymd(d); return renderCal(); }
+  if (e.target.closest("#msg")) hideMsg();
+});
+document.addEventListener("mouseover", e => {
+  if (busy) return;
+  const c = e.target.closest(".cmd"); if (c && +c.dataset.c !== cmd) { cmd = +c.dataset.c; [...$("cmds").children].forEach((b, i) => b.classList.toggle("cur", i === cmd)); }
+  const rw = e.target.closest(".row"); if (rw && +rw.dataset.l !== lcur) { lcur = +rw.dataset.l; renderList(); }
+});
+document.addEventListener("keydown", e => {
+  const k = e.key, open = $("ed").classList.contains("show");
+  if (busy) { if (k === "Enter" || k === " ") e.preventDefault(); return; }
+  if (open && (e.ctrlKey || e.metaKey) && k === "Enter") { e.preventDefault(); return save(); }
+  if (k === "Escape") { if (open) return closeEd(); if (sub) return closeSub(); if (page) { page = 0; lead = 0; return render(); } return hideMsg(); }
+  if (open) {
+    if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) {
+      e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : MOODS.length - 1) : (i + dir + MOODS.length) % MOODS.length]); document.querySelector(`#moods button[data-m="${mood}"]`).focus();
+    }
+    return;
+  }
+  const enter = (k === "Enter" || k === " ") && e.target.tagName !== "BUTTON";
+  if (sub === "sList") {
+    if (k === "ArrowUp" && lcur > 0) { e.preventDefault(); lcur--; return renderList(); }
+    if (k === "ArrowDown") { e.preventDefault(); if (lcur < 6) lcur++; else { lpage++; lcur = 0; } return renderList(); }
+    if (k === "ArrowRight") { e.preventDefault(); lpage++; lcur = 0; return renderList(); }
+    if (k === "ArrowLeft" && lpage) { e.preventDefault(); lpage--; lcur = 0; return renderList(); }
+    if (enter) { e.preventDefault(); closeSub(); return openEd(listDay(lcur)); }
+    return;
+  }
+  if (sub === "sCal") {
+    const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[k];
+    if (mv) { e.preventDefault(); const d = new Date(calSel + "T00:00:00"); d.setDate(d.getDate() + mv); if (ymd(d) <= ymd(new Date())) { calSel = ymd(d); renderCal(); } return; }
+    if (enter) { e.preventDefault(); closeSub(); return openEd(calSel); }
+    return;
+  }
+  if (sub) { if (enter) closeSub(); return; }
+  if ($("msg").classList.contains("show") && enter) { e.preventDefault(); return hideMsg(); }
+  const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -2, ArrowDown: 2 }[k];
+  if (mv) { e.preventDefault(); const n = cmd + mv; if (n >= 0 && n < CMDS.length) { cmd = n; renderBot(); } return; }
+  if (k === "q" || k === "Q") { lead = (lead + 3) % 4; return render(); }
+  if (k === "e" || k === "E") { lead = (lead + 1) % 4; return render(); }
+  if (enter) { e.preventDefault(); return command(cmd); }
+});
+
+$("clouds").innerHTML = [[10, 30, 24], [30, 50, 34], [16, 75, 28]].map(([y, w, t], i) => `<i class="cloud" style="top:${y}%;width:${w / 4}cqw;--t:${t}s;animation-delay:${-i * 9}s"></i>`).join("");
+$("trees").innerHTML = [[6, 38, 13], [17, 41, 9], [84, 39, 12], [94, 42, 9], [72, 46, 7], [28, 45, 6]].map(([x, b, w]) => `<i class="tree" style="left:${x}%;--b:${b}%;--w:${w}cqw"></i>`).join("");
+render();
+// battle intro: swirl, then the encounter line
+(async () => { const s = document.createElement("i"); s.className = "swirl"; $("top").appendChild(s); await sleep(800); s.remove();
+  const fd = foeDays(); await say(fd.length ? `みきろく が ${fd.length}ひき あらわれた！` : "へいわな そうげんが ひろがっている……"); await sleep(1400); hideMsg(); })();
+</script>
+</body>
+</html>
