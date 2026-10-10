@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Battle Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+<style>
+  /* DS-era monster battle screen: top = battle field with HP boxes and message window, bottom = touch command screen */
+  :root { --f:'DotGothic16','MS Gothic',monospace; --ink:#383838; --sh:#d8d8d0; --hp:#58d080; --hpy:#f8c030; --hpr:#f05830; --exp:#40a8f8;
+    --red:#d84848; --redd:#8a2020; --bag:#c8982f; --bagd:#7a5a10; --run:#4a7ccc; --rund:#203f80; --mon:#4caa48; --mond:#1f6a1c; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--ink); background:radial-gradient(ellipse at 50% 30%,#3a4150,#15181f 70%); overflow:hidden; display:grid; place-items:center; -webkit-font-smoothing:none; }
+  button { font:inherit; color:inherit; }
+
+  /* the two screens */
+  .ds { width:min(520px,calc((100vh - 46px) * .665),calc(100vw - 24px)); display:flex; flex-direction:column; gap:clamp(10px,2.4vh,22px); padding:clamp(8px,1.6vh,14px); background:linear-gradient(180deg,#5b6170,#3c414d); border-radius:18px; box-shadow:0 10px 30px rgba(0,0,0,.6), inset 0 2px 0 rgba(255,255,255,.2); }
+  .scr { position:relative; width:100%; aspect-ratio:4/3; overflow:hidden; border:4px solid #111; border-radius:4px; background:#000; container-type:inline-size; }
+  .scr * { image-rendering:pixelated; }
+
+  /* ---------- top: battle ---------- */
+  .field { position:absolute; inset:0; background:linear-gradient(180deg,#2a3a68 0%,#4a5c8c 34%,#7a8cb0 52%,#a8b4c8 60%,#7aa068 60%,#5f8a52 100%); }
+  .field::before { content:""; position:absolute; inset:0 0 40% 0; background:repeating-linear-gradient(180deg,rgba(255,255,255,.06) 0 2px,transparent 2px 6px); }
+  .field::after { content:""; position:absolute; left:0; right:0; top:60%; bottom:0; background:repeating-linear-gradient(90deg,rgba(0,0,0,.06) 0 3px,transparent 3px 9px); }
+  .pad { position:absolute; border-radius:50%; background:radial-gradient(ellipse at 50% 40%,#9ccc88 0 45%,#76a862 46% 70%,#4f7f42 71%); box-shadow:0 3px 0 #3b6332; }
+  .pad.foe { right:6%; top:31%; width:40%; height:13%; animation:padR .7s steps(8) both; }
+  .pad.me { left:-8%; bottom:20%; width:52%; height:16%; animation:padL .7s steps(8) both; }
+  /* sprites (objects, not creatures) */
+  .cal { position:absolute; right:19%; top:9%; width:15cqw; animation:padR .7s steps(8) both; transition:filter .2s; }
+  .cal svg { width:100%; display:block; }
+  .cal.hit { animation:hit .5s steps(2) 2; }
+  .cal.down { animation:faint .6s steps(6) forwards; }
+  .cal.gone { opacity:.25; filter:grayscale(1); }
+  .note { position:absolute; left:10%; bottom:27%; width:22cqw; animation:padL .7s steps(8) both; }
+  .note svg { width:100%; display:block; }
+  .note.atk { animation:atk .4s steps(4); }
+
+  .box { position:absolute; background:#f8f8f0; border:2px solid #404040; border-radius:3px 12px 3px 12px; padding:.8cqw 2cqw 1cqw 2.4cqw; font-size:3.6cqw; line-height:1.1; box-shadow:0 0 0 2px #f8f8f0, 0 0 0 3px #606060; }
+  .box.foe { left:2.5%; top:5%; width:43%; animation:boxL .6s .4s steps(6) both; }
+  .box.me { right:2.5%; top:49%; width:46%; animation:boxR .6s .4s steps(6) both; }
+  .box .nm { display:flex; justify-content:space-between; align-items:baseline; white-space:nowrap; gap:4px; } .box .nm span { overflow:hidden; text-overflow:ellipsis; }
+  .box .lv { font-size:3cqw; } .box .lv b { font-weight:400; color:#3a7ac8; margin-right:1px; }
+  .hpl { display:flex; align-items:center; gap:1cqw; margin-top:.6cqw; }
+  .hpl small { font-size:2.4cqw; background:#f8b030; color:#fff; padding:0 1cqw; border-radius:2px; -webkit-text-stroke:.2px #604000; }
+  .bar { flex:1; height:1.8cqw; background:#506858; border:1px solid #303030; border-radius:2px; padding:1px; }
+  .bar i { display:block; height:100%; width:var(--v,100%); background:var(--c,var(--hp)); border-radius:1px; box-shadow:inset 0 -2px 0 rgba(0,0,0,.18); transition:width 1.1s steps(22); }
+  .num { text-align:right; font-size:3.4cqw; margin-top:.3cqw; letter-spacing:.05em; }
+  .expl { display:flex; align-items:center; gap:1cqw; margin-top:.4cqw; } .expl small { font-size:2.2cqw; color:#3a7ac8; }
+  .expl .bar { height:1.1cqw; background:#606060; } .expl .bar i { background:var(--exp); transition:width 1.2s steps(24); }
+
+  .msg { position:absolute; left:2%; right:2%; bottom:2.5%; height:24%; background:#f8f8f8; border:.9cqw solid #5878b8; border-radius:2cqw; box-shadow:inset 0 0 0 .6cqw #a8c0e8, 0 0 0 2px #28385a; padding:2.2cqw 4cqw; font-size:4.3cqw; line-height:1.55; color:#484848; text-shadow:2px 2px 0 var(--sh); }
+  .msg p { white-space:pre-wrap; word-break:break-all; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+  .msg .arr { position:absolute; right:3cqw; bottom:2cqw; width:0; height:0; border:1.4cqw solid transparent; border-top-color:#e04040; animation:bounce .6s steps(2) infinite; display:none; }
+  .msg.wait .arr { display:block; }
+  .msg .side { position:absolute; right:-.4cqw; top:12%; display:flex; flex-direction:column; gap:1cqw; } .msg .side i { width:4cqw; height:2.4cqw; border:1px solid #888; background:#e8e8e8; } .msg .side i + i { background:#f4b0b8; }
+
+  /* ---------- bottom: touch screen ---------- */
+  .touch { background:#d8d8d8; background-image:radial-gradient(circle at 50% 46%,transparent 0 22cqw,rgba(255,255,255,.35) 22cqw 23cqw,transparent 23cqw), repeating-linear-gradient(0deg,rgba(255,255,255,.35) 0 2px,transparent 2px 6px); }
+  .balls { position:absolute; left:2%; top:2%; display:flex; gap:.6cqw; z-index:3; }
+  .balls i { width:6cqw; height:6cqw; border-radius:50%; border:.6cqw solid #303030; background:linear-gradient(180deg,#e84040 0 44%,#303030 44% 56%,#f8f8f8 56%); position:relative; }
+  .balls i::after { content:""; position:absolute; left:50%; top:50%; width:1.8cqw; height:1.8cqw; translate:-50% -50%; border-radius:50%; background:#f8f8f8; border:.4cqw solid #303030; }
+  .balls i.off { filter:grayscale(1) brightness(.75); }
+  .ghost { position:absolute; inset:9% 3% 22%; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2cqw; }
+  .ghost i { background:#b8b8b8; border-radius:2cqw; box-shadow:inset 0 0 0 .6cqw #a0a0a0; }
+  .cmdbtn { all:unset; box-sizing:border-box; position:absolute; cursor:pointer; display:grid; place-items:center; text-align:center; color:#fff; text-shadow:2px 2px 0 rgba(0,0,0,.35); border-radius:3cqw; transition:transform .06s; }
+  .cmdbtn::before { content:""; position:absolute; inset:1.2cqw; border-radius:2cqw; border:.5cqw solid rgba(255,255,255,.25); pointer-events:none; }
+  .cmdbtn.fight { left:13%; top:13%; width:74%; height:47%; background:linear-gradient(180deg,#e05a5a,var(--red)); box-shadow:0 0 0 1.4cqw #f0a0a0, 0 0 0 2cqw var(--redd), 0 1.6cqw 0 2cqw #5a1010; font-size:5.4cqw; }
+  .cmdbtn.fight span { display:flex; align-items:center; gap:2cqw; } .cmdbtn.fight svg { width:6cqw; }
+  .cmdbtn.bag { left:2%; bottom:3%; width:28%; height:17%; background:linear-gradient(180deg,#e2b54a,var(--bag)); box-shadow:0 0 0 .8cqw #f2d896, 0 0 0 1.3cqw var(--bagd), 0 1cqw 0 1.3cqw #4a3608; font-size:4.6cqw; }
+  .cmdbtn.run { left:36%; bottom:1%; width:28%; height:15%; background:linear-gradient(180deg,#6a98e0,var(--run)); box-shadow:0 0 0 .8cqw #a8c4f0, 0 0 0 1.3cqw var(--rund), 0 1cqw 0 1.3cqw #102050; font-size:4.6cqw; }
+  .cmdbtn.mon { right:2%; bottom:3%; width:28%; height:17%; background:linear-gradient(180deg,#6cc868,var(--mon)); box-shadow:0 0 0 .8cqw #a8e0a0, 0 0 0 1.3cqw var(--mond), 0 1cqw 0 1.3cqw #0f400c; font-size:4.6cqw; }
+  .cmdbtn:active { transform:translateY(.8cqw); }
+  .cmdbtn.sel { filter:brightness(1.12); outline:.8cqw solid #f8f080; outline-offset:2.4cqw; }
+  .cmdbtn:focus-visible { outline:.8cqw solid #f8f080; outline-offset:2.4cqw; }
+  .menu { position:absolute; inset:0; animation:slideUp .25s steps(5) both; }
+
+  /* sub panels on the touch screen (bag / party / editor) */
+  .panel { position:absolute; inset:0; display:none; flex-direction:column; background:#e8e8e0; animation:slideUp .25s steps(5) both; }
+  .panel.show { display:flex; }
+  .ph { display:flex; align-items:center; justify-content:space-between; gap:2cqw; padding:1.4cqw 3cqw; color:#fff; font-size:4.4cqw; text-shadow:2px 2px 0 rgba(0,0,0,.3); }
+  .ph small { font-size:3.2cqw; }
+  .ph button { all:unset; cursor:pointer; background:rgba(0,0,0,.25); padding:.2cqw 2cqw; border-radius:2cqw; font-size:3.4cqw; } .ph button:hover, .ph button:focus-visible { background:rgba(0,0,0,.45); outline:0; }
+  #pBag .ph { background:linear-gradient(180deg,#e2b54a,var(--bag)); } #pMon .ph { background:linear-gradient(180deg,#6cc868,var(--mon)); } #pEd .ph { background:linear-gradient(180deg,#e05a5a,var(--red)); }
+  .list { flex:1; min-height:0; display:flex; flex-direction:column; gap:1cqw; padding:1.6cqw 3cqw; list-style:none; }
+  .it { all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:5cqw 1fr auto; align-items:center; gap:2cqw; width:100%; padding:.8cqw 2cqw; background:#f8f8f8; border:.5cqw solid #b0b0a8; border-radius:1.6cqw; font-size:3.7cqw; }
+  .it .ico { width:4.6cqw; height:4.6cqw; border-radius:1cqw; background:var(--c,#c8c8c8); border:.4cqw solid #505050; }
+  .it .tx { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .it small { font-size:3cqw; color:#787878; }
+  .it.cur { border-color:#e04040; background:#fff4e0; } .it.cur .tx::before { content:"▶"; color:#e04040; margin-right:1cqw; }
+  .it.empty .tx { color:#9a9a9a; }
+  .foot { display:flex; justify-content:space-between; align-items:center; padding:1cqw 3cqw 1.6cqw; font-size:3.2cqw; color:#606060; }
+  .foot button { all:unset; cursor:pointer; padding:.4cqw 3cqw; background:#f8f8f8; border:.5cqw solid #a0a098; border-radius:2cqw; } .foot button:hover, .foot button:focus-visible { border-color:#e04040; outline:0; } .foot button:disabled { opacity:.4; cursor:default; }
+  /* party grid */
+  .party { flex:1; display:grid; grid-template-columns:1fr 1fr; gap:1.6cqw; padding:1.6cqw 3cqw; }
+  .slot { all:unset; box-sizing:border-box; cursor:pointer; position:relative; padding:1cqw 2cqw 1cqw 8cqw; border-radius:2cqw 5cqw 2cqw 5cqw; background:linear-gradient(180deg,#88c8f0,#58a0d8); border:.5cqw solid #285890; color:#fff; text-shadow:1px 1px 0 rgba(0,0,0,.35); font-size:3.3cqw; line-height:1.3; }
+  .slot.first { background:linear-gradient(180deg,#f0a8a8,#d86868); border-color:#7a2020; }
+  .slot.empty { background:linear-gradient(180deg,#b8b8b8,#909090); border-color:#585858; }
+  .slot .pb { position:absolute; left:1.4cqw; top:1.4cqw; width:5cqw; height:5cqw; border-radius:50%; border:.5cqw solid #303030; background:linear-gradient(180deg,#e84040 0 44%,#303030 44% 56%,#f8f8f8 56%); }
+  .slot.empty .pb { filter:grayscale(1); }
+  .slot .bar { margin-top:.4cqw; height:1.4cqw; } .slot .st { position:absolute; right:2cqw; top:1cqw; font-size:2.6cqw; background:#fff; color:var(--c,#555); padding:0 1cqw; border-radius:1cqw; text-shadow:none; }
+  .slot.cur { outline:.8cqw solid #f8f080; } .slot:focus-visible { outline:.8cqw solid #f8f080; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1cqw; padding:0 3cqw 1.4cqw; font-size:3cqw; text-align:center; } .stats div { background:#f8f8f8; border:.4cqw solid #b0b0a8; border-radius:1.4cqw; padding:.4cqw 0; } .stats b { display:block; font-weight:400; font-size:4.4cqw; color:#e04040; }
+  /* editor = move select */
+  .moves { display:grid; grid-template-columns:repeat(5,1fr); gap:1cqw; padding:1.4cqw 3cqw .6cqw; }
+  .mv { all:unset; box-sizing:border-box; cursor:pointer; text-align:center; padding:1cqw 0; border-radius:1.6cqw; background:linear-gradient(180deg,var(--c1),var(--c2)); border:.5cqw solid rgba(0,0,0,.35); color:#fff; font-size:3.4cqw; text-shadow:1px 1px 0 rgba(0,0,0,.35); line-height:1.2; }
+  .mv small { display:block; font-size:2.4cqw; opacity:.9; }
+  .mv.on { outline:.8cqw solid #f8f080; transform:translateY(-.6cqw); } .mv:focus-visible { outline:.8cqw solid #f8f080; }
+  #body { flex:1; min-height:0; margin:0 3cqw; resize:none; font:3.9cqw/1.6 var(--f); color:#383838; background:#f8f8f8; border:.6cqw solid #5878b8; border-radius:2cqw; padding:1cqw 2.4cqw; outline:0; box-shadow:inset 0 0 0 .4cqw #a8c0e8; }
+  #body:focus { border-color:#e04040; }
+  .edfoot { display:flex; gap:2cqw; align-items:center; padding:1.2cqw 3cqw 1.6cqw; }
+  .go { all:unset; cursor:pointer; flex:1; text-align:center; padding:1cqw 0; border-radius:2cqw; color:#fff; font-size:4.2cqw; background:linear-gradient(180deg,#e05a5a,var(--red)); box-shadow:0 .8cqw 0 #5a1010; text-shadow:2px 2px 0 rgba(0,0,0,.3); }
+  .back { all:unset; cursor:pointer; padding:1cqw 3cqw; border-radius:2cqw; background:linear-gradient(180deg,#6a98e0,var(--run)); color:#fff; font-size:3.6cqw; box-shadow:0 .8cqw 0 #102050; }
+  .go:active, .back:active { transform:translateY(.6cqw); box-shadow:none; }
+  .go:focus-visible, .back:focus-visible { outline:.8cqw solid #f8f080; }
+  .edfoot small { font-size:2.6cqw; color:#787878; width:100%; }
+
+  .help { position:fixed; left:50%; bottom:6px; translate:-50% 0; font-size:12px; color:#9aa3b5; white-space:nowrap; }
+  #flash { position:fixed; inset:0; z-index:60; background:#fff; opacity:0; pointer-events:none; }
+  #flash.go { animation:flash .5s steps(2) 2; }
+
+  @keyframes padR { from { transform:translateX(120%); } }
+  @keyframes padL { from { transform:translateX(-120%); } }
+  @keyframes boxL { from { transform:translateX(-130%); } }
+  @keyframes boxR { from { transform:translateX(130%); } }
+  @keyframes hit { 50% { opacity:0; } }
+  @keyframes faint { to { transform:translateY(60%); opacity:0; clip-path:inset(0 0 100% 0); } }
+  @keyframes atk { 50% { transform:translate(8%,-6%); } }
+  @keyframes bounce { 50% { transform:translateY(25%); } }
+  @keyframes slideUp { from { opacity:0; transform:translateY(6%); } }
+  @keyframes flash { 50% { opacity:.8; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition:none !important; } }
+  @media (max-width:560px) { body { overflow-y:auto; align-items:start; padding:54px 0 30px; } .ds { width:calc(100vw - 16px); } .help { position:static; translate:none; margin-top:8px; text-align:center; white-space:normal; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="ds">
+  <!-- top screen -->
+  <section class="scr" aria-label="バトル画面">
+    <div class="field"></div>
+    <div class="pad foe"></div><div class="pad me"></div>
+    <div class="cal" id="cal"><svg viewBox="0 0 20 22" shape-rendering="crispEdges" aria-hidden="true">
+      <path d="M2 3h16v18H2z" fill="#303030"/><path d="M3 4h14v16H3z" fill="#f8f8f8"/><path d="M3 4h14v4H3z" fill="#e04848"/>
+      <path d="M5 1h2v5H5zM13 1h2v5h-2z" fill="#606060"/><path d="M3 19h14v1H3z" fill="#c8c8c8"/>
+      <text id="calD" x="10" y="17.4" text-anchor="middle" font-family="DotGothic16,monospace" font-size="8" fill="#303030">10</text>
+      <text id="calW" x="10" y="7.3" text-anchor="middle" font-family="DotGothic16,monospace" font-size="3" fill="#fff">SAT</text></svg></div>
+    <div class="note" id="note"><svg viewBox="0 0 26 20" shape-rendering="crispEdges" aria-hidden="true">
+      <path d="M2 4h22v15H2z" fill="#303030"/><path d="M3 5h10v13H3zM14 5h9v13h-9z" fill="#f0e8c8"/><path d="M13 5h1v13h-1z" fill="#a08850"/>
+      <path d="M4 8h8v1H4zM4 11h8v1H4zM4 14h6v1H4zM15 8h7v1h-7zM15 11h7v1h-7z" fill="#b8b098"/>
+      <path d="M18 0h2v1h1v9h-1v2h-2v-2h-1V1h1z" fill="#303030"/><path d="M18 1h2v8h-2z" fill="#f8c030"/><path d="M18 10h2v1h-2z" fill="#e8a080"/></svg></div>
+    <div class="box foe"><div class="nm"><span id="fN">10/10（土）</span><span class="lv"><b>♦</b>Lv<span id="fL">1</span></span></div>
+      <div class="hpl"><small>HP</small><div class="bar"><i id="fH"></i></div></div></div>
+    <div class="box me"><div class="nm"><span>わたし</span><span class="lv"><b>♦</b>Lv<span id="mL">1</span></span></div>
+      <div class="hpl"><small>HP</small><div class="bar"><i id="mH"></i></div></div>
+      <div class="num" id="mN">0/ 0</div>
+      <div class="expl"><small>EXP</small><div class="bar"><i id="mX"></i></div></div></div>
+    <div class="msg" id="msg"><p id="mT"></p><span class="arr"></span><span class="side"><i></i><i></i></span></div>
+  </section>
+
+  <!-- bottom screen -->
+  <section class="scr touch" aria-label="コマンド画面">
+    <div class="balls" id="balls"></div>
+    <div class="menu" id="menu">
+      <div class="ghost"><i></i><i></i><i></i><i></i></div>
+      <button class="cmdbtn fight" data-c="0"><span><svg viewBox="0 0 10 10" shape-rendering="crispEdges"><path d="M2 1h6v8H2z" fill="#303030"/><path d="M3 2h4v6H3z" fill="#f0e8c8"/><path d="M4 3h2v1H4zM4 5h2v1H4z" fill="#a09070"/></svg>たたかう</span></button>
+      <button class="cmdbtn bag" data-c="1">バッグ</button>
+      <button class="cmdbtn run" data-c="2">にげる</button>
+      <button class="cmdbtn mon" data-c="3">ポケモン</button>
+    </div>
+    <div class="panel" id="pBag"><div class="ph"><span>バッグ ─ にっき</span><small id="bagPg"></small><button data-close>もどる</button></div>
+      <ul class="list" id="bagList"></ul>
+      <div class="foot"><button id="bPrev">◀ まえ</button><span id="bagCnt"></span><button id="bNext">つぎ ▶</button></div></div>
+    <div class="panel" id="pMon"><div class="ph"><span>てもち ─ さいきん6日</span><button data-close>もどる</button></div>
+      <div class="party" id="party"></div>
+      <div class="stats" id="stats"></div></div>
+    <div class="panel" id="pEd" role="dialog" aria-label="にっきを書く"><div class="ph"><span id="eT">わざを えらんでください</span><button data-close>もどる</button></div>
+      <div class="moves" id="moves"></div>
+      <textarea id="body" placeholder="きょうは どんな いちにち だった？"></textarea>
+      <div class="edfoot"><button class="go" id="save">こうげき！（記録）</button><button class="back" data-close>もどる</button></div></div>
+  </section>
+</div>
+<p class="help">← → ↑ ↓ えらぶ ／ Enter けってい ／ Esc もどる ／ Ctrl+Enter 記録</p>
+</div>
+<div id="flash"></div>
+
+<script src="theme-switch.js" data-theme="pokemon_dp"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+// each mood is a "move" with a type colour
+const MOVE = {
+  最高: { n:"ゴキゲン", t:"でんき", c1:"#f8d030", c2:"#c8a010" },
+  良い: { n:"ニコニコ", t:"くさ",   c1:"#78c850", c2:"#4e8a30" },
+  普通: { n:"ふつう",   t:"ノーマル", c1:"#b8b8a0", c2:"#888870" },
+  微妙: { n:"モヤモヤ", t:"ゴースト", c1:"#9a7ac8", c2:"#634a8a" },
+  最悪: { n:"ズーン",   t:"あく",   c1:"#806050", c2:"#4e3a30" }
+};
+const DOW = ["日","月","火","水","木","金","土"], DOWE = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, PER = 6;
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`; };
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+let data = load(), target = ymd(new Date()), mcur = 0, panel = null, bpage = 0, bcur = 0, pcur = 0, mood = null, busy = false, typeTimer;
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const hpColor = r => r > .5 ? "var(--hp)" : r > .2 ? "var(--hpy)" : "var(--hpr)";
+
+// message window types like the handheld games; resolves when done
+function say(text, wait = false) {
+  clearInterval(typeTimer); const el = $("mT"), m = $("msg"); m.classList.remove("wait"); el.textContent = "";
+  return new Promise(res => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = text; m.classList.toggle("wait", wait); return res(); }
+    let i = 0; typeTimer = setInterval(() => { i++; el.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typeTimer); m.classList.toggle("wait", wait); res(); } }, 34);
+  });
+}
+
+function renderTop(prompt = true) {
+  const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, today = ymd(new Date()), e = data[target], d = new Date(target + "T00:00:00");
+  $("fN").textContent = target === today ? "きょう" : md(target); $("fL").textContent = d.getDate();
+  $("calD").textContent = d.getDate(); $("calW").textContent = DOWE[d.getDay()];
+  $("fH").style.setProperty("--v", e ? "0%" : "100%");
+  $("cal").classList.toggle("gone", !!e); $("cal").classList.remove("down", "hit");
+  const month = today.slice(0, 7), got = Object.keys(data).filter(k => k.startsWith(month)).length, days = new Date().getDate(), r = got / days;
+  $("mL").textContent = lv; $("mN").textContent = `${got}/ ${days}`;
+  $("mH").style.setProperty("--v", `${r * 100}%`); $("mH").style.setProperty("--c", hpColor(r));
+  $("mX").style.setProperty("--v", `${xp % XP_PER_RANK / XP_PER_RANK * 100}%`);
+  if (prompt) say(e ? `${target === today ? "きょう" : md(target)}の にっき：\n${e.text.replace(/\s+/g, " ")}` : "わたしは どうする？");
+}
+
+function renderBalls() {
+  $("balls").innerHTML = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); return `<i class="${data[ymd(d)] ? "" : "off"}" title="${md(ymd(d))}"></i>`; }).join("");
+}
+function renderMenu() { document.querySelectorAll(".cmdbtn").forEach(b => b.classList.toggle("sel", +b.dataset.c === mcur)); }
+
+// bag: every day going back from today, PER per page
+const bagDay = i => { const d = new Date(); d.setDate(d.getDate() - (bpage * PER + i)); return ymd(d); };
+function renderBag() {
+  const today = ymd(new Date());
+  $("bagList").innerHTML = Array.from({ length: PER }, (_, i) => { const k = bagDay(i), e = data[k];
+    return `<li><button class="it ${i === bcur ? "cur" : ""} ${e ? "" : "empty"}" data-b="${i}"><span class="ico" style="--c:${e && e.mood ? MOVE[e.mood].c1 : "#d0d0c8"}"></span><span class="tx">${k === today ? "きょう" : md(k)} ${e ? esc(e.text.replace(/\s+/g, " ")) : "─ まだ かいていない"}</span><small>${e ? "×" + e.text.length : ""}</small></button></li>`; }).join("");
+  $("bagPg").textContent = `${bpage + 1}ページ`; $("bagCnt").textContent = `にっき ×${Object.keys(data).length}`; $("bPrev").disabled = bpage === 0;
+}
+function renderParty() {
+  const today = ymd(new Date()), xp = totalXp(), all = Object.keys(data);
+  $("party").innerHTML = Array.from({ length: 6 }, (_, i) => { const d = new Date(); d.setDate(d.getDate() - i); const k = ymd(d), e = data[k], r = e ? Math.min(e.text.length / 200, 1) : 0;
+    return `<button class="slot ${i === 0 ? "first" : ""} ${e ? "" : "empty"} ${i === pcur ? "cur" : ""}" data-p="${i}"><span class="pb"></span>${k === today ? "きょう" : md(k)}${e && e.mood ? `<span class="st" style="--c:${MOVE[e.mood].c2}">${MOVE[e.mood].t}</span>` : ""}<br>${e ? `Lv${streakAt(k)}` : "─"}<div class="bar"><i style="--v:${r * 100}%;--c:${hpColor(r)}"></i></div></button>`; }).join("");
+  $("stats").innerHTML = [["レベル", Math.floor(xp / XP_PER_RANK) + 1], ["れんぞく", streakCount() + "日"], ["にっき", all.length], ["もじすう", Object.values(data).reduce((s, x) => s + x.text.length, 0)]].map(([l, v]) => `<div>${l}<b>${v}</b></div>`).join("");
+}
+
+function openPanel(id) {
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("show", p.id === id)); panel = id;
+  $("menu").style.display = id ? "none" : ""; $("balls").style.display = id ? "none" : "";
+  if (id === "pBag") renderBag(); if (id === "pMon") renderParty();
+  if (!id) { renderMenu(); renderTop(); }
+}
+function setMood(m) { mood = m; document.querySelectorAll(".mv").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
+function openEd(k) {
+  target = k; renderTop(false); const e = data[k]; mood = e ? e.mood : null;
+  $("eT").textContent = `${k === ymd(new Date()) ? "きょう" : md(k)} ─ わざを えらぶ`;
+  $("moves").innerHTML = MOODS.map(m => `<button class="mv ${m === mood ? "on" : ""}" data-m="${m}" style="--c1:${MOVE[m].c1};--c2:${MOVE[m].c2}">${m}<small>${MOVE[m].t}</small></button>`).join("");
+  $("body").value = e ? e.text : "";
+  openPanel("pEd"); say(e ? "にっきを かきなおす？" : `${k === ymd(new Date()) ? "きょう" : md(k)}が あらわれた！`);
+  setTimeout(() => $("body").focus(), 50);
+}
+function command(i) {
+  if (i === 0) return openEd(target);
+  if (i === 1) { bpage = 0; bcur = 0; return openPanel("pBag"); }
+  if (i === 2) { busy = true; say("うまく にげきれた！"); setTimeout(() => location.href = "index.html", 1100); return; }
+  if (i === 3) { pcur = 0; return openPanel("pMon"); }
+}
+
+async function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  if (busy) return; busy = true;
+  const xp0 = totalXp(), isNew = !data[selectedKey()], k = selectedKey();
+  data[k] = { mood, text }; store(data);
+  const xp1 = totalXp(), up = Math.floor(xp1 / XP_PER_RANK) > Math.floor(xp0 / XP_PER_RANK), name = k === ymd(new Date()) ? "きょう" : md(k);
+  openPanel(null); clearInterval(typeTimer);
+  const mv = mood ? MOVE[mood].n : "にっき";
+  await say(`わたしの ${mv}にっき！`); $("note").classList.remove("atk"); void $("note").offsetWidth; $("note").classList.add("atk");
+  await sleep(350);
+  if (isNew) {
+    const c = $("cal"); c.classList.remove("gone", "hit"); void c.offsetWidth; c.classList.add("hit"); $("fH").style.setProperty("--v", "0%");
+    await sleep(1100); await say(`${name}は たおれた！`); c.classList.add("down"); await sleep(700);
+    $("mX").style.setProperty("--v", `${xp1 % XP_PER_RANK / XP_PER_RANK * 100}%`); renderTop(false);
+    await say(`わたしは ${xp1 - xp0} けいけんちを もらった！\n${streakCount()}日 れんぞく きろく！`, true); await sleep(900);
+    if (up) { $("flash").classList.remove("go"); void $("flash").offsetWidth; $("flash").classList.add("go"); await say(`わたしは レベル ${Math.floor(xp1 / XP_PER_RANK) + 1} に あがった！`, true); await sleep(1000); }
+  } else {
+    await say("にっきを かきなおした！", true); await sleep(900);
+  }
+  renderBalls(); renderTop(); busy = false;
+}
+const selectedKey = () => target;
+
+document.addEventListener("click", e => {
+  if (busy) return;
+  const c = e.target.closest(".cmdbtn"); if (c) { mcur = +c.dataset.c; renderMenu(); return command(mcur); }
+  if (e.target.closest("[data-close]")) return openPanel(null);
+  const b = e.target.closest("[data-b]"); if (b) { bcur = +b.dataset.b; return openEd(bagDay(bcur)); }
+  const p = e.target.closest("[data-p]"); if (p) { const d = new Date(); d.setDate(d.getDate() - +p.dataset.p); return openEd(ymd(d)); }
+  const m = e.target.closest(".mv"); if (m) return setMood(mood === m.dataset.m ? null : m.dataset.m);
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#bPrev")) { if (bpage) { bpage--; bcur = 0; renderBag(); } return; }
+  if (e.target.closest("#bNext")) { bpage++; bcur = 0; return renderBag(); }
+});
+document.addEventListener("mouseover", e => {
+  if (busy) return;
+  const c = e.target.closest(".cmdbtn"); if (c && +c.dataset.c !== mcur) { mcur = +c.dataset.c; renderMenu(); }
+  const b = e.target.closest("[data-b]"); if (b && +b.dataset.b !== bcur) { bcur = +b.dataset.b; renderBag(); }
+});
+// 2D layout of the four command buttons for arrow keys
+const NAV = { 0: { ArrowDown: 2, ArrowLeft: 1, ArrowRight: 3 }, 1: { ArrowUp: 0, ArrowRight: 2 }, 2: { ArrowUp: 0, ArrowLeft: 1, ArrowRight: 3 }, 3: { ArrowUp: 0, ArrowLeft: 2 } };
+document.addEventListener("keydown", e => {
+  if (busy) return;
+  const k = e.key;
+  if (panel === "pEd") {
+    if ((e.ctrlKey || e.metaKey) && k === "Enter") { e.preventDefault(); return save(); }
+    if (k === "Escape") return openPanel(null);
+    if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) {
+      e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : MOODS.length - 1) : (i + dir + MOODS.length) % MOODS.length]); document.querySelector(`.mv[data-m="${mood}"]`).focus();
+    }
+    return;
+  }
+  if (k === "Escape" || k === "Backspace") { if (panel) { e.preventDefault(); openPanel(null); } return; }
+  const enter = (k === "Enter" || k === " ") && e.target.tagName !== "BUTTON";
+  if (panel === "pBag") {
+    if (k === "ArrowUp" && bcur > 0) { e.preventDefault(); bcur--; return renderBag(); }
+    if (k === "ArrowDown") { e.preventDefault(); if (bcur < PER - 1) bcur++; else { bpage++; bcur = 0; } return renderBag(); }
+    if (k === "ArrowRight") { e.preventDefault(); bpage++; bcur = 0; return renderBag(); }
+    if (k === "ArrowLeft" && bpage > 0) { e.preventDefault(); bpage--; bcur = 0; return renderBag(); }
+    if (enter) { e.preventDefault(); return openEd(bagDay(bcur)); }
+    return;
+  }
+  if (panel === "pMon") {
+    const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -2, ArrowDown: 2 }[k];
+    if (mv) { e.preventDefault(); const n = pcur + mv; if (n >= 0 && n < 6) { pcur = n; renderParty(); } return; }
+    if (enter) { e.preventDefault(); const d = new Date(); d.setDate(d.getDate() - pcur); return openEd(ymd(d)); }
+    return;
+  }
+  const to = NAV[mcur][k]; if (to !== undefined) { e.preventDefault(); mcur = to; return renderMenu(); }
+  if (enter) { e.preventDefault(); return command(mcur); }
+});
+
+renderBalls(); renderMenu(); renderTop();
+</script>
+</body>
+</html>
