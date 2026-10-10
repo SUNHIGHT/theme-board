@@ -76,7 +76,10 @@
     { id: "metalslug", name: "METAL SLUG",     sub: "メタルスラッグ",           c1: "#ffd400", c2: "#434c22",
       titles: [ { id: "metalslug", file: "metalslug.html", name: "METAL SLUG", sub: "出撃!" } ] },
     { id: "dq",     name: "DRAGON QUEST",      sub: "ドラゴンクエスト",         c1: "#7ec8ff", c2: "#04042c",
-      titles: [ { id: "dq11", file: "dq11.html", name: "DRAGON QUEST XI", sub: "過ぎ去りし時を求めて" } ] },
+      titles: [
+        { id: "dq9", file: "dq9.html", name: "DRAGON QUEST IX", sub: "星空の守り人" },
+        { id: "dq11", file: "dq11.html", name: "DRAGON QUEST XI", sub: "過ぎ去りし時を求めて" }
+      ] },
     { id: "xenoblade", name: "XENOBLADE", sub: "ゼノブレイド",           c1: "#4a63ff", c2: "#0c1470",
       titles: [
         { id: "xb2", file: "xenoblade2.html", name: "XENOBLADE 2", sub: "アルストの空", c1: "#4a63ff", c2: "#0c1470" },
