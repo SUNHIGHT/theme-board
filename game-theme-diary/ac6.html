@@ -6,168 +6,169 @@
 <title>Rubicon Diary</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Zen+Kaku+Gothic+New:wght@500;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b0d10;--fg:#aeb5bd;--hi:#f4f6f8;--acc:#ff6a00;--acc2:#e8edf2;--line:rgba(232,237,242,.4);--panel:rgba(16,19,24,.8);--sel:rgba(255,106,0,.16);--glow:rgba(255,106,0,.5);--warn:#ff6a00;--fb:'Zen Kaku Gothic New',sans-serif;--fh:'Michroma','Zen Kaku Gothic New',sans-serif; }
-
+  /* Garage-menu layout: left main menu / sub list / detail panel / hint bar (after AC6's garage screen) */
+  :root { --bg:#0b0d0f; --fg:#c9d0d5; --hi:#f2f5f7; --dim:#7d868d; --line:rgba(235,240,243,.3); --panel:rgba(74,82,89,.42); --row:rgba(255,255,255,.07);
+    --sel-bg:#e9edef; --sel-fg:#101214; --acc:#ff6a00; --fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --fh:'Michroma','Zen Kaku Gothic New',sans-serif; }
   * { box-sizing:border-box; margin:0; }
-  body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
-  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 16px 70px; }
-  header { position:relative; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:24px; animation:typeIn .8s both; }
-  .op { font-size:12px; letter-spacing:.4em; color:var(--acc); }
-  h1 { font-family:var(--fh); font-weight:700; font-size:clamp(34px,8.5vw,66px); letter-spacing:.05em; line-height:1.05; color:var(--hi); margin:4px 0; }
-  h1 small { display:block; font-size:.4em; letter-spacing:.35em; color:var(--fg); font-family:var(--fb); font-weight:400; }
-  .clock { display:flex; flex-wrap:wrap; gap:22px; font-size:15px; letter-spacing:.15em; margin-top:8px; }
-  .clock b { color:var(--acc); font-weight:400; margin-right:6px; }
-  .blink { animation:blink 1s steps(1) infinite; }
-  .panel { position:relative; background:var(--panel); border:1px solid var(--line); padding:22px 22px 18px; margin-bottom:30px; }
-  .ttl { display:inline-block; font-family:var(--fh); font-size:15px; letter-spacing:.25em; color:var(--bg); background:var(--acc); padding:2px 14px; margin:-36px 0 12px -8px; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:var(--fg); overflow:hidden; background:
+      radial-gradient(ellipse at 72% 28%, rgba(120,132,140,.28), transparent 58%),
+      repeating-linear-gradient(100deg, rgba(255,255,255,.028) 0 2px, transparent 2px 96px),
+      linear-gradient(115deg,#0c0e10 0%,#1c2125 46%,#0a0b0d 100%); }
+  body::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.55;
+    background:linear-gradient(72deg, transparent 0 38%, rgba(255,255,255,.05) 38% 42%, transparent 42% 60%, rgba(255,255,255,.035) 60% 63%, transparent 63%); filter:blur(6px); }
+  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,.7) 100%); }
+  .app { position:relative; z-index:1; height:100%; display:grid; grid-template-rows:auto 1fr auto; }
+
+  /* top bar */
+  .top { display:flex; align-items:flex-end; justify-content:space-between; gap:16px; padding:22px 30px 12px; animation:fadeIn .5s both; }
+  .crumb { font-family:var(--fh); font-size:clamp(20px,3vw,30px); letter-spacing:.2em; color:var(--hi); }
+  .crumb small { display:block; font-family:var(--fb); font-size:12px; letter-spacing:.25em; color:var(--dim); margin-top:4px; }
+  .res { display:flex; gap:26px; margin-right:150px; font-family:var(--fh); font-size:13px; letter-spacing:.1em; color:var(--hi); text-align:right; }
+  .res b { display:block; font-family:var(--fb); font-weight:500; font-size:10px; letter-spacing:.25em; color:var(--dim); }
+  .res span { font-size:18px; }
+
+  /* middle */
+  .mid { display:grid; grid-template-columns:260px 1fr; gap:22px; padding:6px 30px; min-height:0; }
+  .menu { display:flex; flex-direction:column; gap:4px; align-self:start; padding-top:10px; }
+  .mi { all:unset; box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:12px 14px; cursor:pointer; color:var(--fg);
+    border-left:3px solid transparent; font-family:var(--fh); font-size:13px; letter-spacing:.16em; animation:slideIn .45s calc(var(--i) * 70ms + .15s) cubic-bezier(.2,.9,.3,1) both; transition:background .12s; }
+  .mi small { display:block; font-family:var(--fb); font-size:11px; letter-spacing:.12em; color:var(--dim); margin-top:3px; }
+  .mi::after { content:"▸"; color:var(--dim); }
+  .mi:hover { background:var(--row); }
+  .mi.cur { color:var(--hi); border-left-color:var(--hi); background:var(--row); }
+  .mi.cur::after { color:var(--hi); }
+  .menu.focus .mi.cur { background:rgba(255,255,255,.16); }
+  .mi:focus-visible, .row:focus-visible, button:focus-visible, textarea:focus-visible { outline:2px solid var(--acc); outline-offset:2px; }
+
+  .work { display:grid; grid-template-columns:minmax(230px,320px) 1fr; gap:16px; min-height:0; animation:fadeIn .4s .25s both; }
+  .work.solo { grid-template-columns:1fr; }
+  .work.solo .sub { display:none; }
+  .pn { position:relative; display:flex; flex-direction:column; min-height:0; background:var(--panel); border:1px solid var(--line); backdrop-filter:blur(3px); }
+  .pn::before, .pn::after { content:""; position:absolute; width:10px; height:10px; border:2px solid var(--hi); pointer-events:none; }
+  .pn::before { top:-1px; left:-1px; border-right:0; border-bottom:0; } .pn::after { right:-1px; bottom:-1px; border-left:0; border-top:0; }
+  .pn > h3 { font-family:var(--fh); font-weight:400; font-size:10px; letter-spacing:.24em; color:var(--dim); padding:9px 14px; border-bottom:1px solid var(--line); }
+  .pn > h3::before { content:"▪ "; color:var(--hi); }
+  .pn .body { padding:12px 14px 14px; overflow:auto; min-height:0; }
+  .panel-in { animation:panelIn .3s cubic-bezier(.2,.9,.3,1); }
+
+  /* list rows (sub menu) */
+  .list { display:flex; flex-direction:column; gap:3px; padding:10px; overflow:auto; min-height:0; }
+  .row { all:unset; box-sizing:border-box; display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 14px; cursor:pointer; color:var(--hi); background:var(--row);
+    font-family:var(--fh); font-size:12px; letter-spacing:.14em; transition:background .1s; }
+  .row small { font-family:var(--fb); font-size:11px; letter-spacing:.08em; color:var(--dim); }
+  .row:hover { background:rgba(255,255,255,.16); }
+  .row.sel { background:var(--sel-bg); color:var(--sel-fg); } .row.sel small { color:#4b5359; }
+  .row.sel.flash { animation:flash .25s; }
+  .empty { padding:18px 14px; color:var(--dim); font-size:13px; line-height:1.8; }
+
+  /* detail */
+  .head { display:flex; align-items:baseline; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:10px; }
+  .head b { font-family:var(--fh); font-weight:400; font-size:16px; letter-spacing:.14em; color:var(--hi); }
+  .chip { font-family:var(--fh); font-size:10px; letter-spacing:.2em; padding:3px 10px; border:1px solid var(--line); color:var(--hi); }
+  textarea { width:100%; min-height:min(34vh,300px); resize:vertical; padding:12px 14px; font:500 16px/1.9 var(--fb); color:var(--hi); background:rgba(0,0,0,.35); border:1px solid var(--line); outline:none; }
+  textarea:focus { border-color:var(--hi); }
+  textarea::placeholder { color:var(--dim); }
+  .acts { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-top:12px; flex-wrap:wrap; }
+  .hintx { font-size:12px; color:var(--acc); min-height:1.2em; }
+  .btn { all:unset; box-sizing:border-box; cursor:pointer; font-family:var(--fh); font-size:13px; letter-spacing:.3em; padding:11px 30px; color:var(--sel-fg); background:var(--sel-bg); transition:.12s; }
+  .btn:hover { background:#fff; box-shadow:0 0 16px rgba(255,255,255,.45); } .btn:active { transform:scale(.96); }
+  .btn.ghost { background:transparent; color:var(--hi); border:1px solid var(--hi); } .btn.ghost:hover { background:rgba(255,255,255,.14); box-shadow:none; }
+  .text { white-space:pre-wrap; line-height:1.9; color:var(--hi); }
+
+  .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-bottom:16px; }
+  .card { border:1px solid var(--line); background:rgba(0,0,0,.28); padding:8px 12px 10px; }
+  .card b { display:block; font-family:var(--fh); font-weight:400; font-size:9px; letter-spacing:.24em; color:var(--dim); }
+  .card span { display:block; font-family:var(--fh); font-size:26px; color:var(--hi); margin-top:4px; }
+  .card span.sm { font-size:15px; letter-spacing:.08em; padding-top:8px; }
   .gauge { margin-bottom:12px; }
-  .gauge b { font-weight:400; display:flex; justify-content:space-between; letter-spacing:.2em; font-size:14px; }
-  .gauge b em { font-style:normal; font-family:var(--fh); font-size:20px; color:var(--hi); }
-  .track { height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.45); }
-  .track div { height:100%; width:0; transition:width .9s cubic-bezier(.2,.9,.3,1); background:repeating-linear-gradient(90deg,var(--c) 0 8px,transparent 8px 10px); }
-  .life div { --c:var(--acc); } .stam div { --c:var(--acc2); }
-  .row3 { display:flex; gap:26px; flex-wrap:wrap; margin-top:14px; }
-  .row3 div { flex:1 1 130px; border-top:1px solid var(--line); padding-top:6px; }
-  .row3 b { display:block; font-weight:400; font-size:12px; letter-spacing:.25em; color:var(--acc); }
-  .row3 i { font-style:normal; font-family:var(--fh); font-size:38px; color:var(--hi); line-height:1.1; }
-  .moods { list-style:none; padding:0; margin-bottom:18px; }
-  .moods button { width:100%; text-align:left; font:inherit; font-size:17px; cursor:pointer; color:var(--fg); background:transparent; border:0;
-    border-bottom:1px dashed var(--line); padding:8px 8px 8px 30px; position:relative; display:flex; justify-content:space-between; transition:.1s; }
-  .moods button span { font-size:12px; letter-spacing:.2em; opacity:.7; }
-  .moods button:hover { color:var(--acc); }
-  .moods button.on { background:var(--sel); color:var(--hi); animation:fade .25s; }
-  .moods button.on::before { content:"▶"; position:absolute; left:8px; color:var(--acc); animation:blink .8s steps(1) infinite; }
-  textarea { width:100%; min-height:180px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.9; color:var(--hi);
-    background:rgba(255,255,255,.05); border:1px solid var(--line); outline:none; }
-  textarea:focus { border-color:var(--acc); box-shadow:0 0 12px var(--glow); }
-  textarea::placeholder { color:var(--fg); opacity:.45; }
-  .hint { font-size:12px; color:var(--acc); margin-top:6px; min-height:1.2em; }
-  .save { display:block; margin:14px 0 0 auto; font-family:var(--fh); font-weight:700; font-size:24px; letter-spacing:.3em; cursor:pointer;
-    color:var(--bg); background:var(--acc); border:0; padding:8px 34px; transition:.1s; }
-  .save:hover { background:var(--hi); box-shadow:0 0 18px var(--glow); }
-  .save:active { transform:scale(.95); }
-  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--line); transition:.15s; }
-  .cal .dow { aspect-ratio:auto; border:0; color:var(--acc); font-size:12px; letter-spacing:.2em; }
-  .cal .done { color:var(--bg); font-weight:700; background:var(--acc); }
-  .cal .today { outline:2px solid var(--hi); outline-offset:2px; }
-  .cal .sel { box-shadow:0 0 0 3px var(--acc2); }
-  .cal div[data-d]:hover { background:var(--sel); transform:scale(1.12); }
-  h2 { font-family:var(--fh); font-size:22px; letter-spacing:.3em; color:var(--hi); margin:6px 0 14px; }
-  .entry { background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--acc); padding:12px 18px; margin-bottom:12px; }
-  .entry small { color:var(--acc); letter-spacing:.2em; font-size:12px; }
-  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.8; color:var(--hi); }
-  #stamp { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
-  #stamp.show { display:flex; animation:fade .2s; }
-  #stamp .bars::before, #stamp .bars::after { content:""; position:absolute; left:0; right:0; height:16vh; background:#000; z-index:1; }
-  #stamp .bars::before { top:0; animation:barT .5s ease-out; } #stamp .bars::after { bottom:0; animation:barB .5s ease-out; }
-  @keyframes barT { from { transform:translateY(-100%); } } @keyframes barB { from { transform:translateY(100%); } }
-  #stamp .box { text-align:center; position:relative; z-index:2; padding:0 16px; }
-  #bang { font-family:var(--fh); font-weight:700; font-size:clamp(110px,28vw,230px); line-height:1; color:var(--warn); text-shadow:0 0 30px var(--warn), 5px 5px 0 #000; animation:bang .45s cubic-bezier(.2,2,.4,1); }
-  @keyframes bang { from { transform:scale(.1) rotate(-25deg); opacity:0; } }
-  #stampBig { font-family:var(--fh); font-size:clamp(22px,5.5vw,40px); letter-spacing:.2em; color:var(--hi); min-height:1.4em; }
-  #stampBig::after { content:"█"; animation:blink .6s steps(1) infinite; color:var(--acc); }
-  #stampSub { margin-top:6px; letter-spacing:.3em; font-size:14px; color:var(--acc); }
-  @keyframes blink { 50% { opacity:0; } }
-  @keyframes fade { from { opacity:0; } }
-  @keyframes typeIn { from { opacity:0; transform:translateX(-30px); } }
-  @keyframes panelIn { 0% { opacity:0; transform:translateY(24px); } 40% { opacity:.4; } 55% { opacity:.1; } 70% { opacity:1; } }
-  @keyframes rise { from { opacity:0; transform:scale(.6); } }
-  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
-  main > .panel { animation:panelIn .7s both; }
-  main > .panel:nth-of-type(1) { animation-delay:.25s; } main > .panel:nth-of-type(2) { animation-delay:.45s; } main > .panel:nth-of-type(3) { animation-delay:.65s; }
-  .cal div[data-d] { animation:rise .3s calc(var(--i) * 16ms + .8s) backwards; }
-  .entry { animation:entryIn .45s calc(var(--i) * 70ms) ease-out backwards; }
+  .gauge b { display:flex; justify-content:space-between; font-family:var(--fh); font-weight:400; font-size:10px; letter-spacing:.2em; color:var(--dim); margin-bottom:5px; }
+  .gauge b em { font-style:normal; color:var(--hi); }
+  .track { height:12px; border:1px solid var(--line); padding:2px; transform:skewX(-20deg); }
+  .track i { display:block; height:100%; width:0; background:repeating-linear-gradient(90deg,var(--hi) 0 6px,transparent 6px 8px); transition:width .8s cubic-bezier(.2,.9,.3,1); }
+
+  .mhead { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-family:var(--fh); font-size:13px; letter-spacing:.16em; color:var(--hi); }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; max-width:620px; }
+  .cal div { aspect-ratio:1.25; display:flex; align-items:center; justify-content:center; font-family:var(--fh); font-size:12px; border:1px solid var(--line); background:rgba(0,0,0,.22); color:var(--fg); }
+  .cal .dow { aspect-ratio:auto; border:0; background:none; color:var(--dim); font-size:10px; letter-spacing:.2em; }
+  .cal .d { cursor:pointer; animation:rise .3s calc(var(--i) * 14ms) both; transition:.12s; }
+  .cal .d:hover { background:rgba(255,255,255,.2); color:var(--hi); }
+  .cal .done { background:var(--sel-bg); color:var(--sel-fg); }
+  .cal .today { outline:1px solid var(--hi); outline-offset:2px; }
+  .cal .sel { box-shadow:0 0 0 2px var(--acc); }
+
+  /* bottom hint bar */
+  .bottom { display:flex; align-items:center; justify-content:space-between; gap:20px; padding:12px 30px 18px; border-top:1px solid var(--line); background:linear-gradient(transparent, rgba(0,0,0,.45)); font-size:13px; animation:fadeIn .5s .4s both; }
+  .desc { color:var(--fg); line-height:1.6; }
+  .keys { display:flex; gap:16px; flex:none; font-size:12px; color:var(--dim); letter-spacing:.08em; }
+  .keys i { display:inline-block; min-width:22px; padding:0 6px; margin-right:6px; text-align:center; border:1px solid var(--fg); border-radius:50%; font-style:normal; color:var(--hi); line-height:20px; }
+
+  /* mission complete overlay */
+  #ov { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
+  #ov.show { display:flex; animation:fadeIn .2s; }
+  #ov .ln { position:absolute; left:0; right:0; top:50%; height:1px; background:var(--hi); animation:grow .6s cubic-bezier(.2,.9,.3,1); box-shadow:0 0 12px #fff; }
+  #ov .tx { position:relative; text-align:center; padding:0 16px; }
+  #ovT { font-family:var(--fh); font-size:clamp(22px,5.4vw,52px); letter-spacing:.28em; color:var(--hi); text-shadow:0 0 24px rgba(255,255,255,.55); animation:zoomIn .6s .2s cubic-bezier(.2,.9,.3,1) both; }
+  #ovS { margin-top:12px; font-size:13px; letter-spacing:.3em; color:var(--dim); animation:fadeIn .4s .6s both; }
+
+  @keyframes fadeIn { from { opacity:0; } }
+  @keyframes slideIn { from { opacity:0; transform:translateX(-28px); } }
+  @keyframes panelIn { from { opacity:0; transform:translateX(18px); } }
+  @keyframes flash { 0% { background:#fff; transform:translateX(5px); } }
+  @keyframes rise { from { opacity:0; transform:scale(.7); } }
+  @keyframes grow { from { transform:scaleX(0); } }
+  @keyframes zoomIn { from { opacity:0; letter-spacing:.7em; transform:scale(1.4); } }
+
+  @media (max-width:820px) {
+    html, body { height:auto; } body { overflow:auto; } .app { height:auto; min-height:100%; }
+    .top { padding:70px 16px 8px; } .res { margin-right:0; }
+    .mid { grid-template-columns:1fr; padding:6px 16px; gap:12px; }
+    .menu { flex-direction:row; overflow-x:auto; padding:0; gap:6px; } .mi { flex:none; border-left:0; border-bottom:3px solid transparent; padding:10px 14px; } .mi::after { content:none; }
+    .mi.cur { border-bottom-color:var(--hi); }
+    .work { grid-template-columns:1fr; } .bottom { flex-direction:column; align-items:flex-start; padding:12px 16px 20px; } .keys { display:none; }
+  }
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
-
-
-  body { background:
-      linear-gradient(rgba(232,237,242,.04) 1px, transparent 1px) 0 0/56px 56px,
-      linear-gradient(90deg, rgba(232,237,242,.04) 1px, transparent 1px) 0 0/56px 56px,
-      radial-gradient(ellipse at 50% 0%, #1b2128, #0b0d10 70%) fixed; }
-  body::before { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.7) 100%); }
-  body::after { content:""; position:fixed; left:0; right:0; top:0; height:4px; z-index:41; pointer-events:none; background:var(--acc); box-shadow:0 0 16px var(--acc); animation:boot .9s ease-out; transform-origin:left; }
-  @keyframes boot { from { transform:scaleX(0); } }
-  h1 { font-weight:400; font-size:clamp(34px,9vw,76px); letter-spacing:.14em; color:var(--hi); }
-  h1 small { font-family:var(--fb); font-weight:500; font-size:.22em; letter-spacing:.3em; color:var(--acc); }
-  header { border-bottom:1px solid var(--line); position:relative; }
-  .op { font-family:var(--fh); font-size:10px; }
-  .ap { display:flex; align-items:center; gap:12px; margin-top:14px; font-family:var(--fh); }
-  .ap b { color:var(--acc); font-size:16px; font-weight:400; } .ap em { font-style:normal; font-size:16px; color:var(--hi); min-width:5em; text-align:right; }
-  .apbar { flex:1; height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.5); transform:skewX(-20deg); }
-  .apbar i { display:block; height:100%; width:0; background:repeating-linear-gradient(90deg,var(--acc2) 0 6px,transparent 6px 8px); box-shadow:0 0 10px rgba(232,237,242,.5); transition:width 1s cubic-bezier(.2,.9,.3,1); }
-  .xh { position:absolute; right:6px; top:-8px; width:64px; height:64px; opacity:.7; pointer-events:none; }
-  .xh::before, .xh::after { content:""; position:absolute; background:var(--acc); } .xh::before { left:50%; top:0; bottom:0; width:1px; } .xh::after { top:50%; left:0; right:0; height:1px; }
-  .panel { border:1px solid var(--line); border-left:4px solid var(--acc); clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,0 100%); backdrop-filter:blur(3px); }
-  .ttl { background:transparent; color:var(--acc); border:1px solid var(--acc); font-family:var(--fh); font-size:11px; font-weight:400; margin-top:-38px; letter-spacing:.2em; background:#0b0d10; }
-  .life div { --c:#e8edf2; } .stam div { --c:#ff6a00; } .track { border-radius:0; transform:skewX(-20deg); border-color:var(--line); }
-  .row3 i, .gauge b em { font-family:var(--fh); font-weight:400; } .row3 i { font-size:20px; }
-  .moods button span { color:var(--acc); opacity:1; font-family:var(--fh); font-size:10px; }
-  .save { background:transparent; color:var(--acc); border:1px solid var(--acc); font-family:var(--fh); font-weight:400; font-size:18px; letter-spacing:.3em; clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%); }
-  .save:hover { background:var(--acc); color:#000; }
-  .cal div { border-radius:0; border-color:var(--line); font-family:var(--fh); font-size:12px; } .cal .done { background:var(--acc); color:#000; } .cal .today { outline:1px solid var(--acc2); }
-  .entry { border-left:4px solid var(--acc); }
-  @media (max-width:560px) { .xh { display:none; } }
-  #stamp { background:rgba(4,5,7,.92); }
-  #bang { font-family:var(--fh); font-weight:400; font-size:clamp(100px,26vw,220px); color:var(--acc); text-shadow:0 0 36px var(--acc); animation:lock .7s cubic-bezier(.2,.9,.3,1); }
-  @keyframes lock { from { transform:scale(3) rotate(90deg); opacity:0; } }
-  #stampBig { font-family:var(--fh); font-size:clamp(18px,4.4vw,32px); letter-spacing:.3em; } #stampSub::before { content:"COAM ─ "; }
-  
 </style>
 </head>
 <body>
-<main>
-  <header>
-    <div class="op">RUBICON 3 ─ ARENA ─ ウォッチポイント</div>
-    <h1>RUBICON<small>DIARY ─ 独立傭兵の日誌</small></h1>
-    <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>COAM</b><span id="coam">0</span></span><span><b>AC</b><span>NIGHTFALL</span></span></div>
-    <div class="ap"><b>AP</b><div class="apbar"><i id="apf"></i></div><em id="apn">0</em></div><div class="xh"></div>
+<div class="app">
+  <header class="top">
+    <div class="crumb" id="crumb">GARAGE<small id="crumb2">日記ガレージ</small></div>
+    <div class="res"><div><b>COAM</b><span id="coam">0</span></div><div><b>OST CHIP</b><span id="chip">0</span></div></div>
   </header>
 
-  <section class="panel">
-    <span class="ttl">ASSEMBLY</span>
-    
-    <div class="gauge life"><b>AP ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
-    <div class="gauge stam"><b>ACS ─ 次のランクまで <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
-    <div class="row3">
-      <div><b>RANK ランク</b><i id="lv">-</i></div>
-      <div><b>STREAK 連続</b><i id="streak">0</i></div>
-      <div><b>TOTAL 記録</b><i id="total">0</i></div>
-    </div>
-  </section>
+  <div class="mid">
+    <nav class="menu focus" id="menu" aria-label="メインメニュー"></nav>
+    <section class="work" id="work">
+      <div class="pn sub"><h3 id="subT">LIST</h3><div class="list" id="sub"></div></div>
+      <div class="pn det"><h3 id="detT">DETAIL</h3><div class="body" id="det"></div></div>
+    </section>
+  </div>
 
-  <section class="panel">
-    <span class="ttl">DIAGNOSTICS 今日の機体状態</span>
-    <ul class="moods" id="moods"></ul>
-    <span class="ttl" style="margin-top:6px">MISSION LOG 作戦記録</span>
-    <textarea id="body" placeholder="作戦内容を記録せよ…"></textarea>
-    <div class="hint" id="hint"></div>
-    <button class="save" id="save">SORTIE</button>
-  </section>
+  <footer class="bottom">
+    <div class="desc" id="desc"></div>
+    <div class="keys"><span><i>↑↓</i>選択</span><span><i>↵</i>決定</span><span><i>esc</i>戻る</span></div>
+  </footer>
+</div>
 
-  <section class="panel">
-    <span class="ttl">MISSION SCHEDULE</span>
-    <div class="cal" id="cal"></div>
-  </section>
-
-  <h2>COMBAT LOG ─ 過去の作戦</h2>
-  <div id="list"></div>
-</main>
-
-<div id="stamp"><div class="bars"></div><div class="box"><div id="bang">◇</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
+<div id="ov"><div class="ln"></div><div class="tx"><div id="ovT"></div><div id="ovS"></div></div></div>
 
 <script src="theme-switch.js" data-theme="ac6"></script>
 <script>
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
-const MOODS = [["最高", "AP FULL"], ["良い", "STABLE"], ["普通", "DAMAGED"], ["微妙", "ACS OVERLOAD"], ["最悪", "STAGGERED"]];
-const RANKS = ["ROOKIE", "INDEPENDENT", "MERCENARY", "RANKER", "ELITE", "ACE", "LEGEND"];
-let MSG_FILED = "MISSION COMPLETE ─ 作戦完了", MSG_PROMO = "RANK UP ─ ランクアップ";
+const MOODS = [["最高","AP FULL"],["良い","STABLE"],["普通","DAMAGED"],["微妙","ACS OVERLOAD"],["最悪","STAGGERED"]];
+const RANKS = ["ROOKIE","INDEPENDENT","MERCENARY","RANKER","ELITE","ACE","LEGEND"];
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const MENU = [
+  { id: "write",    en: "MISSION LOG", jp: "日記を書く",   desc: "今日の作戦を記録します。気分を選び、本文を入力して出撃(保存)します。" },
+  { id: "archive",  en: "ARCHIVES",    jp: "過去の記録",   desc: "これまでの作戦記録を閲覧します。選んだ記録は、そのまま編集できます。" },
+  { id: "schedule", en: "SCHEDULE",    jp: "カレンダー",   desc: "月間の出撃スケジュールを確認します。日付を選ぶと、その日の記録を開きます。" },
+  { id: "license",  en: "LICENSE",     jp: "ライセンス",   desc: "傭兵ライセンスを確認します。ランク、連続出撃日数、累計の記録数を表示します。" }
+];
 const $ = id => document.getElementById(id);
-
 const load = () => {
   try {
     let d = JSON.parse(localStorage.getItem(KEY));
@@ -177,106 +178,145 @@ const load = () => {
 };
 const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDate = k => k.replace(/-/g, ".");
 
-const countUp = (el, to) => {
-  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
-  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
-  const t0 = performance.now();
-  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
-};
+let data = load(), selected = ymd(new Date()), mood = null, draft = "";
+let mi = 0, si = 0, focus = "main", calOff = 0, overlayTimer, typeTimer;
+const DOW = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
 
-let data = load(), selected = ymd(new Date()), mood = null, stampTimer, typeTimer;
-
-function streakCount() {
-  let n = 0, d = new Date();
-  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
-  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
-  return n;
-}
+function streakCount() { let n = 0, d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
 function totalXp() {
   let xp = 0, run = 0, prev = null;
-  for (const k of Object.keys(data).sort()) {
-    const cur = new Date(k + "T00:00:00");
-    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
-    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
-    prev = cur;
-  }
+  for (const k of Object.keys(data).sort()) { const cur = new Date(k + "T00:00:00"); run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1; xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK; prev = cur; }
   return xp;
 }
 const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const archiveKeys = () => Object.keys(data).sort().reverse();
+const loadDay = () => { const e = data[selected]; mood = e ? e.mood : null; draft = e ? e.text : ""; };
 
-function typewrite(text) {
-  clearInterval(typeTimer); let i = 0;
-  const el = $("stampBig"); el.textContent = "";
-  typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(typeTimer); }, 55);
+function renderTop() {
+  const xp = totalXp();
+  $("coam").textContent = (xp * 180).toLocaleString();
+  $("chip").textContent = streakCount();
+  $("crumb").firstChild.textContent = "GARAGE ▸ " + MENU[mi].en;
+  $("crumb2").textContent = MENU[mi].jp + " ─ " + fmtDate(selected) + " " + DOW[new Date(selected + "T00:00:00").getDay()];
+  $("desc").textContent = MENU[mi].desc;
+}
+function renderMenu() {
+  const m = $("menu"); m.classList.toggle("focus", focus === "main");
+  m.innerHTML = MENU.map((x, i) => `<button class="mi ${i === mi ? "cur" : ""}" data-m="${i}" style="--i:${i}"><span>${x.en}<small>${x.jp}</small></span></button>`).join("");
 }
 
-function render() {
-  const sd = new Date(selected + "T00:00:00");
-  $("d").textContent = selected.replace(/-/g, ".");
-  $("dow").textContent = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
+function subList(items, selIdx) {
+  return items.map((it, i) => `<button class="row ${i === selIdx ? "sel" : ""}" data-s="${i}">${it}</button>`).join("");
+}
+function renderWork(animate) {
+  const id = MENU[mi].id, work = $("work"), det = $("det");
+  work.classList.toggle("solo", id === "schedule" || id === "license");
+  [$("sub").parentElement, $("det").parentElement].forEach(p => { if (animate) { p.classList.remove("panel-in"); void p.offsetWidth; p.classList.add("panel-in"); } });
 
-  const xp = totalXp(), rk = rankOf(xp), st = streakCount();
-  const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
-  $("lv").textContent = RANKS[rk];
-  $("xp").style.width = pct + "%"; $("xpTxt").textContent = pct + "%";
-  $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
-  countUp($("streak"), st);
-  countUp($("total"), Object.keys(data).length);
-  $("coam").textContent = (xp * 180).toLocaleString(); const _ap = 2000 + Math.min(st, 30) * 350; $("apn").textContent = _ap.toLocaleString(); $("apf").style.width = Math.round(_ap / 12500 * 100) + "%";
-
-  const e = data[selected];
-  $("body").value = e ? e.text : "";
-  mood = e ? e.mood : null;
-  $("moods").innerHTML = MOODS.map(([m, tag, c]) => `<li><button data-m="${m}" style="--r:${c||""}" class="${m===mood?"on":""}">${m}<span>${tag}</span></button></li>`).join("");
-  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
-
-  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
-  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
-  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
-  h += "<div style='visibility:hidden'></div>".repeat(first);
-  for (let d = 1; d <= last; d++) {
-    const k = ymd(new Date(y, mo, d));
-    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+  if (id === "write") {
+    $("subT").textContent = "CONDITION ─ 今日の機体状態";
+    const mi2 = MOODS.findIndex(x => x[0] === mood);
+    $("sub").innerHTML = subList(MOODS.map(([m, t]) => `<span>${t}</span><small>${m}</small>`), mi2);
+    $("detT").textContent = "ENTRY ─ 作戦記録";
+    const today = selected === ymd(new Date());
+    det.innerHTML = `<div class="head"><b>${fmtDate(selected)}</b><span class="chip" id="moodChip">${mood ? MOODS.find(x => x[0] === mood)[1] : "NO DATA"}</span></div>
+      <textarea id="body" placeholder="作戦内容を記録せよ…"></textarea>
+      <div class="acts"><span class="hintx">${today ? "" : "過去の日付を編集中です(SCHEDULE で日付を選べます)"}</span><button class="btn" id="save">SORTIE</button></div>`;
+    $("body").value = draft;
+    $("body").addEventListener("input", e => { draft = e.target.value; });
+  } else if (id === "archive") {
+    const keys = archiveKeys();
+    if (si >= keys.length) si = Math.max(0, keys.length - 1);
+    $("subT").textContent = "COMBAT LOG ─ 作戦一覧";
+    $("sub").innerHTML = keys.length ? subList(keys.map(k => `<span>${fmtDate(k)}</span><small>${esc((data[k].mood) || "-")}</small>`), si) : `<div class="empty">記録はまだありません。</div>`;
+    $("detT").textContent = "REPORT ─ 作戦詳細";
+    const k = keys[si];
+    det.innerHTML = k ? `<div class="head"><b>${fmtDate(k)}</b><span class="chip">${esc((MOODS.find(x => x[0] === data[k].mood) || ["", "NO DATA"])[1])}</span></div>
+      <div class="text">${esc(data[k].text)}</div><div class="acts"><span></span><button class="btn ghost" id="edit" data-k="${k}">EDIT</button></div>`
+      : `<div class="empty">MISSION LOG で最初の作戦を記録しましょう。</div>`;
+  } else if (id === "schedule") {
+    const now = new Date(), base = new Date(now.getFullYear(), now.getMonth() + calOff, 1), y = base.getFullYear(), mo = base.getMonth();
+    const first = base.getDay(), last = new Date(y, mo + 1, 0).getDate();
+    $("detT").textContent = "SCHEDULE ─ 月間予定";
+    let h = DOW.map(d => `<div class="dow">${d[0]}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) {
+      const k = ymd(new Date(y, mo, d));
+      h += `<div class="d ${data[k] ? "done" : ""} ${k === ymd(now) ? "today" : ""} ${k === selected ? "sel" : ""}" data-d="${k}" style="--i:${d}">${d}</div>`;
+    }
+    det.innerHTML = `<div class="mhead"><button class="btn ghost" data-cal="-1" style="padding:6px 16px">◂</button><span>${y}.${String(mo + 1).padStart(2, "0")}</span><button class="btn ghost" data-cal="1" style="padding:6px 16px">▸</button></div><div class="cal">${h}</div>`;
+  } else {
+    const xp = totalXp(), rk = rankOf(xp), st = streakCount(), n = Object.keys(data).length;
+    const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100), ap = 2000 + Math.min(st, 30) * 350;
+    $("detT").textContent = "MERCENARY LICENSE ─ 傭兵ライセンス";
+    det.innerHTML = `<div class="cards">
+        <div class="card"><b>RANK</b><span class="sm">${RANKS[rk]}</span></div>
+        <div class="card"><b>STREAK</b><span>${st}</span></div>
+        <div class="card"><b>TOTAL</b><span>${n}</span></div>
+        <div class="card"><b>HUNTER CLASS</b><span>${String(1 + Math.floor(xp / 60)).padStart(2, "0")}</span></div></div>
+      <div class="gauge"><b>AP ─ 連続日数<em>${ap.toLocaleString()}</em></b><div class="track"><i style="width:0" data-w="${Math.round(ap / 12500 * 100)}"></i></div></div>
+      <div class="gauge"><b>ACS ─ 次のランクまで<em>${pct}%</em></b><div class="track"><i style="width:0" data-w="${pct}"></i></div></div>`;
+    requestAnimationFrame(() => det.querySelectorAll("[data-w]").forEach(el => el.style.width = el.dataset.w + "%"));
   }
-  $("cal").innerHTML = h;
-
-  const keys = Object.keys(data).sort().reverse();
-  $("list").innerHTML = keys.length ? keys.map((k, i) =>
-    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
-    : `<div class="entry" style="--i:1"><p>作戦記録なし。最初の任務に出撃せよ。</p></div>`;
 }
 
-$("moods").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  mood = b.dataset.m;
-  
-  document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
-};
-$("cal").onclick = e => {
-  const c = e.target.closest("[data-d]"); if (!c) return;
-  selected = c.dataset.d; render();
-};
-$("save").onclick = () => {
+function renderAll(animate) { renderTop(); renderMenu(); renderWork(animate); }
+
+function showOverlay(title, sub) {
+  const ov = $("ov"); ov.classList.remove("show"); void ov.offsetWidth; ov.classList.add("show");
+  $("ovT").textContent = title; $("ovS").textContent = sub;
+  clearTimeout(overlayTimer); overlayTimer = setTimeout(() => ov.classList.remove("show"), 2300);
+}
+$("ov").onclick = () => $("ov").classList.remove("show");
+
+function saveEntry() {
   const text = $("body").value.trim();
   if (!text) { $("body").focus(); return; }
   const before = rankOf(totalXp()), isNew = !data[selected];
-  data[selected] = { mood, text };
-  store(data);
+  data[selected] = { mood, text }; draft = text; store(data);
   const up = rankOf(totalXp()) > before;
-  
-  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
-  $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
-  setTimeout(() => typewrite(up ? MSG_PROMO : MSG_FILED), 450);
-  $("stampSub").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
-  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2800);
-  render();
-};
-$("stamp").onclick = () => $("stamp").classList.remove("show");
+  showOverlay(up ? "RANK UP" : "MISSION COMPLETE", (up ? RANKS[rankOf(totalXp())] + " ─ " : "") + (isNew ? streakCount() + " DAYS" : "UPDATED"));
+  renderTop();
+}
 
-render();
+function setMood(i) {
+  mood = MOODS[i][0]; si = i;
+  document.querySelectorAll("#sub .row").forEach((r, k) => { r.classList.toggle("sel", k === i); if (k === i) { r.classList.remove("flash"); void r.offsetWidth; r.classList.add("flash"); } });
+  const c = $("moodChip"); if (c) c.textContent = MOODS[i][1];
+}
+function goWrite(dateKey) { selected = dateKey; loadDay(); mi = 0; focus = "sub"; si = Math.max(0, MOODS.findIndex(x => x[0] === mood)); renderAll(true); }
+
+// ---- events ----
+$("menu").addEventListener("click", e => { const b = e.target.closest("[data-m]"); if (!b) return; mi = +b.dataset.m; si = 0; focus = "main"; if (MENU[mi].id === "write") loadDay(); renderAll(true); });
+$("sub").addEventListener("click", e => {
+  const b = e.target.closest("[data-s]"); if (!b) return; focus = "sub";
+  const i = +b.dataset.s;
+  if (MENU[mi].id === "write") setMood(i); else { si = i; renderWork(false); renderMenu(); }
+});
+$("det").addEventListener("click", e => {
+  if (e.target.closest("#save")) return saveEntry();
+  const ed = e.target.closest("#edit"); if (ed) return goWrite(ed.dataset.k);
+  const dd = e.target.closest("[data-d]"); if (dd) return goWrite(dd.dataset.d);
+  const c = e.target.closest("[data-cal]"); if (c) { calOff += +c.dataset.cal; renderWork(false); }
+});
+document.addEventListener("keydown", e => {
+  if (e.target.matches("textarea, input")) { if (e.key === "Escape") { e.target.blur(); focus = "sub"; } return; }
+  const id = MENU[mi].id, hasSub = id === "write" || id === "archive";
+  const subLen = id === "write" ? MOODS.length : archiveKeys().length;
+  if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+    e.preventDefault(); const d = e.key === "ArrowDown" ? 1 : -1;
+    if (focus === "main") { mi = (mi + d + MENU.length) % MENU.length; si = 0; if (MENU[mi].id === "write") loadDay(); renderAll(true); }
+    else if (hasSub && subLen) { si = (si + d + subLen) % subLen; if (id === "write") setMood(si); else { renderWork(false); } renderMenu(); }
+  } else if (e.key === "ArrowRight" || e.key === "Enter") {
+    if (focus === "main" && hasSub) { focus = "sub"; si = id === "write" ? Math.max(0, MOODS.findIndex(x => x[0] === mood)) : 0; renderMenu(); }
+    else if (focus === "sub" && e.key === "Enter") { if (id === "write") { $("body").focus(); } else { const k = archiveKeys()[si]; if (k) goWrite(k); } }
+  } else if (e.key === "ArrowLeft" || e.key === "Escape") { focus = "main"; renderMenu(); }
+});
+
+loadDay();
+renderAll(false);
 </script>
 </body>
 </html>
