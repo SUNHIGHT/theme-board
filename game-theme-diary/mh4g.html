@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hunter's Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Cinzel:wght@700;900&family=M+PLUS+1p:wght@500;700;800&display=swap" rel="stylesheet">
+<style>
+  /* 3DS hunting-game menus: wide top screen + narrower touch screen, tribal patterns, torn-paper buttons, wooden plaques, save-slot list */
+  :root { --fb:'M PLUS 1p',sans-serif; --fs:'Black Ops One',sans-serif; --fp:'Cinzel',serif;
+    --stone:#1f2a24; --stone2:#2b3830; --gold:#f2c94c; --wood:#6b4a2a; --woodd:#3b2612; --ink:#141414; --parch:#e8e2c4; --parchd:#b9ae80; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--fb); background:#050505; color:#eee; overflow:hidden; display:grid; place-items:center; }
+  button { font:inherit; color:inherit; }
+  .ds { --W:min(660px,calc((100vh - 40px) / 1.22),calc(100vw - 16px)); width:var(--W); display:flex; flex-direction:column; align-items:center; gap:calc(var(--W) * .02); }
+  .scr { position:relative; overflow:hidden; container-type:inline-size; background:#000; }
+  .top { width:100%; aspect-ratio:5/3; }
+  .bot { width:80%; aspect-ratio:4/3; }
+  .pane { position:absolute; inset:0; display:none; }
+  body[data-v="main"] .v-main, body[data-v="select"] .v-select, body[data-v="card"] .v-card, body[data-v="cal"] .v-cal, body[data-v="edit"] .v-edit { display:block; animation:fadeIn .3s both; }
+
+  /* ---------- shared textures ---------- */
+  .teal { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 45%,#2d7c8c 0%,#164854 45%,#08222a 100%); }
+  .teal::after { content:""; position:absolute; inset:0; opacity:.35; mix-blend-mode:overlay; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.7' numOctaves='3'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .rug { position:absolute; inset:0; background:
+      repeating-linear-gradient(45deg,transparent 0 7cqw,rgba(40,20,5,.55) 7cqw 8cqw),
+      repeating-linear-gradient(-45deg,transparent 0 7cqw,rgba(40,20,5,.55) 7cqw 8cqw),
+      conic-gradient(from 45deg at 50% 50%,#b0702a 0 25%,#8a4f1a 0 50%,#b0702a 0 75%,#8a4f1a 0) 0 0/11.3cqw 11.3cqw; }
+  .rug::before { content:""; position:absolute; left:50%; top:52%; width:46cqw; height:46cqw; translate:-50% -50%; rotate:45deg; border:2.2cqw solid #5a2c0e; outline:1cqw solid #d89a40; outline-offset:1.6cqw; background:repeating-linear-gradient(90deg,#c0782e 0 2cqw,#9a5a20 2cqw 4cqw); opacity:.75; }
+  .rug::after { content:""; position:absolute; left:0; right:0; bottom:0; height:9%; background:repeating-linear-gradient(90deg,#2a1a0a 0 2cqw,#d8a048 2cqw 3cqw,#2a1a0a 3cqw 5cqw); border-top:.6cqw solid #1a0f05; }
+  .stonebg { position:absolute; inset:0; background:radial-gradient(ellipse at 50% 40%,#33413a,#141b17 80%); }
+  .stonebg::before { content:""; position:absolute; inset:0; opacity:.22; background:
+      linear-gradient(135deg,transparent 46%,#8fa48f 46% 54%,transparent 54%) 0 0/8cqw 8cqw,
+      linear-gradient(45deg,transparent 46%,#8fa48f 46% 54%,transparent 54%) 0 0/8cqw 8cqw; }
+  .stonebg::after { content:""; position:absolute; left:50%; top:46%; width:56cqw; height:56cqw; translate:-50% -50%; border-radius:50%; border:1.2cqw dotted rgba(160,180,150,.25); box-shadow:0 0 0 5cqw rgba(160,180,150,.06); }
+  /* wooden plaque title */
+  .plaque { position:absolute; left:3%; top:2.5%; z-index:5; padding:.6cqw 5cqw .8cqw; font:900 3.4cqw/1.2 var(--fp); color:var(--gold); text-shadow:0 .3cqw 0 #000; background:linear-gradient(180deg,#8a6236,var(--wood) 60%,#503418); border:.4cqw solid var(--woodd); box-shadow:inset 0 .3cqw 0 rgba(255,255,255,.2); clip-path:polygon(3% 0,97% 0,100% 50%,97% 100%,3% 100%,0 50%); }
+  .plaque.jp { font:800 3.2cqw/1.4 var(--fb); }
+  .plaque::before, .plaque::after { content:""; position:absolute; top:50%; width:1.2cqw; height:1.2cqw; translate:0 -50%; border-radius:50%; background:#c8a060; box-shadow:inset -.2cqw -.2cqw 0 #5a3a18; }
+  .plaque::before { left:2cqw; } .plaque::after { right:2cqw; }
+  /* bottom message strip */
+  .help { position:absolute; left:2%; right:2%; bottom:2%; z-index:4; min-height:15%; padding:1.6cqw 3cqw; background:rgba(5,5,5,.92); border:.5cqw dashed #6a6a5a; font:700 3.6cqw/1.45 var(--fb); color:#f4f4ec; }
+  .help::before, .help::after { content:""; position:absolute; top:-.5cqw; width:2cqw; height:calc(100% + 1cqw); background:repeating-linear-gradient(180deg,#c8a040 0 1cqw,transparent 1cqw 2cqw); }
+  .help::before { left:-2.4cqw; } .help::after { right:-2.4cqw; }
+
+  /* ---------- top: title (main) ---------- */
+  .flames { position:absolute; inset:0; }
+  .flames i { position:absolute; display:block; background:linear-gradient(var(--a,160deg),#ffd23a,#f07a12 55%,#9a2a05); clip-path:polygon(50% 0,62% 38%,100% 30%,70% 55%,88% 100%,50% 70%,12% 100%,30% 55%,0 30%,38% 38%); opacity:.85; animation:flick 2.4s ease-in-out infinite alternate; }
+  .logo { position:absolute; left:50%; top:47%; translate:-50% -50%; text-align:center; z-index:3; animation:logoIn .8s both; }
+  .logo small { display:block; font:900 5.4cqw/1 var(--fp); letter-spacing:.2em; background:linear-gradient(180deg,#fff,#b8b8b8 50%,#6a6a6a); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 .4cqw 0 #000); }
+  .logo b { display:block; font:900 15cqw/1 var(--fp); letter-spacing:.02em; background:linear-gradient(180deg,#fff7d0 0%,#e8c46a 35%,#9a6a20 55%,#f2d27a 70%,#7a4a10 100%); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 .5cqw 0 #1a0a00) drop-shadow(0 0 2cqw rgba(255,160,40,.45)); }
+  .logo span { display:inline-block; margin-top:.8cqw; font:800 3.4cqw/1 var(--fb); letter-spacing:.3em; color:#fff; background:#111; padding:.6cqw 2.4cqw; transform:skewX(-12deg); border-left:1cqw solid #f07a12; }
+  .tag { position:absolute; right:3%; bottom:4%; font:700 2.6cqw var(--fb); color:#e8f4f4; text-shadow:0 1px 2px #000; }
+
+  /* ---------- bottom: main menu buttons ---------- */
+  .mbtn { all:unset; box-sizing:border-box; position:absolute; cursor:pointer; display:grid; place-items:center; padding-bottom:2.6cqw; font:400 5.6cqw/1 var(--fs); letter-spacing:.06em; color:#1a1a12; background:var(--c); border:.5cqw solid rgba(0,0,0,.6);
+    clip-path:polygon(1% 4%,8% 0,22% 3%,40% 0,61% 3%,80% 0,99% 3%,100% 30%,98% 62%,100% 97%,82% 100%,60% 97%,38% 100%,18% 97%,2% 100%,0 66%,2% 34%); filter:brightness(.72) saturate(.85); transition:filter .12s, transform .12s; }
+  .mbtn::after { content:""; position:absolute; left:6%; right:6%; bottom:1.4cqw; height:2cqw; background:linear-gradient(135deg,#1a1a12 25%,transparent 25%) 0 0/2cqw 2cqw, linear-gradient(225deg,#1a1a12 25%,transparent 25%) 0 0/2cqw 2cqw; opacity:.8; }
+  .mbtn small { position:absolute; top:1cqw; right:2cqw; font:800 2.4cqw var(--fb); letter-spacing:0; opacity:.75; }
+  .mbtn.cur { filter:none; transform:scale(1.03); box-shadow:0 0 0 1cqw rgba(255,240,180,.0); }
+  .mbtn.cur::before { content:""; position:absolute; inset:-.4cqw; border:.8cqw solid #fff4c0; clip-path:inherit; }
+  .mbtn:focus-visible { outline:none; filter:none; }
+  .b0 { --c:#e8a08a; left:5%; top:6%; width:43%; height:20%; } .b1 { --c:#a8b48a; left:52%; top:6%; width:43%; height:20%; }
+  .b2 { --c:#8ac4c0; left:12%; top:30%; width:40%; height:18%; font-size:4.2cqw; } .b3 { --c:#b49ac4; left:56%; top:30%; width:39%; height:18%; }
+  .b4 { --c:#c8bc6a; left:5%; top:52%; width:62%; height:19%; }
+  .seal { position:absolute; right:5%; top:52%; width:22%; height:24%; display:grid; place-items:center; animation:bob 2s ease-in-out infinite; }
+  .seal svg { width:100%; height:100%; }
+
+  /* ---------- select: save slots ---------- */
+  .slots { position:absolute; left:5%; right:20%; top:4%; display:flex; flex-direction:column; gap:2.4cqw; }
+  .slot { all:unset; box-sizing:border-box; cursor:pointer; position:relative; height:15.5cqw; padding:1.4cqw 3cqw 1cqw; color:#2a2a18; background:linear-gradient(180deg,#e9edd0,#cdd4a8); border:.5cqw solid #3a3a28;
+    clip-path:polygon(2% 0,98% 0,100% 12%,100% 88%,98% 100%,2% 100%,0 88%,0 12%); filter:brightness(.8); }
+  .slot::before { content:""; position:absolute; left:3%; right:3%; top:1cqw; height:1.6cqw; background:linear-gradient(135deg,#55603a 25%,transparent 25%) 0 0/1.6cqw 1.6cqw, linear-gradient(225deg,#55603a 25%,transparent 25%) 0 0/1.6cqw 1.6cqw; opacity:.7; }
+  .slot .nm { display:block; text-align:center; margin:1cqw auto .3cqw; width:60%; background:rgba(255,255,255,.55); font:800 3.2cqw/1.3 var(--fb); border:.3cqw solid #8a906a; }
+  .slot .row { display:grid; grid-template-columns:auto 1fr auto auto; gap:0 2.4cqw; font:700 2.9cqw/1.3 var(--fb); }
+  .slot .row b { font-weight:800; color:#1a3a8a; } .slot .row span:nth-child(odd) { color:#3a3a28; }
+  .slot.nodata { background:linear-gradient(180deg,#8a8a88,#6a6a68); color:#222; display:grid; place-items:center; }
+  .slot.nodata .nd { padding-top:3.4cqw; font:400 4.6cqw var(--fs); letter-spacing:.3em; color:#2a2a2a; }
+  .slot.nodata .nd::before, .slot.nodata .nd::after { content:"◢◣◢◣"; font-size:2.4cqw; letter-spacing:0; margin:0 2cqw; color:#3a3a3a; }
+  .slot.nodata small { position:absolute; left:4%; top:2cqw; font:800 3cqw var(--fb); color:#1a1a1a; }
+  .slot.cur { filter:none; box-shadow:0 0 0 1cqw #fff4c0 inset; } .slot:focus-visible { filter:none; }
+  .badge { position:absolute; right:-3cqw; top:-1.4cqw; z-index:2; padding:1cqw 4cqw 1cqw 3cqw; font:800 3.2cqw var(--fb); color:#3a2000; background:linear-gradient(180deg,#ffe48a,#d8a020); clip-path:polygon(8% 0,100% 0,92% 100%,0 100%); border:.4cqw solid #6a4a00; }
+  .side { position:absolute; right:3%; bottom:22%; display:flex; flex-direction:column; gap:2cqw; width:15%; }
+  .sbtn { all:unset; box-sizing:border-box; cursor:pointer; text-align:center; padding:1.6cqw 0; font:800 3.6cqw var(--fb); color:#f4f4e0; background:linear-gradient(180deg,#8a9a5a,#5a6a30); border:.5cqw solid #2a3010; border-radius:1cqw; text-shadow:0 .3cqw 0 #000; }
+  .sbtn:hover, .sbtn:focus-visible { filter:brightness(1.2); outline:0; }
+  .pg { position:absolute; left:5%; right:20%; top:76%; display:flex; justify-content:space-between; font:800 3cqw var(--fb); color:#d8d8c0; }
+  .pg button { all:unset; cursor:pointer; } .pg button:hover { color:var(--gold); } .pg button:disabled { opacity:.3; }
+
+  /* top: quest paper (select / edit) */
+  .quest { position:absolute; left:50%; top:54%; translate:-50% -50%; width:58%; height:72%; padding:3cqw 4cqw; color:#2a1a0a; background:linear-gradient(180deg,#f4ecd0,#dccfa0); box-shadow:0 1.4cqw 0 rgba(0,0,0,.5); clip-path:polygon(0 2%,6% 0,30% 1.5%,55% 0,80% 1.5%,100% 0,99% 30%,100% 60%,99% 100%,70% 98.5%,40% 100%,12% 98.5%,0 100%,1% 70%); animation:paperIn .35s both; z-index:3; }
+  .quest::before { content:""; position:absolute; right:4cqw; top:3cqw; width:9cqw; height:9cqw; border-radius:50%; border:.6cqw solid #b0281a; opacity:.75; }
+  .quest::after { content:"記"; position:absolute; right:4cqw; top:3cqw; width:9cqw; height:9cqw; display:grid; place-items:center; font:800 5cqw var(--fb); color:#b0281a; opacity:.8; rotate:-12deg; }
+  .quest h3 { font:800 3.6cqw var(--fb); border-bottom:.4cqw solid #6a4a20; padding-bottom:.6cqw; margin-right:12cqw; }
+  .quest h3 small { display:block; font:900 2.4cqw var(--fp); letter-spacing:.2em; color:#7a5020; }
+  .quest dl { display:grid; grid-template-columns:auto 1fr; gap:.4cqw 2cqw; margin-top:1.2cqw; font:700 2.8cqw/1.5 var(--fb); }
+  .quest dt { color:#7a5020; } .quest dd { margin:0; }
+  .quest p { margin-top:1.2cqw; font:700 2.9cqw/1.6 var(--fb); white-space:pre-wrap; word-break:break-all; overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; border-top:.3cqw dashed #a08050; padding-top:1cqw; }
+
+  /* ---------- card ---------- */
+  .gcard { position:absolute; left:50%; top:55%; translate:-50% -50%; width:76%; height:74%; padding:2.4cqw 3cqw; background:linear-gradient(160deg,#3a2a18,#1e140a); border:.8cqw solid #c8a050; outline:.4cqw solid #3a2408; outline-offset:-1.6cqw; box-shadow:0 1.4cqw 2cqw rgba(0,0,0,.6); display:grid; grid-template-columns:1fr 1.2fr; gap:2cqw; z-index:3; animation:paperIn .35s both; }
+  .gcard .em { display:grid; place-items:center; } .gcard .em svg { width:90%; }
+  .gcard h4 { font:900 2.6cqw var(--fp); letter-spacing:.2em; color:var(--gold); }
+  .gcard .hr { font:900 11cqw/1 var(--fp); color:#fff2c8; text-shadow:0 .5cqw 0 #000; } .gcard .hr small { font-size:.3em; letter-spacing:.2em; margin-right:1cqw; color:var(--gold); }
+  .gcard dl { display:grid; grid-template-columns:auto 1fr; gap:.6cqw 2cqw; font:700 2.8cqw var(--fb); margin-top:1cqw; } .gcard dt { color:#d8c08a; } .gcard dd { margin:0; text-align:right; font-weight:800; }
+  .gbar { height:1.4cqw; background:#120a04; border:.3cqw solid #6a4a20; margin-top:1cqw; } .gbar i { display:block; height:100%; background:linear-gradient(90deg,#f07a12,#ffd23a); }
+  .kills { position:absolute; left:5%; right:22%; top:4%; display:flex; flex-direction:column; gap:1.4cqw; }
+  .kill { display:grid; grid-template-columns:7cqw 1fr auto; align-items:center; gap:2cqw; padding:1cqw 3cqw; background:linear-gradient(90deg,rgba(232,226,196,.92),rgba(200,190,150,.85)); color:#2a1a0a; font:800 3.6cqw var(--fb); clip-path:polygon(0 0,97% 0,100% 50%,97% 100%,0 100%); }
+  .kill i { width:6cqw; height:6cqw; border-radius:50%; background:var(--c); border:.5cqw solid #2a1a0a; }
+  .kill b { font:400 4.4cqw var(--fs); }
+
+  /* ---------- calendar ---------- */
+  .cgrid { position:absolute; left:4%; right:4%; top:4%; display:grid; grid-template-columns:repeat(7,1fr); gap:1cqw; }
+  .cgrid .dw { text-align:center; font:400 2.8cqw var(--fs); color:#c8c8a8; }
+  .cd { all:unset; box-sizing:border-box; cursor:pointer; position:relative; height:9.2cqw; display:grid; place-items:center; background:linear-gradient(180deg,#56604a,#3a4232); border:.4cqw solid #1a2014; font:400 3.6cqw var(--fs); color:#e8e8d0; }
+  .cd.on { background:linear-gradient(180deg,#e8c070,#b0802a); color:#2a1a00; }
+  .cd.on::after { content:""; position:absolute; right:.6cqw; bottom:.6cqw; width:2.6cqw; height:2.6cqw; border-radius:50%; background:var(--c); border:.3cqw solid #2a1a00; }
+  .cd.out { opacity:.3; } .cd.fut { cursor:default; opacity:.45; } .cd.today { outline:.5cqw solid #fff4c0; outline-offset:-.8cqw; } .cd.sel { box-shadow:0 0 0 .8cqw #f07a12; z-index:1; }
+  .cd:not(.fut):hover { filter:brightness(1.2); }
+  .mon { position:absolute; left:50%; top:52%; translate:-50% -50%; z-index:3; text-align:center; animation:logoIn .5s both; }
+  .mon b { display:block; font:900 13cqw/1 var(--fp); color:#fff2c8; text-shadow:0 .6cqw 0 #000, 0 0 3cqw rgba(255,160,40,.5); } .mon span { white-space:nowrap; font:800 3.2cqw var(--fb); background:#111; padding:.6cqw 3cqw; border-left:1cqw solid #f07a12; }
+  .mon em { display:block; margin-top:2cqw; font:700 3cqw var(--fb); font-style:normal; color:#e8f4f4; text-shadow:0 1px 2px #000; }
+
+  /* ---------- edit (bottom) ---------- */
+  .form { position:absolute; left:4%; right:4%; top:3%; bottom:21%; display:flex; flex-direction:column; gap:1.4cqw; padding:2cqw 3cqw; background:linear-gradient(180deg,#efe8cc,#d6cc9c); color:#2a1a0a; clip-path:polygon(0 1%,50% 0,100% 1%,99.5% 50%,100% 99%,50% 100%,0 99%,.5% 50%); }
+  .form .lb { font:800 2.8cqw var(--fb); color:#7a5020; border-bottom:.3cqw solid #a08050; }
+  .stamps { display:flex; gap:1.2cqw; }
+  .stamp { all:unset; cursor:pointer; flex:1; text-align:center; padding:.8cqw 0; font:800 3.2cqw var(--fb); border:.5cqw solid #6a4a20; border-radius:1cqw; background:rgba(255,255,255,.4); position:relative; }
+  .stamp i { display:block; width:4cqw; height:4cqw; margin:0 auto .4cqw; border-radius:50%; background:var(--c); border:.4cqw solid #2a1a0a; }
+  .stamp.on { background:#b0281a; color:#fff; border-color:#5a0a05; } .stamp:focus-visible { outline:.6cqw solid #f07a12; }
+  #body { flex:1; min-height:0; resize:none; font:700 3.6cqw/1.7 var(--fb); color:#2a1a0a; background:rgba(255,255,255,.55); border:.5cqw solid #6a4a20; padding:1cqw 2cqw; outline:0; background-image:repeating-linear-gradient(transparent 0 6cqw,rgba(120,80,30,.25) 6cqw 6.2cqw); background-attachment:local; }
+  #body:focus { border-color:#b0281a; box-shadow:0 0 0 .6cqw rgba(240,122,18,.4); }
+  .edbtns { position:absolute; right:3%; bottom:3%; display:flex; gap:2cqw; z-index:5; }
+  .edbtns .sbtn { width:20cqw; }
+  .v-edit .help { right:48cqw; min-height:15%; font-size:3cqw; }
+
+  .keys { margin-top:4px; font:700 12px var(--fb); color:#8a8a80; text-align:center; }
+
+  /* ---------- QUEST CLEAR ---------- */
+  #ov { position:absolute; inset:0; z-index:20; display:grid; place-content:center; text-align:center; visibility:hidden; pointer-events:none; overflow:hidden; }
+  #ov.show { visibility:visible; pointer-events:auto; cursor:pointer; animation:ovOut .4s 2.8s forwards; }
+  #ov::before { content:""; position:absolute; left:50%; top:50%; width:160cqw; height:160cqw; translate:-50% -50%; background:repeating-conic-gradient(from 0deg,rgba(255,210,80,.35) 0 6deg,transparent 6deg 18deg); opacity:0; }
+  #ov.show::before { animation:rays 3s linear forwards; }
+  #ov::after { content:""; position:absolute; inset:0; background:rgba(0,0,0,.72); z-index:-1; }
+  #ov b { position:relative; font:900 12cqw/1 var(--fp); letter-spacing:.04em; background:linear-gradient(180deg,#fffbe0,#f2c94c 45%,#a8701a 60%,#ffe7a0); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(0 .6cqw 0 #2a1400) drop-shadow(0 0 2cqw rgba(255,190,60,.7)); opacity:0; }
+  #ov.show b { animation:clearIn .5s .15s cubic-bezier(.3,1.5,.5,1) forwards; }
+  #ov span { position:relative; display:inline-block; justify-self:center; margin-top:1.4cqw; font:800 4cqw var(--fb); color:#fff; background:#111; padding:.6cqw 4cqw; border-left:1.2cqw solid #f07a12; border-right:1.2cqw solid #f07a12; opacity:0; } #ov.show span { animation:fadeIn .3s .6s forwards; }
+  #ov em { position:relative; margin-top:1.4cqw; font:700 3.4cqw var(--fb); font-style:normal; color:#ffe7a0; text-shadow:0 1px 3px #000; opacity:0; } #ov.show em { animation:fadeIn .3s .85s forwards; }
+
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+  @keyframes flick { to { transform:scale(1.06) rotate(2deg); filter:brightness(1.2); } }
+  @keyframes logoIn { from { opacity:0; transform:scale(1.25); } }
+  @keyframes bob { 50% { transform:translateY(-4%); } }
+  @keyframes paperIn { from { opacity:0; transform:translateY(8%) rotate(-2deg); } }
+  @keyframes rays { 0% { opacity:0; transform:rotate(0); } 15% { opacity:1; } 100% { opacity:.6; transform:rotate(40deg); } }
+  @keyframes clearIn { from { opacity:0; transform:scale(2.2); } to { opacity:1; transform:none; } }
+  @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; } }
+  @media (max-width:560px) { body { overflow-y:auto; align-items:start; padding:56px 0 20px; } }
+</style>
+</head>
+<body data-v="main">
+<div>
+<div class="ds">
+  <!-- TOP SCREEN -->
+  <section class="scr top" aria-label="上画面">
+    <div class="pane v-main">
+      <div class="teal"></div>
+      <div class="flames" id="flames"></div>
+      <div class="plaque">Main Menu</div>
+      <div class="logo"><small>HUNTER'S</small><b>DIARY</b><span>ハンターダイアリー</span></div>
+      <div class="tag" id="tagline"></div>
+    </div>
+    <div class="pane v-select v-edit">
+      <div class="rug"></div>
+      <div class="plaque jp" id="topTitle">記録データの選択</div>
+      <div class="quest" id="quest"></div>
+    </div>
+    <div class="pane v-card">
+      <div class="rug"></div>
+      <div class="plaque jp">ギルドカード</div>
+      <div class="gcard" id="gcard"></div>
+    </div>
+    <div class="pane v-cal">
+      <div class="teal"></div>
+      <div class="plaque jp">狩猟カレンダー</div>
+      <div class="mon" id="mon"></div>
+    </div>
+    <div id="ov"><b id="ovT">QUEST CLEAR</b><span id="ovJ"></span><em id="ovS"></em></div>
+  </section>
+
+  <!-- BOTTOM SCREEN -->
+  <section class="scr bot" aria-label="下画面">
+    <div class="pane v-main">
+      <div class="stonebg"></div>
+      <button class="mbtn b0" data-m="0">NEW ENTRY</button>
+      <button class="mbtn b1" data-m="1">CONTINUE</button>
+      <button class="mbtn b2" data-m="2">GUILD CARD</button>
+      <button class="mbtn b3" data-m="3">CALENDAR</button>
+      <button class="mbtn b4" data-m="4">THEMES</button>
+      <div class="seal" aria-hidden="true"><svg viewBox="0 0 40 40"><g fill="#e8e0c0" stroke="#1a1a12" stroke-width="1.5"><path d="M20 3l4 9 10-2-6 8 8 6-10 1 1 10-7-7-7 7 1-10-10-1 8-6-6-8 10 2z"/></g><circle cx="20" cy="21" r="6" fill="#c84020" stroke="#1a1a12" stroke-width="1.5"/></svg></div>
+      <div class="help" id="mHelp"></div>
+    </div>
+    <div class="pane v-select">
+      <div class="stonebg"></div>
+      <div class="slots" id="slots"></div>
+      <div class="pg"><button id="older">◀ 前の3日</button><span id="pgn"></span><button id="newer">次の3日 ▶</button></div>
+      <div class="side"><button class="sbtn" id="sOk">決定</button><button class="sbtn" data-back>戻る</button></div>
+      <div class="help">記録データを選択してください。</div>
+    </div>
+    <div class="pane v-card">
+      <div class="stonebg"></div>
+      <div class="kills" id="kills"></div>
+      <div class="side" style="bottom:22%"><button class="sbtn" id="cOk">狩猟</button><button class="sbtn" data-back>戻る</button></div>
+      <div class="help">調子ごとの狩猟記録です。「狩猟」で今日を記します。</div>
+    </div>
+    <div class="pane v-cal">
+      <div class="stonebg"></div>
+      <div class="cgrid" id="cgrid"></div>
+      <div class="help" id="cHelp">日付を選んでください。（Q/Eで月を切替）</div>
+    </div>
+    <div class="pane v-edit" role="dialog" aria-label="記録する">
+      <div class="stonebg"></div>
+      <div class="form">
+        <div class="lb">調子 ─ 狩りの手応え</div><div class="stamps" id="stamps"></div>
+        <div class="lb">報告書 ─ 日記</div><textarea id="body" placeholder="今日はどんな狩りだった？"></textarea>
+      </div>
+      <div class="help">Ctrl+Enterで報告</div>
+      <div class="edbtns"><button class="sbtn" id="save">報告</button><button class="sbtn" data-back>戻る</button></div>
+    </div>
+  </section>
+</div>
+<p class="keys">矢印 選択 ／ Enter 決定 ／ Esc 戻る ／ Ctrl+Enter 報告</p>
+</div>
+
+<script src="theme-switch.js" data-theme="mh4g"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MC = { 最高:"#f2c94c", 良い:"#7ac050", 普通:"#8ab4c8", 微妙:"#a07ac0", 最悪:"#c84020" };
+const MW = { 最高:"大成功", 良い:"成功", 普通:"通常", 微妙:"苦戦", 最悪:"力尽きた" };
+const DOW = ["日","月","火","水","木","金","土"];
+const MONTHS = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, PER = 3;
+const MENU_HELP = ["今日の狩猟記録（日記）を書きます。", "これまでの記録データを選んで、読み返したり書き直したりします。", "ハンターランクや連続狩猟日数を確認します。", "狩猟カレンダーから日付を選んで記録します。", "テーマ選択画面に戻ります。"];
+// main menu grid: arrow-key neighbours
+const NAV = { 0:{ ArrowRight:1, ArrowDown:2 }, 1:{ ArrowLeft:0, ArrowDown:3 }, 2:{ ArrowUp:0, ArrowRight:3, ArrowDown:4 }, 3:{ ArrowUp:1, ArrowLeft:2, ArrowDown:4 }, 4:{ ArrowUp:2 } };
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+let data = load(), view = "main", prev = "main", mcur = 0, page = 0, cur = 0, calSel = ymd(new Date()), selected = ymd(new Date()), mood = null, ovTimer;
+const dayOf = i => { const d = new Date(); d.setDate(d.getDate() - (page * PER + i)); return ymd(d); };
+
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const hr = () => Math.floor(totalXp() / XP_PER_RANK) + 1;
+const gainIfNew = k => { if (data[k]) return 0; const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() - 1); return XP_PER + Math.min(streakAt(ymd(d)) + 1, 30) * XP_BONUS_PER_STREAK; };
+
+function questPaper(k, editing) {
+  const e = data[k], today = ymd(new Date());
+  $("quest").innerHTML = `<h3><small>${editing ? "QUEST ─ 受注中" : "RECORD"}</small>${k === today ? "今日 " : ""}${md(k)}の記録</h3>
+    <dl><dt>目標</dt><dd>${e ? "記録を読み返す・書き直す" : "この日の日記を書く"}</dd><dt>報酬</dt><dd>${e ? "─" : `${gainIfNew(k)} EXP`}</dd><dt>調子</dt><dd>${e && e.mood ? `${e.mood}（${MW[e.mood]}）` : "─"}</dd></dl>
+    <p>${e ? esc(e.text) : "まだ報告書が出ていない。"}</p>`;
+}
+
+function render() {
+  document.body.dataset.v = view;
+  const today = ymd(new Date()), all = Object.keys(data);
+  if (view === "main") {
+    document.querySelectorAll(".mbtn").forEach(b => b.classList.toggle("cur", +b.dataset.m === mcur));
+    $("mHelp").textContent = MENU_HELP[mcur];
+    $("tagline").textContent = `HR ${hr()} ・ 連続狩猟 ${streakCount()}日 ・ 記録 ${all.length}件`;
+  }
+  if (view === "select") {
+    $("topTitle").textContent = "記録データの選択";
+    $("slots").innerHTML = Array.from({ length: PER }, (_, i) => { const k = dayOf(i), e = data[k];
+      if (!e) return `<button class="slot nodata ${i === cur ? "cur" : ""}" data-i="${i}"><small>${k === today ? "今日 " : ""}${md(k)}</small><span class="nd">NO DATA</span></button>`;
+      return `<button class="slot ${i === cur ? "cur" : ""}" data-i="${i}">${k === today ? `<span class="badge">今日の記録</span>` : streakAt(k) >= 3 ? `<span class="badge">連続${streakAt(k)}日</span>` : ""}<span class="nm">${md(k)}</span>
+        <span class="row"><span>調子</span><b>${esc(e.mood || "─")}</b><span>文字数</span><b>${e.text.length}</b><span>連続</span><b>${streakAt(k)}日</b><span>HR</span><b>${hr()}</b></span></button>`; }).join("");
+    $("pgn").textContent = `${page + 1} / ∞`; $("newer").disabled = page === 0;
+    questPaper(dayOf(cur), false);
+  }
+  if (view === "card") {
+    const xp = totalXp(), chars = Object.values(data).reduce((s, x) => s + x.text.length, 0), month = today.slice(0, 7);
+    $("gcard").innerHTML = `<div class="em"><svg viewBox="0 0 60 60"><g fill="none" stroke="#c8a050" stroke-width="2"><circle cx="30" cy="30" r="26"/><circle cx="30" cy="30" r="19" stroke-dasharray="3 3"/></g><path d="M30 10l5 13h13l-10 8 4 14-12-8-12 8 4-14-10-8h13z" fill="#f2c94c" stroke="#3a2408" stroke-width="1.5"/></svg></div>
+      <div><h4>HUNTER RANK</h4><div class="hr"><small>HR</small>${hr()}</div><div class="gbar"><i style="width:${xp % XP_PER_RANK / XP_PER_RANK * 100}%"></i></div>
+      <dl><dt>連続狩猟</dt><dd>${streakCount()}日</dd><dt>総狩猟数</dt><dd>${all.length}回</dd><dt>今月</dt><dd>${all.filter(k => k.startsWith(month)).length}回</dd><dt>総文字数</dt><dd>${chars.toLocaleString()}</dd><dt>次のHRまで</dt><dd>${XP_PER_RANK - xp % XP_PER_RANK} EXP</dd></dl></div>`;
+    $("kills").innerHTML = MOODS.map(m => `<div class="kill"><i style="--c:${MC[m]}"></i><span>${m} ─ ${MW[m]}</span><b>${all.filter(k => data[k].mood === m).length}</b></div>`).join("");
+  }
+  if (view === "cal") {
+    const sd = new Date(calSel + "T00:00:00"), y = sd.getFullYear(), m = sd.getMonth(), first = new Date(y, m, 1), start = new Date(first); start.setDate(1 - first.getDay());
+    const weeks = Math.ceil((first.getDay() + new Date(y, m + 1, 0).getDate()) / 7), got = all.filter(k => k.startsWith(calSel.slice(0, 7))).length;
+    $("mon").innerHTML = `<b>${MONTHS[m]}</b><span>${y}年 ${m + 1}月の狩猟記録 ${got}回</span><em>${md(calSel)}${data[calSel] ? " ─ " + esc(data[calSel].text.slice(0, 30)) : " ─ 未記録"}</em>`;
+    let h = DOW.map(d => `<span class="dw">${d}</span>`).join("");
+    for (let i = 0; i < weeks * 7; i++) { const d = new Date(start); d.setDate(start.getDate() + i); const dk = ymd(d), e = data[dk], fut = dk > today;
+      h += `<button class="cd ${e ? "on" : ""} ${d.getMonth() !== m ? "out" : ""} ${fut ? "fut" : ""} ${dk === today ? "today" : ""} ${dk === calSel ? "sel" : ""}" ${fut ? "disabled" : `data-go="${dk}"`} style="--c:${e ? MC[e.mood] || "#fff" : ""}">${d.getDate()}</button>`; }
+    $("cgrid").innerHTML = h;
+  }
+}
+
+function go(v) { prev = view === "edit" ? prev : view; view = v; cur = 0; if (v === "select") page = 0; render(); }
+function back() { if (view === "edit") { view = prev; return render(); } if (view !== "main") { view = "main"; render(); } }
+function runMenu(i) {
+  if (i === 0) return openEd(ymd(new Date()));
+  if (i === 1) return go("select");
+  if (i === 2) return go("card");
+  if (i === 3) { calSel = ymd(new Date()); return go("cal"); }
+  if (i === 4) location.href = "index.html";
+}
+function shiftCal(n) { const d = new Date(calSel + "T00:00:00"); d.setDate(d.getDate() + n); const k = ymd(d); if (k <= ymd(new Date())) { calSel = k; render(); } }
+function shiftMonth(n) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() + n); const k = ymd(d); calSel = k > ymd(new Date()) ? ymd(new Date()) : k; render(); }
+function moveSlot(n) {
+  if (n < 0) { if (page === 0) return; page--; cur = PER - 1; }
+  else if (n >= PER) { page++; cur = 0; }
+  else cur = n;
+  render();
+}
+
+function setMood(m) { mood = m; document.querySelectorAll(".stamp").forEach(b => b.classList.toggle("on", b.dataset.s === mood)); }
+function openEd(k) {
+  selected = k; const e = data[k]; mood = e ? e.mood : null;
+  if (view !== "edit") prev = view;
+  view = "edit"; render();
+  $("topTitle").textContent = "クエスト受注"; questPaper(k, true);
+  $("stamps").innerHTML = MOODS.map(m => `<button class="stamp ${m === mood ? "on" : ""}" data-s="${m}"><i style="--c:${MC[m]}"></i>${m}</button>`).join("");
+  $("body").value = e ? e.text : "";
+  setTimeout(() => $("body").focus(), 30);
+}
+function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  const xp0 = totalXp(), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data);
+  const xp1 = totalXp(), up = Math.floor(xp1 / XP_PER_RANK) > Math.floor(xp0 / XP_PER_RANK);
+  $("ovT").textContent = up ? "HR UP!" : "QUEST CLEAR";
+  $("ovJ").textContent = up ? `ハンターランクが ${Math.floor(xp1 / XP_PER_RANK) + 1} に上がった！` : isNew ? "記録の報告が完了しました" : "報告書を書き直しました";
+  $("ovS").textContent = isNew ? `報酬 ${xp1 - xp0} EXP ／ 連続狩猟 ${streakCount()}日` : "";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 3200);
+  view = prev === "edit" ? "main" : prev; render();
+}
+
+document.addEventListener("click", e => {
+  const mb = e.target.closest(".mbtn"); if (mb) { mcur = +mb.dataset.m; render(); return runMenu(mcur); }
+  const sl = e.target.closest(".slot"); if (sl) { cur = +sl.dataset.i; return openEd(dayOf(cur)); }
+  const g = e.target.closest("[data-go]"); if (g) { calSel = g.dataset.go; return openEd(calSel); }
+  const st = e.target.closest(".stamp"); if (st) return setMood(mood === st.dataset.s ? null : st.dataset.s);
+  if (e.target.closest("[data-back]")) return back();
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#sOk")) return openEd(dayOf(cur));
+  if (e.target.closest("#cOk")) return openEd(ymd(new Date()));
+  if (e.target.closest("#older")) { page++; cur = 0; return render(); }
+  if (e.target.closest("#newer")) { if (page) { page--; cur = 0; render(); } return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("mouseover", e => {
+  if (view === "main") { const mb = e.target.closest(".mbtn"); if (mb && +mb.dataset.m !== mcur) { mcur = +mb.dataset.m; render(); } }
+  if (view === "select") { const sl = e.target.closest(".slot"); if (sl && +sl.dataset.i !== cur) { cur = +sl.dataset.i; render(); } }
+});
+document.addEventListener("keydown", e => {
+  const k = e.key;
+  if (view === "edit") {
+    if ((e.ctrlKey || e.metaKey) && k === "Enter") { e.preventDefault(); return save(); }
+    if (k === "Escape") return back();
+    if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) {
+      e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : MOODS.length - 1) : (i + dir + MOODS.length) % MOODS.length]); document.querySelector(`.stamp[data-s="${mood}"]`).focus();
+    }
+    return;
+  }
+  if (k === "Escape" || k === "Backspace") { e.preventDefault(); if ($("ov").classList.contains("show")) return $("ov").classList.remove("show"); return back(); }
+  const enter = (k === "Enter" || k === " ") && e.target.tagName !== "BUTTON";
+  if (view === "main") { const to = NAV[mcur][k]; if (to !== undefined) { e.preventDefault(); mcur = to; return render(); } if (enter) { e.preventDefault(); return runMenu(mcur); } }
+  if (view === "select") {
+    if (k === "ArrowUp") { e.preventDefault(); return moveSlot(cur - 1); }
+    if (k === "ArrowDown") { e.preventDefault(); return moveSlot(cur + 1); }
+    if (k === "ArrowRight" || k === "e" || k === "E") { e.preventDefault(); page++; cur = 0; return render(); }
+    if ((k === "ArrowLeft" || k === "q" || k === "Q") && page) { e.preventDefault(); page--; cur = 0; return render(); }
+    if (enter) { e.preventDefault(); return openEd(dayOf(cur)); }
+  }
+  if (view === "card" && enter) { e.preventDefault(); return openEd(ymd(new Date())); }
+  if (view === "cal") {
+    const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[k]; if (mv) { e.preventDefault(); return shiftCal(mv); }
+    if (k === "q" || k === "Q") return shiftMonth(-1); if (k === "e" || k === "E") return shiftMonth(1);
+    if (enter) { e.preventDefault(); return openEd(calSel); }
+  }
+});
+
+$("flames").innerHTML = [[8, 8, 30, 70, 150], [62, 2, 34, 80, 200], [30, 30, 22, 60, 120], [74, 44, 20, 50, 220], [2, 56, 18, 46, 170], [44, 0, 16, 40, 190]]
+  .map(([x, y, w, h, a], i) => `<i style="left:${x}%;top:${y}%;width:${w}%;height:${h}%;--a:${a}deg;animation-delay:${-i * .4}s;rotate:${(i % 2 ? 1 : -1) * (10 + i * 6)}deg"></i>`).join("");
+render();
+</script>
+</body>
+</html>
