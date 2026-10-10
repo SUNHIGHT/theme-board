@@ -70,6 +70,8 @@
       titles: [ { id: "metalslug", file: "metalslug.html", name: "METAL SLUG", sub: "出撃!" } ] },
     { id: "dq",     name: "DRAGON QUEST",      sub: "ドラゴンクエスト",         c1: "#7ec8ff", c2: "#04042c",
       titles: [ { id: "dq11", file: "dq11.html", name: "DRAGON QUEST XI", sub: "過ぎ去りし時を求めて" } ] },
+    { id: "xenoblade", name: "XENOBLADE", sub: "ゼノブレイド",           c1: "#4a63ff", c2: "#0c1470",
+      titles: [ { id: "xb2", file: "xenoblade2.html", name: "XENOBLADE 2", sub: "アルストの空" } ] },
     { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
       titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
@@ -86,7 +88,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
