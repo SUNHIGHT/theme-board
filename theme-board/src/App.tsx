@@ -6,6 +6,9 @@ import ThemeCardView from './components/molecules/ThemeCardView'
 import { DailyRecordForm } from './components/molecules/DailyRecordForm'
 import { DailyRecordList } from './components/molecules/DailyRecordList'
 import { ThemeForm } from './components/molecules/ThemeForm'
+import SelectBox from './components/atoms/SelectBox'
+import { uiThemes, useUiTheme, type UiThemeId } from './hooks/useUiTheme'
+import './themes/p5s.css'
 
 const practicePages = [
   { id: "timer", label: "カウントダウンタイマー", component: "CountdownTimerPage" },
@@ -103,6 +106,9 @@ export function App() {
 
   const [state, dispatch] = useReducer(appReducer, initialAppState);
 
+  //見た目（UIテーマ）の切り替え
+  const { uiTheme, setUiTheme } = useUiTheme();
+
   //検索用state
   const [searchText, setSearchText] = useState("");
   //入力された検索文字を使って、表示するテーマ一覧を絞り込む
@@ -139,6 +145,20 @@ export function App() {
       <Header>
         アイコン、検索バー、別タブ、お知らせボタン、アカウント情報、ゴール追加ボタン
         ※Qiitaを参考にしてる
+        <label>
+          UIテーマ：
+          <SelectBox
+            value={uiTheme}
+            onChange={(e) => setUiTheme(e.target.value as UiThemeId)}
+            style={{ width: "auto" }}
+          >
+            {uiThemes.map((theme) => (
+              <option key={theme.id} value={theme.id}>
+                {theme.label}
+              </option>
+            ))}
+          </SelectBox>
+        </label>
         <button onClick={() => dispatch({ type: "openThemeAdd" })}>
           テーマを追加
         </button>
