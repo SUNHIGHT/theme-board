@@ -51,6 +51,16 @@
       titles: [ { id: "cyberpunk", file: "cyberpunk.html", name: "CYBERPUNK 2077", sub: "ナイトシティ" } ] },
     { id: "mh",     name: "MONSTER HUNTER",    sub: "モンスターハンター",       c1: "#f08a24", c2: "#241709",
       titles: [ { id: "mh2g", file: "mh2g.html", name: "MONSTER HUNTER 2G", sub: "ドンドルマ" } ] },
+    { id: "splatoon", name: "SPLATOON",      sub: "スプラトゥーン",           c1: "#ff6a00", c2: "#3b2bff",
+      titles: [ { id: "splatoon3", file: "splatoon3.html", name: "SPLATOON 3", sub: "バンカラ地方" } ] },
+    { id: "mario",  name: "SUPER MARIO",       sub: "スーパーマリオ",           c1: "#e83800", c2: "#5c94fc",
+      titles: [ { id: "mario", file: "mario.html", name: "SUPER MARIO BROS.", sub: "キノコ王国 1-1" } ] },
+    { id: "zelda",  name: "THE LEGEND OF ZELDA", sub: "ゼルダの伝説",         c1: "#f5d76e", c2: "#08170d",
+      titles: [ { id: "zelda_oot", file: "zelda_oot.html", name: "OCARINA OF TIME", sub: "時のオカリナ" } ] },
+    { id: "danganronpa", name: "DANGANRONPA", sub: "ダンガンロンパ",           c1: "#ff2d7a", c2: "#0a0a0a",
+      titles: [ { id: "danganronpa", file: "danganronpa.html", name: "TRIGGER HAPPY HAVOC", sub: "希望ヶ峰学園" } ] },
+    { id: "armoredcore", name: "ARMORED CORE", sub: "アーマード・コア",        c1: "#ff6a00", c2: "#0b0d10",
+      titles: [ { id: "ac6", file: "ac6.html", name: "ARMORED CORE VI", sub: "ルビコン3" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
@@ -63,7 +73,8 @@
     persona: ["RPG"], mgs: ["ステルス", "アクション"], destiny: ["シューター"], apex: ["シューター"],
     darksouls: ["アクション", "RPG"], eldenring: ["アクション", "RPG"], resident: ["ホラー", "アクション"],
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
-    zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"]
+    zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
+    splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
