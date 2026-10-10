@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Apex Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Teko:wght@500;700&family=Zen+Kaku+Gothic+New:wght@500;900&display=swap" rel="stylesheet">
+<style>
+  :root { --bg:#0d0f12;--fg:#aeb4ba;--hi:#ffffff;--acc:#e03b3b;--acc2:#4aa8ff;--line:rgba(255,255,255,.22);--panel:rgba(20,23,28,.82);--sel:rgba(224,59,59,.22);--glow:rgba(224,59,59,.5);--warn:#ffcc33;--fb:'Zen Kaku Gothic New','Teko',sans-serif;--fh:'Teko','Zen Kaku Gothic New',sans-serif; }
+
+  * { box-sizing:border-box; margin:0; }
+  body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
+  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 16px 70px; }
+  header { position:relative; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:24px; animation:typeIn .8s both; }
+  .op { font-size:12px; letter-spacing:.4em; color:var(--acc); }
+  h1 { font-family:var(--fh); font-weight:700; font-size:clamp(34px,8.5vw,66px); letter-spacing:.05em; line-height:1.05; color:var(--hi); margin:4px 0; }
+  h1 small { display:block; font-size:.4em; letter-spacing:.35em; color:var(--fg); font-family:var(--fb); font-weight:400; }
+  .clock { display:flex; flex-wrap:wrap; gap:22px; font-size:15px; letter-spacing:.15em; margin-top:8px; }
+  .clock b { color:var(--acc); font-weight:400; margin-right:6px; }
+  .blink { animation:blink 1s steps(1) infinite; }
+  .panel { position:relative; background:var(--panel); border:1px solid var(--line); padding:22px 22px 18px; margin-bottom:30px; }
+  .ttl { display:inline-block; font-family:var(--fh); font-size:15px; letter-spacing:.25em; color:var(--bg); background:var(--acc); padding:2px 14px; margin:-36px 0 12px -8px; }
+  .gauge { margin-bottom:12px; }
+  .gauge b { font-weight:400; display:flex; justify-content:space-between; letter-spacing:.2em; font-size:14px; }
+  .gauge b em { font-style:normal; font-family:var(--fh); font-size:20px; color:var(--hi); }
+  .track { height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.45); }
+  .track div { height:100%; width:0; transition:width .9s cubic-bezier(.2,.9,.3,1); background:repeating-linear-gradient(90deg,var(--c) 0 8px,transparent 8px 10px); }
+  .life div { --c:var(--acc); } .stam div { --c:var(--acc2); }
+  .row3 { display:flex; gap:26px; flex-wrap:wrap; margin-top:14px; }
+  .row3 div { flex:1 1 130px; border-top:1px solid var(--line); padding-top:6px; }
+  .row3 b { display:block; font-weight:400; font-size:12px; letter-spacing:.25em; color:var(--acc); }
+  .row3 i { font-style:normal; font-family:var(--fh); font-size:38px; color:var(--hi); line-height:1.1; }
+  .moods { list-style:none; padding:0; margin-bottom:18px; }
+  .moods button { width:100%; text-align:left; font:inherit; font-size:17px; cursor:pointer; color:var(--fg); background:transparent; border:0;
+    border-bottom:1px dashed var(--line); padding:8px 8px 8px 30px; position:relative; display:flex; justify-content:space-between; transition:.1s; }
+  .moods button span { font-size:12px; letter-spacing:.2em; opacity:.7; }
+  .moods button:hover { color:var(--acc); }
+  .moods button.on { background:var(--sel); color:var(--hi); animation:fade .25s; }
+  .moods button.on::before { content:"▶"; position:absolute; left:8px; color:var(--acc); animation:blink .8s steps(1) infinite; }
+  textarea { width:100%; min-height:180px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.9; color:var(--hi);
+    background:rgba(255,255,255,.05); border:1px solid var(--line); outline:none; }
+  textarea:focus { border-color:var(--acc); box-shadow:0 0 12px var(--glow); }
+  textarea::placeholder { color:var(--fg); opacity:.45; }
+  .hint { font-size:12px; color:var(--acc); margin-top:6px; min-height:1.2em; }
+  .save { display:block; margin:14px 0 0 auto; font-family:var(--fh); font-weight:700; font-size:24px; letter-spacing:.3em; cursor:pointer;
+    color:var(--bg); background:var(--acc); border:0; padding:8px 34px; transition:.1s; }
+  .save:hover { background:var(--hi); box-shadow:0 0 18px var(--glow); }
+  .save:active { transform:scale(.95); }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--line); transition:.15s; }
+  .cal .dow { aspect-ratio:auto; border:0; color:var(--acc); font-size:12px; letter-spacing:.2em; }
+  .cal .done { color:var(--bg); font-weight:700; background:var(--acc); }
+  .cal .today { outline:2px solid var(--hi); outline-offset:2px; }
+  .cal .sel { box-shadow:0 0 0 3px var(--acc2); }
+  .cal div[data-d]:hover { background:var(--sel); transform:scale(1.12); }
+  h2 { font-family:var(--fh); font-size:22px; letter-spacing:.3em; color:var(--hi); margin:6px 0 14px; }
+  .entry { background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--acc); padding:12px 18px; margin-bottom:12px; }
+  .entry small { color:var(--acc); letter-spacing:.2em; font-size:12px; }
+  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.8; color:var(--hi); }
+  #stamp { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
+  #stamp.show { display:flex; animation:fade .2s; }
+  #stamp .bars::before, #stamp .bars::after { content:""; position:absolute; left:0; right:0; height:16vh; background:#000; z-index:1; }
+  #stamp .bars::before { top:0; animation:barT .5s ease-out; } #stamp .bars::after { bottom:0; animation:barB .5s ease-out; }
+  @keyframes barT { from { transform:translateY(-100%); } } @keyframes barB { from { transform:translateY(100%); } }
+  #stamp .box { text-align:center; position:relative; z-index:2; padding:0 16px; }
+  #bang { font-family:var(--fh); font-weight:700; font-size:clamp(110px,28vw,230px); line-height:1; color:var(--warn); text-shadow:0 0 30px var(--warn), 5px 5px 0 #000; animation:bang .45s cubic-bezier(.2,2,.4,1); }
+  @keyframes bang { from { transform:scale(.1) rotate(-25deg); opacity:0; } }
+  #stampBig { font-family:var(--fh); font-size:clamp(22px,5.5vw,40px); letter-spacing:.2em; color:var(--hi); min-height:1.4em; }
+  #stampBig::after { content:"█"; animation:blink .6s steps(1) infinite; color:var(--acc); }
+  #stampSub { margin-top:6px; letter-spacing:.3em; font-size:14px; color:var(--acc); }
+  @keyframes blink { 50% { opacity:0; } }
+  @keyframes fade { from { opacity:0; } }
+  @keyframes typeIn { from { opacity:0; transform:translateX(-30px); } }
+  @keyframes panelIn { 0% { opacity:0; transform:translateY(24px); } 40% { opacity:.4; } 55% { opacity:.1; } 70% { opacity:1; } }
+  @keyframes rise { from { opacity:0; transform:scale(.6); } }
+  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
+  main > .panel { animation:panelIn .7s both; }
+  main > .panel:nth-of-type(1) { animation-delay:.25s; } main > .panel:nth-of-type(2) { animation-delay:.45s; } main > .panel:nth-of-type(3) { animation-delay:.65s; }
+  .cal div[data-d] { animation:rise .3s calc(var(--i) * 16ms + .8s) backwards; }
+  .entry { animation:entryIn .45s calc(var(--i) * 70ms) ease-out backwards; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+
+
+  body { background:
+      repeating-linear-gradient(120deg, transparent 0 46px, rgba(255,255,255,.025) 46px 92px),
+      radial-gradient(ellipse at 100% 0%, #2a1013 0%, transparent 55%), #0d0f12 fixed; }
+  body::before { content:""; position:fixed; left:-14%; top:-30%; width:46%; height:80%; background:var(--acc); opacity:.14; transform:skewX(-24deg); z-index:0; pointer-events:none; animation:barIn .8s cubic-bezier(.2,.9,.3,1) backwards; }
+  body::after { content:""; position:fixed; right:-12%; bottom:-30%; width:40%; height:60%; background:#fff; opacity:.05; transform:skewX(-24deg); z-index:0; pointer-events:none; animation:barIn .9s .1s cubic-bezier(.2,.9,.3,1) backwards; }
+  @keyframes barIn { from { transform:translateX(-120%) skewX(-24deg); } }
+  h1 { font-weight:700; font-style:italic; text-transform:uppercase; letter-spacing:.04em; transform:skewX(-8deg); transform-origin:left; font-size:clamp(46px,11vw,92px); line-height:.95; }
+  h1 small { font-size:.3em; letter-spacing:.2em; font-weight:500; color:var(--acc); }
+  header { border-bottom:3px solid var(--acc); }
+  .panel { border:0; border-left:5px solid var(--acc); clip-path:polygon(0 0,calc(100% - 26px) 0,100% 26px,100% 100%,26px 100%,0 calc(100% - 26px)); }
+  .ttl { background:var(--acc); color:#fff; font-weight:700; font-style:italic; clip-path:polygon(0 0,100% 0,calc(100% - 10px) 100%,0 100%); padding-right:24px; font-size:19px; }
+  .track { transform:skewX(-20deg); border-color:var(--line); }
+  .life div { --c:#f2f2f2; } .stam div { --c:#4aa8ff; }
+  .row3 i, .gauge b em { font-weight:700; font-style:italic; font-size:44px; }
+  .gauge b em { font-size:30px; }
+  .moods button span { color:var(--r); opacity:1; font-weight:900; text-shadow:0 0 8px var(--r); }
+  .moods button.on { border-left:5px solid var(--r); clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); }
+  .save { font-style:italic; background:var(--acc); color:#fff; clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%); padding-right:46px; font-size:30px; }
+  .save:hover { background:#fff; color:var(--acc); }
+  .cal div { clip-path:polygon(25% 0,75% 0,100% 50%,75% 100%,25% 100%,0 50%); border:0; background:rgba(255,255,255,.07); }
+  .cal .dow { background:none; clip-path:none; }
+  .cal .done { background:var(--acc); color:#fff; }
+  .cal .today { outline:0; background:#fff; color:#111; }
+  .entry { border-left-color:var(--acc); }
+  .hexes { position:absolute; right:0; top:8px; display:flex; gap:4px; }
+  .hexes i { width:30px; height:34px; background:rgba(255,255,255,.14); clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); animation:hexIn .4s calc(var(--n) * 90ms + .3s) cubic-bezier(.3,1.6,.5,1) backwards; }
+  .hexes i:nth-child(3) { background:var(--acc); }
+  @keyframes hexIn { from { opacity:0; transform:translateY(-14px) scale(.4); } }
+  @media (max-width:560px) { .hexes { display:none; } }
+  #stamp { background:rgba(8,9,11,.88); }
+  #bang { font-style:italic; text-shadow:0 0 36px var(--warn), 6px 6px 0 #000; }
+  #stampBig { font-weight:700; font-style:italic; text-transform:uppercase; }
+  #stampSub::before { content:"SQUAD ─ "; }
+  
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="op">OUTLANDS ─ APEX GAMES ─ 試合記録</div>
+    <h1>APEX DIARY<small>DROP IN ─ 今日も降下</small></h1>
+    <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>SQUAD</b><span>YOU +2</span></span></div>
+    <div class="hexes"><i style="--n:0"></i><i style="--n:1"></i><i style="--n:2"></i><i style="--n:3"></i><i style="--n:4"></i><i style="--n:5"></i></div>
+  </header>
+
+  <section class="panel">
+    <span class="ttl">LEGEND STATUS</span>
+    
+    <div class="gauge life"><b>HEALTH ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
+    <div class="gauge stam"><b>SHIELD ─ 次のランクまで <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
+    <div class="row3">
+      <div><b>RANK ランク</b><i id="lv">-</i></div>
+      <div><b>STREAK 連続</b><i id="streak">0</i></div>
+      <div><b>TOTAL 記録</b><i id="total">0</i></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <span class="ttl">LOADOUT 今日の装備</span>
+    <ul class="moods" id="moods"></ul>
+    <span class="ttl" style="margin-top:6px">MATCH REPORT 試合記録</span>
+    <textarea id="body" placeholder="今日のマッチを振り返ろう…"></textarea>
+    <div class="hint" id="hint"></div>
+    <button class="save" id="save">DEPLOY</button>
+  </section>
+
+  <section class="panel">
+    <span class="ttl">SEASON CALENDAR</span>
+    <div class="cal" id="cal"></div>
+  </section>
+
+  <h2>MATCH HISTORY ─ 過去の記録</h2>
+  <div id="list"></div>
+</main>
+
+<div id="stamp"><div class="bars"></div><div class="box"><div id="bang">#1</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
+
+<script src="theme-switch.js" data-theme="apex"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "HEIRLOOM", "#ff3b3b"], ["良い", "LEGENDARY", "#ffcc33"], ["普通", "EPIC", "#b36bff"], ["微妙", "RARE", "#4aa8ff"], ["最悪", "COMMON", "#c9cdd1"]];
+const RANKS = ["ROOKIE", "BRONZE", "SILVER", "GOLD", "PLATINUM", "DIAMOND", "APEX PREDATOR"];
+const MSG_FILED = "YOU ARE THE CHAMPION ─ 記録完了", MSG_PROMO = "RANK UP ─ ランクアップ";
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const $ = id => document.getElementById(id);
+
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const countUp = (el, to) => {
+  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
+  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
+  const t0 = performance.now();
+  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
+  requestAnimationFrame(tick);
+};
+
+let data = load(), selected = ymd(new Date()), mood = null, stampTimer, typeTimer;
+
+function streakCount() {
+  let n = 0, d = new Date();
+  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
+  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
+  return n;
+}
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const cur = new Date(k + "T00:00:00");
+    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = cur;
+  }
+  return xp;
+}
+const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+
+function typewrite(text) {
+  clearInterval(typeTimer); let i = 0;
+  const el = $("stampBig"); el.textContent = "";
+  typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(typeTimer); }, 55);
+}
+
+function render() {
+  const sd = new Date(selected + "T00:00:00");
+  $("d").textContent = selected.replace(/-/g, ".");
+  $("dow").textContent = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
+
+  const xp = totalXp(), rk = rankOf(xp), st = streakCount();
+  const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
+  $("lv").textContent = RANKS[rk];
+  $("xp").style.width = pct + "%"; $("xpTxt").textContent = pct + "%";
+  $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
+  countUp($("streak"), st);
+  countUp($("total"), Object.keys(data).length);
+  
+
+  const e = data[selected];
+  $("body").value = e ? e.text : "";
+  mood = e ? e.mood : null;
+  $("moods").innerHTML = MOODS.map(([m, tag, c]) => `<li><button data-m="${m}" style="--r:${c||""}" class="${m===mood?"on":""}">${m}<span>${tag}</span></button></li>`).join("");
+  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
+
+  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
+  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
+  h += "<div style='visibility:hidden'></div>".repeat(first);
+  for (let d = 1; d <= last; d++) {
+    const k = ymd(new Date(y, mo, d));
+    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+  }
+  $("cal").innerHTML = h;
+
+  const keys = Object.keys(data).sort().reverse();
+  $("list").innerHTML = keys.length ? keys.map((k, i) =>
+    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
+    : `<div class="entry" style="--i:1"><p>まだ試合がありません。最初のマッチに降下しよう。</p></div>`;
+}
+
+$("moods").onclick = e => {
+  const b = e.target.closest("button"); if (!b) return;
+  mood = b.dataset.m;
+  document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
+};
+$("cal").onclick = e => {
+  const c = e.target.closest("[data-d]"); if (!c) return;
+  selected = c.dataset.d; render();
+};
+$("save").onclick = () => {
+  const text = $("body").value.trim();
+  if (!text) { $("body").focus(); return; }
+  const before = rankOf(totalXp()), isNew = !data[selected];
+  data[selected] = { mood, text };
+  store(data);
+  const up = rankOf(totalXp()) > before;
+  document.documentElement.style.setProperty("--warn", (MOODS.find(x => x[0] === mood) || [])[2] || "#e8edf2");
+  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
+  $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
+  setTimeout(() => typewrite(up ? MSG_PROMO : MSG_FILED), 450);
+  $("stampSub").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
+  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2800);
+  render();
+};
+$("stamp").onclick = () => $("stamp").classList.remove("show");
+render();
+</script>
+</body>
+</html>

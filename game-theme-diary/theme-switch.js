@@ -13,6 +13,16 @@
         { id: "destiny1", file: "destiny1.html", name: "DESTINY",   sub: "旅人の光" },
         { id: "destiny2", file: "destiny2.html", name: "DESTINY 2", sub: "ディレクター" }
       ] },
+    { id: "apex",    name: "APEX LEGENDS",     sub: "エーペックスレジェンズ",   c1: "#e03b3b", c2: "#0d0f12",
+      titles: [ { id: "apex", file: "apex.html", name: "APEX LEGENDS", sub: "チャンピオンになれ" } ] },
+    { id: "darksouls", name: "DARK SOULS",      sub: "ダークソウルシリーズ",     c1: "#d9822b", c2: "#0b0a08",
+      titles: [
+        { id: "darksouls1", file: "darksouls1.html", name: "DARK SOULS",   sub: "ロードラン" },
+        { id: "darksouls2", file: "darksouls2.html", name: "DARK SOULS II", sub: "ドラングレイグ" },
+        { id: "darksouls3", file: "darksouls3.html", name: "DARK SOULS III", sub: "ロスリック" }
+      ] },
+    { id: "eldenring", name: "ELDEN RING",     sub: "エルデンリング",           c1: "#e8c46a", c2: "#0b0905",
+      titles: [ { id: "eldenring", file: "eldenring.html", name: "ELDEN RING", sub: "狭間の地" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
