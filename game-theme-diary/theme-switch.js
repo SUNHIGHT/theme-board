@@ -81,6 +81,8 @@
       titles: [ { id: "gd2", file: "gravitydaze2.html", name: "GRAVITY DAZE 2", sub: "重力的眩暈完結編" } ] },
     { id: "jump", name: "JUMP ULTIMATE STARS", sub: "ジャンプアルティメットスターズ", c1: "#e9532b", c2: "#2a1a5e",
       titles: [ { id: "jus", file: "jump_stars.html", name: "JUMP ULTIMATE STARS", sub: "コマ割りの大乱闘" } ] },
+    { id: "atelier", name: "ATELIER", sub: "アトリエシリーズ",             c1: "#ffd21a", c2: "#6b3b22",
+      titles: [ { id: "sophie", file: "atelier_sophie.html", name: "ATELIER SOPHIE", sub: "不思議な本の錬金術士" } ] },
     { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
       titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
@@ -97,7 +99,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   window.DIARY_THEMES = GAMES;
