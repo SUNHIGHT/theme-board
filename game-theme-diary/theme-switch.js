@@ -8,6 +8,11 @@
         { id: "p3", file: "persona3.html", name: "PERSONA 3", sub: "蒼い影時間" },
         { id: "p5", file: "persona5.html", name: "PERSONA 5", sub: "赤と黒" }
       ] },
+    { id: "destiny", name: "DESTINY",          sub: "デスティニーシリーズ",     c1: "#7fd4ff", c2: "#0a1018",
+      titles: [
+        { id: "destiny1", file: "destiny1.html", name: "DESTINY",   sub: "旅人の光" },
+        { id: "destiny2", file: "destiny2.html", name: "DESTINY 2", sub: "ディレクター" }
+      ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
       titles: [
         { id: "mgs1", file: "mgs1.html", name: "METAL GEAR SOLID",   sub: "シャドー・モセス" },
