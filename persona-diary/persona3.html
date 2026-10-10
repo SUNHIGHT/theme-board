@@ -173,8 +173,9 @@
 
 <div id="stamp"><div class="box"><div class="big" id="stampBig"></div><div class="sub" id="stampSub"></div></div></div>
 
+<script src="theme-switch.js" data-theme="p3"></script>
 <script>
-const KEY = "persona3-diary-v1";
+const KEY = "diary-shared-v1";
 const MOODS = ["最高","良い","普通","微妙","最悪"];
 const ROMAN = ["I","II","III","IV","V","VI","VII","VIII","IX","X"];
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
@@ -189,7 +190,14 @@ const countUp = (el, to) => {
 let stampTimer;
 
 
-const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } };
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
 const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
