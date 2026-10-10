@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jump Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Zen+Maru+Gothic:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Dual-screen layout (top info screen + bottom manga-panel screen), round black menu buttons, orange header bars */
+  :root { --or:#e9532b; --dor:#8f1d12; --pu:#2a1a5e; --bk:#111; --ye:#ffd400; --f:'Zen Maru Gothic','Hiragino Maru Gothic ProN',sans-serif; --fd:'Dela Gothic One','Zen Maru Gothic',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:#fff; overflow:auto; background:#05061a; display:grid; place-items:center; }
+  body::before { content:""; position:fixed; inset:0; background:radial-gradient(circle at 20% 30%, rgba(233,83,43,.35), transparent 40%), radial-gradient(circle at 85% 70%, rgba(60,80,255,.35), transparent 45%), repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.04) 0 4deg, transparent 4deg 12deg); pointer-events:none; }
+  .stage { position:relative; width:min(100vw, 66vh); min-width:340px; aspect-ratio:2/3; display:grid; grid-template-rows:1fr 1fr; gap:1.4%; z-index:1; }
+  .scr { position:relative; container-type:inline-size; overflow:hidden; border:3px solid #000; border-radius:6px; background:#0b1038; box-shadow:0 0 0 3px #333, 0 10px 30px rgba(0,0,0,.6); }
+  .space { position:absolute; inset:0; background:radial-gradient(ellipse at 70% 20%, rgba(120,70,220,.6), transparent 55%), radial-gradient(ellipse at 20% 90%, rgba(30,120,255,.45), transparent 50%), linear-gradient(160deg,#2a1263,#0b1038 60%,#160a40); }
+  .space i { position:absolute; width:2px; height:2px; background:#fff; border-radius:50%; box-shadow:0 0 4px #fff; animation:tw 2s ease-in-out infinite alternate; }
+  .abs { position:absolute; }
+
+  .hd { position:absolute; left:0; right:0; top:0; height:19cqw; display:flex; align-items:center; gap:3cqw; padding:0 3cqw; }
+  .ico { width:15cqw; height:15cqw; border-radius:50%; background:#000; border:.7cqw solid #fff; display:grid; place-items:center; font-size:8cqw; flex:none; box-shadow:0 0 0 .8cqw var(--or); }
+  .hd h2 { font-weight:900; font-size:4.6cqw; line-height:1.1; letter-spacing:.04em; text-shadow:.4cqw .4cqw 0 #000; } .hd h2 small { display:block; font-family:var(--fd); font-size:4.4cqw; letter-spacing:.03em; } .hd h2 small span { display:block; font:700 2.6cqw var(--f); }
+  .exp { position:absolute; left:3cqw; right:3cqw; top:21cqw; bottom:3cqw; background:rgba(5,5,25,.82); border:.9cqw solid #fff; border-radius:3cqw; padding:2cqw 3.5cqw; }
+  .exp b { display:block; font-size:2.6cqw; letter-spacing:.2em; color:#ffb48f; } .exp b::before { content:"⠿"; margin-right:1cqw; }
+  .exp p { font-weight:900; font-size:4.4cqw; line-height:1.7; margin-top:1cqw; background:repeating-linear-gradient(transparent 0 7.4cqw, rgba(255,255,255,.35) 7.4cqw 7.6cqw); background-position:0 0; text-shadow:.2cqw .2cqw 0 #000; }
+  .sfx { position:absolute; right:3cqw; top:2cqw; width:24cqw; height:19cqw; display:grid; place-items:center; }
+  .sfx::before { content:""; position:absolute; inset:0; background:var(--ye); clip-path:polygon(50% 0,60% 20%,85% 5%,78% 30%,100% 35%,80% 52%,95% 78%,68% 70%,60% 100%,45% 72%,18% 90%,28% 60%,0 50%,25% 38%,10% 12%,38% 24%); filter:drop-shadow(.5cqw .5cqw 0 #000); }
+  .sfx b { position:relative; font:2.6cqw/1 var(--fd); color:var(--dor); transform:rotate(-10deg); text-align:center; }
+
+  /* bottom: menu */
+  .bar { position:absolute; left:0; right:0; top:0; height:13cqw; background:linear-gradient(180deg,#f06a38,#c93a18); border-bottom:.8cqw solid #000; padding:1.4cqw 3cqw; display:flex; gap:2.4cqw; align-items:center; }
+  .bar i { width:7cqw; height:7cqw; background:#fff; border-radius:1cqw; color:var(--or); font:900 4.8cqw/7cqw var(--f); text-align:center; font-style:normal; flex:none; }
+  .bar h3 { font-weight:900; font-size:5cqw; line-height:1.05; } .bar h3 small { display:block; font:700 3cqw var(--f); color:var(--ye); letter-spacing:.06em; }
+  .grid { position:absolute; left:8cqw; right:8cqw; top:16cqw; display:grid; grid-template-columns:repeat(4,1fr); gap:2.4cqw 4cqw; }
+  .mb { all:unset; box-sizing:border-box; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:1cqw; transition:.12s; animation:pop .35s calc(var(--i)*40ms) both; }
+  .mb .c { width:100%; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle at 50% 35%, #333, #000 70%); border:.9cqw solid #fff; box-shadow:0 0 0 .6cqw #e9532b; display:grid; place-items:center; font-size:10cqw; color:#fff; transition:.12s; }
+  .mb span { font-weight:900; font-size:3cqw; letter-spacing:.04em; text-shadow:.3cqw .3cqw 0 #000; }
+  .mb:hover .c, .mb.cur .c { transform:scale(1.08); box-shadow:0 0 0 .9cqw var(--ye), 0 0 3cqw var(--ye); background:radial-gradient(circle at 50% 35%, #553, #000 70%); } .mb.cur span { color:var(--ye); }
+  .mb.lock .c { filter:grayscale(1) brightness(.7); }
+  .deck { position:absolute; left:3cqw; bottom:1.2cqw; font:700 3.2cqw var(--f); text-shadow:.3cqw .3cqw 0 #000; }
+  .backb { all:unset; cursor:pointer; position:absolute; right:2.5cqw; bottom:2cqw; display:flex; align-items:center; gap:1.5cqw; padding:.8cqw 3cqw .8cqw 1.4cqw; background:#000; border:.5cqw solid #fff; border-radius:4cqw; font-weight:900; font-size:4cqw; z-index:5; } .backb kbd { background:#fff; color:#000; font:900 3cqw var(--f); padding:0 1.4cqw; border-radius:1cqw; } .backb:hover { background:#333; }
+
+  /* write: card on top */
+  .nmb { position:absolute; left:2cqw; right:2cqw; top:2cqw; height:10cqw; background:#fff; border:.7cqw solid #000; border-radius:2cqw; display:flex; align-items:center; gap:2cqw; padding:0 2cqw; color:#000; font:900 6cqw var(--f); } .nmb i { width:7cqw; height:7cqw; border-radius:50%; background:var(--or); color:#fff; font:900 4.4cqw/7cqw var(--f); text-align:center; font-style:normal; border:.5cqw solid #000; }
+  .card { position:absolute; left:2cqw; right:2cqw; top:14cqw; bottom:2cqw; background:linear-gradient(180deg,#e9532b,#b92e12); border:.7cqw solid #000; border-radius:2.4cqw; padding:2cqw; font-weight:900; }
+  .rw { display:flex; align-items:center; gap:2cqw; margin-bottom:1.4cqw; } .rw .k { background:#000; color:#fff; font-size:3cqw; padding:.4cqw 1.8cqw; border-radius:1cqw; }
+  .hp { display:flex; align-items:center; gap:2cqw; background:rgba(0,0,0,.3); border-radius:2cqw; padding:1cqw 2cqw; margin-bottom:1.6cqw; } .hp .li { width:8cqw; height:8cqw; background:#fff; color:var(--dor); border-radius:1.5cqw; border:.5cqw solid #000; font:900 5cqw/7cqw var(--f); text-align:center; } .hp .bars { flex:1; } .hp .tr { height:2.2cqw; background:#333; margin:.5cqw 0; border:.3cqw solid #000; } .hp .tr div { height:100%; background:linear-gradient(90deg,#3df,#4f8); transition:width .8s; } .hp .tr.b div { background:linear-gradient(90deg,#fd3,#f93); } .hp b { font-size:3.8cqw; white-space:nowrap; text-shadow:.3cqw .3cqw 0 #000; }
+  .two { display:grid; grid-template-columns:1.2fr 1fr; gap:2cqw; }
+  .abil { background:#fff; color:#000; border:.5cqw solid #000; border-radius:1.4cqw; padding:1cqw 2cqw; font-size:3.4cqw; margin-top:1cqw; min-height:9cqw; } .abil small { display:block; font-size:2.4cqw; color:#666; }
+  .ai { display:grid; gap:1cqw; } .aic { all:unset; box-sizing:border-box; cursor:pointer; background:#fff; color:#000; border:.5cqw solid #000; border-radius:3cqw; padding:.8cqw 2.2cqw; font-size:2.8cqw; height:7cqw; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; } .aic:hover { background:var(--ye); } .aic.on { background:var(--ye); }
+  .wz { margin-top:2cqw; display:grid; gap:1.2cqw; } .wz .r { background:#fff; color:#000; border:.6cqw solid #000; border-radius:1.4cqw; padding:.8cqw 2cqw; display:flex; align-items:center; gap:2cqw; font-size:3.4cqw; } .wz .r i { background:var(--or); color:#fff; font-style:normal; width:5cqw; height:5cqw; border-radius:50%; text-align:center; font-size:3cqw; line-height:5cqw; border:.4cqw solid #000; } .wz .r b { margin-left:auto; font-size:3cqw; color:var(--dor); }
+
+  /* bottom: manga collage */
+  .pn { position:absolute; filter:drop-shadow(0 0 0 #000); } .pn > .o { position:absolute; inset:0; background:#000; clip-path:var(--cp); } .pn > .i { position:absolute; inset:.7cqw; background:#fff; clip-path:var(--cp); overflow:hidden; color:#000; }
+  .ht { background-image:radial-gradient(circle, rgba(0,0,0,.35) 24%, transparent 26%); background-size:2cqw 2cqw; } .sl { background:repeating-conic-gradient(from 0deg at 50% 50%, #000 0 1.2deg, #fff 1.2deg 7deg); }
+  textarea { position:absolute; inset:2cqw 3cqw 2cqw 3cqw; width:calc(100% - 6cqw); height:calc(100% - 4cqw); resize:none; border:0; outline:0; background:transparent; color:#000; font:900 3.6cqw/1.7 var(--f); }
+  .pn.sel > .o { background:#e9142a; } .pn.sel > .i { background:var(--ye); }
+  .mp { all:unset; position:absolute; box-sizing:border-box; cursor:pointer; } .mp:hover > .i { filter:brightness(.92); }
+  .mp .i { display:grid; place-items:center; text-align:center; } .mp b { font:2.8cqw/1.1 var(--fd); } .mp small { display:block; font:900 2cqw var(--f); color:#555; letter-spacing:.1em; }
+  .bst { all:unset; position:absolute; cursor:pointer; display:grid; place-items:center; background:var(--ye); clip-path:polygon(50% 0,58% 18%,82% 4%,76% 28%,100% 30%,82% 50%,98% 74%,72% 68%,64% 100%,48% 74%,22% 92%,30% 62%,0 56%,24% 40%,6% 14%,34% 24%); font:4cqw/1 var(--fd); color:var(--dor); transition:.12s; } .bst:hover { background:#fff; transform:scale(1.06) rotate(-4deg); }
+  .dtl { position:absolute; font:700 2.8cqw var(--f); color:#000; display:flex; flex-direction:column; gap:.8cqw; } .dtl input { font:700 2.8cqw var(--f); border:.4cqw solid #000; border-radius:1cqw; padding:.4cqw 1cqw; background:#fff; color:#000; } .dtl em { font-style:normal; color:#c00; font-size:2.4cqw; }
+
+  .scroll { position:absolute; left:3cqw; right:3cqw; top:16cqw; bottom:3cqw; overflow:auto; display:flex; flex-direction:column; gap:2cqw; scrollbar-width:thin; padding-right:1cqw; }
+  .ent { all:unset; box-sizing:border-box; cursor:pointer; flex:none; display:grid; grid-template-columns:12cqw 1fr; background:#fff; color:#000; border:.7cqw solid #000; min-height:13cqw; transform:rotate(var(--r,0deg)); animation:pop .3s calc(var(--i)*40ms) both; } .ent:hover { background:#fff7c0; }
+  .ent .m { background:var(--or); color:#fff; display:grid; place-items:center; font:2.8cqw var(--fd); text-align:center; border-right:.7cqw solid #000; background-image:radial-gradient(circle, rgba(0,0,0,.25) 24%, transparent 26%); background-size:1.8cqw 1.8cqw; } .ent .t { padding:1cqw 2.4cqw; font-weight:900; font-size:3.1cqw; line-height:1.4; overflow:hidden; } .ent .t small { display:block; font-size:2.4cqw; color:#777; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:1.2cqw; } .cal div { aspect-ratio:1; display:grid; place-items:center; background:#fff; color:#000; border:.5cqw solid #000; font:3.4cqw var(--fd); } .cal .ht2 { background:#fff url() ; background-image:radial-gradient(circle, rgba(0,0,0,.2) 24%, transparent 26%); background-size:1.6cqw 1.6cqw; } .cal .dow { border:0; background:none; color:var(--ye); font:900 2.8cqw var(--f); aspect-ratio:auto; } .cal .done { background:var(--ye); } .cal .today { outline:.8cqw solid #e9142a; } .cal [data-go] { cursor:pointer; }
+  .big { display:grid; grid-template-columns:1fr 1fr; gap:2cqw; } .bx { background:#fff; color:#000; border:.7cqw solid #000; padding:1.4cqw 2cqw; transform:rotate(var(--r,0deg)); } .bx small { font:900 2.6cqw var(--f); color:#777; display:block; } .bx b { font:7cqw/1.1 var(--fd); color:var(--or); } .bx.w { grid-column:1/-1; } .bar2 { height:3cqw; background:#ddd; border:.4cqw solid #000; margin-top:1cqw; } .bar2 div { height:100%; background:var(--or); transition:width .8s; }
+  .actb { all:unset; cursor:pointer; box-sizing:border-box; display:block; width:100%; background:#fff; color:#000; border:.7cqw solid #000; padding:2.4cqw 3cqw; font:900 3.8cqw var(--f); transform:rotate(var(--r,0deg)); } .actb:hover { background:var(--ye); } .actb small { display:block; font-size:2.6cqw; color:#666; }
+  button:focus-visible, textarea:focus-visible { outline:.6cqw solid var(--ye); outline-offset:.4cqw; }
+
+  #ov { position:fixed; inset:0; z-index:60; display:none; place-content:center; text-align:center; background:radial-gradient(circle, rgba(0,0,0,.4), rgba(0,0,0,.88)); }
+  #ov.show { display:grid; animation:fadeo .2s both, ovOut .4s 2.4s forwards; cursor:pointer; }
+  #ov .bs { position:relative; width:min(86vw,520px); aspect-ratio:1.3; display:grid; place-items:center; animation:pop .45s both; } #ov .bs::before { content:""; position:absolute; inset:0; background:var(--ye); clip-path:polygon(50% 0,58% 16%,82% 2%,76% 26%,100% 28%,82% 48%,98% 74%,72% 68%,64% 100%,48% 74%,22% 94%,30% 62%,0 56%,24% 40%,6% 12%,34% 22%); filter:drop-shadow(1.4vw 1.4vw 0 #000); } #ov .bs div { position:relative; color:var(--dor); font:clamp(32px,9vw,64px)/1.1 var(--fd); transform:rotate(-8deg); } #ov .bs small { display:block; font:900 clamp(14px,3.4vw,22px) var(--f); color:#000; margin-top:6px; }
+  @keyframes tw { to { opacity:.25; } } @keyframes pop { from { opacity:0; transform:scale(.6) rotate(var(--r,0deg)); } } @keyframes fadeo { from { opacity:0; } } @keyframes ovOut { to { opacity:0; visibility:hidden; } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div class="scr" id="top"></div>
+  <div class="scr" id="bot"></div>
+</div>
+<div id="ov"><div class="bs"><div><span id="ovT"></span><small id="ovS"></small></div></div></div>
+
+<script src="theme-switch.js" data-theme="jus"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = [["最高", "ドーン!!"], ["良い", "ニコッ"], ["普通", "ふう…"], ["微妙", "どよーん"], ["最悪", "ガーン!"]];
+const BTNS = [
+  ["✎", "ニッキ", "write", "今日のできごとをコマに書き込もう!\nまずは日記を書いてみてね♪"],
+  ["▤", "レキシ", "log", "これまでに書いた日記のコマを\nふりかえってみよう!"],
+  ["▦", "カレンダー", "cal", "日記を書いた日が黄色く光るよ。\n毎日続けるのがコツだ!"],
+  ["♛", "ランク", "rank", "連続で日記を書くと\nすごい実績がもらえるぞ!"],
+  ["◧", "チョウシ", "stat", "調子ごとの回数や\nステータスを確認できるよ。"],
+  ["?", "？？？", "secret", "ひみつのコマが隠されている…?\n７日連続で書くとわかるかも!"],
+  ["⇩", "データ", "data", "日記のバックアップ(書き出し)と\n読み込みができるよ。"],
+  ["⚙", "オプション", "opt", "テーマ選択画面へもどるよ。\n記録はそのまま引きつがれるよ♪"]
+];
+const MS = [3, 7, 14, 30, 60, 100];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+let data = load(), view = "menu", hov = 0, selected = today(), mood = null, draft = null, ovTimer;
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const stars = n => Array.from({ length: n }, () => `<i style="left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:-${Math.random()*2}s"></i>`).join("");
+const MA = ["ドン!", "バーン!", "ゴゴゴ", "キラッ"];
+
+function topMenu() {
+  const b = BTNS[hov];
+  return `<div class="space">${stars(18)}</div><div class="hd"><div class="ico">${b[0]}</div><h2>トップメニュー<small>INFORMATION<span>インフォメーション</span></small></h2></div>
+    <div class="sfx"><b>${MA[hov % 4]}</b></div><div class="exp"><b>EXPLANATION</b><p>${esc(b[3]).replace(/\n/g, "<br>")}</p></div>`;
+}
+function botMenu() {
+  return `<div class="space">${stars(40)}</div><div class="bar"><i>▥</i><h3>トップメニュー<small>JUMP DIARY STARS</small></h3></div>
+    <div class="grid">${BTNS.map((b, i) => `<button class="mb ${i === hov ? "cur" : ""} ${b[2] === "secret" && streakCount() < 7 ? "lock" : ""}" data-i="${i}" style="--i:${i}"><span class="c">${b[0]}</span><span>${b[1]}</span></button>`).join("")}</div>
+    <div class="deck">キロク ${String(Object.keys(data).length).padStart(3, "0")}</div>`;
+}
+function topCard() {
+  const e = data[selected], st = streakCount(), xp = totalXp(), into = xp % XP_PER_RANK, lv = Math.floor(xp / XP_PER_RANK) + 1;
+  const rec = [0, 1, 2].map(i => { const k = shift(selected, -(i + 1)); return `<button class="aic ${data[k] ? "on" : ""}" data-k="${k}">${data[k] ? esc(data[k].text.replace(/\s+/g, " ")) : "？？？"}</button>`; }).join("");
+  const mi = mood ? mood[0] : "−";
+  return `<div class="space"></div><div class="nmb"><i>${mi}</i>${dl(selected)}</div>
+    <div class="card"><div class="hp"><div class="li">力</div><div class="bars"><div class="tr"><div style="width:${Math.min(st / 30, 1) * 100}%"></div></div><div class="tr b"><div style="width:${into / XP_PER_RANK * 100}%"></div></div></div><b>↑ ${st}/30</b></div>
+    <div class="two"><div><div class="rw"><span class="k">かず</span>${Object.keys(data).length}こ　<span class="k">しゅるい</span>${esc(e ? e.mood || "-" : "−")}</div>
+      <div class="abil"><small>アビリティ</small>${e ? esc(e.text.slice(0, 16)) : "まだ書いていない!"}</div>
+      <div class="wz"><div class="r"><i>A</i>れんぞく記録<b>${st}日</b></div><div class="r"><i>B</i>ランク ${lv}<b>あと${XP_PER_RANK - into}</b></div></div></div>
+      <div><div style="font-size:2.6cqw;margin-bottom:.6cqw;text-align:center">あいしょう</div><div class="ai">${rec}</div></div></div></div>`;
+}
+function panel(css, cp, inner, cls = "") { return `<div class="pn ${cls}" style="${css};--cp:${cp}"><div class="o"></div><div class="i">${inner}</div></div>`; }
+function botWrite() {
+  const e = data[selected]; const txt = draft !== null ? draft : (e ? e.text : "");
+  const P = "polygon(0 0,100% 3%,98% 100%,2% 96%)";
+  let h = `<div class="space"></div>`;
+  h += panel("left:1.5cqw;top:1.5cqw;width:66cqw;height:50cqw", P, `<div class="ht" style="position:absolute;inset:0;opacity:.35"></div><textarea id="ta" placeholder="ここに今日のできごとを書こう!">${esc(txt)}</textarea>`);
+  MOODS.forEach(([m, sfx], i) => { const on = mood && mood[0] === m;
+    h += `<button class="mp" data-m="${m}" style="left:69.5cqw;top:${1.5 + i * 10.2}cqw;width:29cqw;height:9.4cqw"><div class="pn ${on ? "sel" : ""}" style="position:absolute;inset:0;--cp:polygon(0 4%,100% 0,97% 100%,3% 94%)"><div class="o"></div><div class="i ${on ? "" : "ht"}"><div><b>${m}</b><small>${sfx}</small></div></div></div></button>`; });
+  h += panel("left:1.5cqw;top:54cqw;width:66cqw;height:18cqw", "polygon(1% 0,100% 6%,99% 100%,0 92%)", `<div class="sl" style="position:absolute;inset:0;opacity:.18"></div>`);
+  h += `<div class="dtl" style="left:4cqw;top:56cqw"><span>ひづけ</span><input type="date" id="dt" value="${selected}" max="${today()}"></div><div class="dtl" style="left:4cqw;top:67cqw"><em>${selected === today() ? "" : "過去の日付を編集中"}</em></div>`;
+  h += `<button class="bst" id="save" style="left:42cqw;top:48cqw;width:30cqw;height:26cqw">ほぞん!</button><button class="backb" id="back" style="bottom:2cqw"><kbd>B</kbd>もどる</button>`;
+  return h;
+}
+function topInfo(i) { const b = BTNS[i]; return `<div class="space">${stars(18)}</div><div class="hd"><div class="ico">${b[0]}</div><h2>${b[1]}<small>JUMP DIARY<span>${b[2].toUpperCase()}</span></small></h2></div><div class="sfx"><b>${MA[i % 4]}</b></div><div class="exp"><b>EXPLANATION</b><p>${esc(b[3]).replace(/\n/g, "<br>")}</p></div>`; }
+function botList(kind) {
+  let body = "";
+  if (kind === "log") {
+    const keys = Object.keys(data).sort().reverse();
+    body = `<div class="scroll">${keys.length ? keys.map((k, i) => `<button class="ent" data-go="${k}" style="--i:${Math.min(i, 8)};--r:${i % 2 ? .6 : -.6}deg"><span class="m">${esc(data[k].mood || "-")}</span><span class="t"><small>${dl(k)}　${data[k].text.length}字</small>${esc(data[k].text.replace(/\s+/g, " ")).slice(0, 70)}</span></button>`).join("") : `<div class="bx w"><small>まだ空っぽ</small><b>0</b>こ</div>`}</div>`;
+  } else if (kind === "cal") {
+    const n = new Date(), y = n.getFullYear(), mo = n.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden;border:0'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); c += `<div data-go="${k}" class="${data[k] ? "done" : "ht2"} ${k === today() ? "today" : ""}">${d}</div>`; }
+    body = `<div class="scroll"><div style="font:900 4cqw var(--f);text-shadow:.3cqw .3cqw 0 #000">${y}年${mo + 1}月</div><div class="cal">${c}</div></div>`;
+  } else if (kind === "rank") {
+    const st = streakCount();
+    body = `<div class="scroll">${MS.map((n, i) => `<div class="bx w" style="--r:${i % 2 ? .5 : -.5}deg"><small>${n}日れんぞく ─ ${st >= n ? "クリア!!" : "あと" + (n - st) + "日"}</small><b>${st >= n ? "★ " : ""}${n}</b>日<div class="bar2"><div style="width:${Math.min(st / n, 1) * 100}%"></div></div></div>`).join("")}</div>`;
+  } else if (kind === "stat") {
+    const all = Object.keys(data), ch = Object.values(data).reduce((s, x) => s + x.text.length, 0);
+    body = `<div class="scroll"><div class="big"><div class="bx"><small>きろくの数</small><b>${all.length}</b></div><div class="bx" style="--r:.6deg"><small>れんぞく</small><b>${streakCount()}</b></div><div class="bx" style="--r:-.5deg"><small>もじ</small><b>${ch}</b></div><div class="bx"><small>けいけんち</small><b>${totalXp()}</b></div>
+      ${MOODS.map(([m]) => { const c = all.filter(k => data[k].mood === m).length; return `<div class="bx w"><small>${m}　${c}かい</small><div class="bar2"><div style="width:${all.length ? c / all.length * 100 : 0}%"></div></div></div>`; }).join("")}</div></div>`;
+  } else if (kind === "secret") {
+    const st = streakCount();
+    body = `<div class="scroll"><div class="bx w"><small>ひみつのコマ</small>${st >= 7 ? `<b style="font-size:5cqw">かいほう!!</b><div style="font:900 3.4cqw/1.7 var(--f);margin-top:1.4cqw">７日れんぞくたっせい、おめでとう!<br>きみは日記マスターだ。このまま<br>ずっと書きつづけよう!!</div>` : `<b>？？？</b><div style="font:900 3.4cqw/1.7 var(--f);margin-top:1.4cqw">あと ${7 - st} 日、れんぞくで書くと…</div>`}</div></div>`;
+  } else if (kind === "data") {
+    body = `<div class="scroll"><button class="actb" id="exp" style="--r:-.5deg">かきだす<small>日記をJSONファイルとして保存</small></button><button class="actb" id="imp" style="--r:.5deg">よみこむ<small>JSONファイルから日記を読み込み</small></button></div>`;
+  } else {
+    body = `<div class="scroll"><button class="actb" id="theme" style="--r:-.5deg">テーマをえらびなおす<small>テーマ選択画面へもどる</small></button></div>`;
+  }
+  return `<div class="space">${stars(30)}</div><div class="bar"><i>▥</i><h3>${BTNS.find(b => b[2] === kind)[1]}<small>JUMP DIARY STARS</small></h3></div>${body}<button class="backb" id="back"><kbd>B</kbd>もどる</button>`;
+}
+
+function render() {
+  const keep = view === "write" && $("ta") ? $("ta").value : null;
+  if (view === "menu") { $("top").innerHTML = topMenu(); $("bot").innerHTML = botMenu(); }
+  else if (view === "write") { $("top").innerHTML = topCard(); $("bot").innerHTML = botWrite(); }
+  else { const i = BTNS.findIndex(b => b[2] === view); $("top").innerHTML = topInfo(i); $("bot").innerHTML = botList(view); }
+}
+function open(v) { view = v; if (v === "write") { selected = selected || today(); const e = data[selected]; mood = e ? MOODS.find(m => m[0] === e.mood) || null : null; draft = null; } render(); }
+function pickDay(k) { selected = k; const e = data[k]; mood = e ? MOODS.find(m => m[0] === e.mood) || null : null; draft = null; view = "write"; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood: mood ? mood[0] : null, text }; store(data); draft = null;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "ランクアップ!!" : "ほぞんかんりょう!"; $("ovS").textContent = isNew ? `${streakCount()}日れんぞく` : "こうしんしたよ";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2900);
+  render();
+}
+document.addEventListener("click", e => {
+  const mb = e.target.closest(".mb"); if (mb) { hov = +mb.dataset.i; const v = BTNS[hov][2]; if (v === "opt" && false) return; return open(v === "write" ? (selected = today(), "write") : v); }
+  const g = e.target.closest("[data-go]"); if (g) return pickDay(g.dataset.go);
+  const ai = e.target.closest(".aic"); if (ai) return pickDay(ai.dataset.k);
+  const m = e.target.closest(".mp"); if (m) { draft = $("ta").value; mood = MOODS.find(x => x[0] === m.dataset.m); return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#back")) { view = "menu"; return render(); }
+  if (e.target.closest("#exit")) { return; }
+  if (e.target.closest("#theme")) { location.href = "index.html"; return; }
+  if (e.target.closest("#exp")) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "diary-backup.json"; a.click(); return; }
+  if (e.target.closest("#imp")) { const f = document.createElement("input"); f.type = "file"; f.accept = "application/json"; f.onchange = () => f.files[0] && f.files[0].text().then(t => { try { const o = JSON.parse(t); for (const k in o) if (o[k] && typeof o[k].text === "string") data[k] = { mood: o[k].mood || null, text: o[k].text }; store(data); render(); } catch { alert("読み込みに失敗しました"); } }); f.click(); return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("mouseover", e => { const mb = e.target.closest(".mb"); if (mb && view === "menu" && hov !== +mb.dataset.i) { hov = +mb.dataset.i; $("top").innerHTML = topMenu(); document.querySelectorAll(".mb").forEach(b => b.classList.toggle("cur", +b.dataset.i === hov)); } });
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; selected = e.target.value; const x = data[selected]; if (x) mood = MOODS.find(m => m[0] === x.mood) || null; render(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); if ($("ov").classList.contains("show")) $("ov").classList.remove("show"); else if (view !== "menu") { view = "menu"; render(); } return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (view === "menu") {
+    const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -4, ArrowDown: 4 }[e.key];
+    if (mv) { e.preventDefault(); const n = hov + mv; if (n >= 0 && n < 8) { hov = n; render(); } }
+    else if (e.key === "Enter") { const v = BTNS[hov][2]; if (v === "write") selected = today(); open(v); }
+  }
+});
+render();
+</script>
+</body>
+</html>
