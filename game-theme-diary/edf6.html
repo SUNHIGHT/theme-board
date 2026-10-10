@@ -6,9 +6,9 @@
 <title>Earth Defense Force Diary</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=Zen+Kaku+Gothic+New:wght@500;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0b100b;--fg:#b4c0aa;--hi:#ffffff;--acc:#ffb000;--acc2:#7fc96b;--line:rgba(255,176,0,.42);--panel:rgba(14,20,14,.88);--sel:rgba(255,176,0,.18);--glow:rgba(255,176,0,.5);--warn:#ff3b30;--fb:'Zen Kaku Gothic New',sans-serif;--fh:'Big Shoulders Display','Zen Kaku Gothic New',sans-serif; }
+  :root { --bg:#06121b;--fg:#8fdcf0;--hi:#e9fbff;--acc:#5ee0ff;--acc2:#46d36a;--line:rgba(94,224,255,.7);--panel:rgba(5,20,32,.9);--sel:rgba(70,211,106,.34);--glow:rgba(94,224,255,.5);--warn:#ffd23f;--fb:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif;--fh:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; }
 
   * { box-sizing:border-box; margin:0; }
   body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
@@ -84,54 +84,70 @@
 
 
   body { background:
-      linear-gradient(rgba(127,201,107,.05) 1px, transparent 1px) 0 0/40px 40px,
-      linear-gradient(90deg, rgba(127,201,107,.05) 1px, transparent 1px) 0 0/40px 40px,
-      radial-gradient(ellipse at 50% 0%, #1d2a1a, #0b100b 70%) fixed; }
-  body::before, body::after { content:""; position:fixed; left:0; right:0; height:16px; z-index:45; pointer-events:none;
-    background:repeating-linear-gradient(135deg,#ffb000 0 16px,#111 16px 32px); background-size:45px 100%; animation:tape 1.6s linear infinite; }
-  body::before { top:0; } body::after { bottom:0; animation-direction:reverse; }
-  @keyframes tape { to { background-position:45px 0; } }
-  main { padding-top:40px; }
-  h1 { font-weight:900; font-size:clamp(54px,14vw,120px); letter-spacing:.06em; line-height:1; color:var(--hi); text-shadow:4px 4px 0 var(--acc), 8px 8px 0 #000; }
-  h1 small { text-shadow:none; font-family:var(--fh); letter-spacing:.3em; color:var(--acc); font-weight:700; }
-  header { border-bottom:4px solid var(--acc); position:relative; overflow:visible; }
-  .radar { position:absolute; right:0; top:10px; width:120px; height:120px; border-radius:50%; border:2px solid var(--acc2); overflow:hidden; background:repeating-radial-gradient(circle,transparent 0 19px,rgba(127,201,107,.35) 19px 20px); box-shadow:0 0 16px rgba(127,201,107,.35); }
-  .radar .sw { position:absolute; inset:0; background:conic-gradient(from 0deg,rgba(127,201,107,.5),transparent 60deg,transparent); animation:spin 2.6s linear infinite; }
-  .radar i { position:absolute; left:var(--x); top:var(--y); width:5px; height:5px; background:var(--warn); box-shadow:0 0 6px var(--warn); animation:swarm var(--s) var(--d) ease-in infinite; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  @keyframes swarm { from { transform:translate(0,0); opacity:0; } 15% { opacity:1; } to { transform:translate(calc((50% - var(--x)) * 1.1), calc((50% - var(--y)) * 1.1)); opacity:0; } }
-  .warnstrip { overflow:hidden; white-space:nowrap; margin:12px 0 0; background:var(--warn); color:#fff; font-family:var(--fh); font-weight:700; font-size:18px; letter-spacing:.12em; }
-  .warnstrip span { display:inline-block; animation:tick 30s linear infinite; padding:2px 0; }
-  @keyframes tick { to { transform:translateX(-50%); } }
-  @media (max-width:560px) { .radar { display:none; } }
-  .clock #enemy { font-family:var(--fh); font-weight:900; font-size:26px; color:var(--warn); text-shadow:0 0 10px var(--warn); }
-  .panel { border:0; border-left:8px solid var(--acc); clip-path:polygon(0 0,calc(100% - 22px) 0,100% 22px,100% 100%,0 100%); }
-  .ttl { background:var(--acc); color:#111; font-weight:900; font-size:18px; }
-  .track { border-radius:0; transform:skewX(-14deg); } .life div { --c:#7fc96b; } .stam div { --c:#ffb000; }
-  .row3 i, .gauge b em { font-weight:900; }
-  .row3 i { font-size:40px; }
-  .save { background:var(--warn); color:#fff; font-weight:900; font-size:30px; clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); padding-right:44px; }
-  .save:hover { background:var(--acc); color:#111; }
-  .cal .done { background:repeating-linear-gradient(135deg,var(--acc) 0 6px,#6b4a00 6px 12px); color:#111; }
-  #stamp { background:rgba(4,8,4,.88); }
-  #bang { font-family:var(--fh); font-weight:900; font-size:clamp(100px,26vw,220px); letter-spacing:.04em; font-style:italic; color:var(--hi); text-shadow:6px 6px 0 var(--warn), 12px 12px 0 #000; animation:edf .7s cubic-bezier(.2,2,.4,1); }
+      radial-gradient(circle at 54px 54px, transparent 0 20px, rgba(94,224,255,.22) 20px 22px, transparent 22px 34px, rgba(94,224,255,.16) 34px 36px, transparent 36px 52px, rgba(94,224,255,.1) 52px 54px, transparent 54px),
+      radial-gradient(circle at calc(100% - 70px) calc(100% - 70px), transparent 0 30px, rgba(94,224,255,.18) 30px 32px, transparent 32px 50px, rgba(94,224,255,.12) 50px 52px, transparent 52px),
+      linear-gradient(rgba(94,224,255,.06) 1px, transparent 1px) 0 0/30px 30px,
+      linear-gradient(90deg, rgba(94,224,255,.06) 1px, transparent 1px) 0 0/30px 30px,
+      radial-gradient(ellipse at 30% 0%, #0f3a4c, #06121b 65%) fixed; }
+  body::before { content:""; position:fixed; left:0; right:0; height:90px; z-index:0; pointer-events:none; background:linear-gradient(transparent, rgba(94,224,255,.09), transparent); animation:roll 8s linear infinite; }
+  @keyframes roll { from { top:-100px; } to { top:100%; } }
+  body::after { content:""; position:fixed; inset:0; z-index:40; pointer-events:none; background:radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6) 100%); }
+  main { max-width:900px; }
+  header { border-bottom:0; position:relative; }
+  .op { display:block; font-size:15px; letter-spacing:.14em; color:#0b1b24; font-weight:700; padding:3px 16px; margin:0 0 14px;
+    background:linear-gradient(#e2e8eb,#a9b6bd); clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); }
+  h1 { font-weight:900; font-size:clamp(40px,10vw,84px); letter-spacing:.08em; line-height:1.05; color:var(--hi); text-shadow:0 0 18px var(--glow), 3px 3px 0 #02080c; }
+  h1 small { text-shadow:none; font-size:.2em; letter-spacing:.3em; color:var(--acc); font-weight:700; }
+  .clock { color:var(--fg); } .clock b { color:var(--warn); font-size:12px; letter-spacing:.18em; }
+  .clock #enemy { font-weight:900; font-size:24px; color:var(--hi); text-shadow:0 0 10px var(--glow); }
+  .unit { position:absolute; right:0; top:44px; width:230px; display:flex; flex-direction:column; gap:4px; }
+  .unit div { display:flex; justify-content:space-between; padding:3px 12px; border:1px solid var(--line); background:linear-gradient(90deg,rgba(94,224,255,.2),rgba(5,20,32,.9)); }
+  .unit b { color:var(--hi); font-weight:700; } .unit span { color:var(--acc); font-weight:700; }
+  @media (max-width:640px) { .unit { position:static; width:auto; margin-top:12px; } }
+  .panel { border:1px solid var(--line); border-radius:0; padding:22px 22px 18px; clip-path:polygon(0 0,calc(100% - 18px) 0,100% 18px,100% 100%,18px 100%,0 calc(100% - 18px)); box-shadow:inset 0 0 40px rgba(94,224,255,.08); }
+  .panel .ttl { display:block; margin:0 -22px 14px !important; padding:3px 22px; background:linear-gradient(#e2e8eb,#a9b6bd); color:#0b1b24; font-size:15px; font-weight:700; letter-spacing:.14em; }
+  .panel > .ttl:first-child { margin-top:-22px !important; }
+  .panel .ttl ~ .ttl { margin-top:20px !important; }
+  .wi { display:grid; gap:2px; margin-bottom:14px; padding:8px 12px; border:1px solid rgba(94,224,255,.35); background:rgba(94,224,255,.05); }
+  .wi div { display:grid; grid-template-columns:5em 8em 1fr; gap:6px; align-items:baseline; font-size:15px; }
+  .wi i { font-style:normal; color:var(--warn); } .wi b { color:var(--hi); font-weight:500; } .wi span { color:var(--acc); }
+  .gauge b { color:var(--hi); font-weight:500; } .gauge b em { font-weight:700; color:var(--acc); }
+  .track { border-radius:0; border:1px solid var(--line); } .life div { --c:#46d36a; } .stam div { --c:#5ee0ff; }
+  .row3 { display:none; }
+  .moods li { list-style:none; }
+  .moods button { display:grid; grid-template-columns:1fr auto; border-bottom:1px solid rgba(94,224,255,.3); color:var(--fg); font-size:17px; padding:7px 10px 7px 32px; }
+  .moods button span { color:var(--warn); opacity:1; letter-spacing:.06em; font-size:14px; }
+  .moods button:hover { background:rgba(94,224,255,.1); color:var(--hi); }
+  .moods button.on { background:linear-gradient(90deg,#2f9c4e,#1f6d36); color:#fff; } .moods button.on span { color:#fff; } .moods button.on::before { color:#fff; }
+  textarea { background:rgba(2,12,20,.8); border:1px solid var(--line); color:var(--acc); font-size:16px; line-height:1.9; }
+  textarea::placeholder { color:var(--fg); opacity:.5; }
+  .save { background:linear-gradient(#37b058,#1f6d36); color:#fff; font-weight:900; font-size:26px; letter-spacing:.2em; border:1px solid #9bf0b4; clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%); padding:8px 48px 8px 36px; }
+  .save:hover { background:linear-gradient(#4ac96c,#27853f); }
+  .cal div { border:1px solid rgba(94,224,255,.4); border-radius:0; color:var(--fg); background:rgba(5,20,32,.6); }
+  .cal .dow { background:none; border:0; color:var(--warn); }
+  .cal div[data-d].done { background:linear-gradient(135deg,#2f9c4e,#1f6d36); color:#fff; border-color:#9bf0b4; }
+  .cal .today { outline:2px solid var(--warn); }
+  h2 { color:var(--hi); font-size:18px; letter-spacing:.2em; background:linear-gradient(#e2e8eb,#a9b6bd); color:#0b1b24; padding:3px 16px; display:inline-block; clip-path:polygon(0 0,100% 0,calc(100% - 12px) 100%,0 100%); padding-right:30px; }
+  .entry { background:rgba(5,20,32,.9); border:1px solid var(--line); border-left:6px solid var(--acc2); } .entry p { color:var(--acc); } .entry small { color:var(--warn); }
+  #stamp { background:rgba(2,10,16,.9); }
+  #bang { font-weight:900; font-size:clamp(100px,26vw,220px); letter-spacing:.04em; font-style:italic; color:var(--hi); text-shadow:0 0 30px var(--acc), 6px 6px 0 #0b3a4c; animation:edf .7s cubic-bezier(.2,2,.4,1); }
   @keyframes edf { from { transform:scale(3) rotate(-8deg); opacity:0; } }
-  #stampSub::before { content:"EDF ─ "; }
+  #stampBig { color:var(--acc); font-weight:700; } #stampSub::before { content:"EDF ─ "; }
   
 </style>
 </head>
 <body>
 <main>
   <header>
-    <div class="op">EDF HQ ─ 作戦指令 ─ ミッション記録</div>
+    <div class="op">兵科日誌選択　　日記作成</div>
     <h1>地球防衛軍<small>EARTH DEFENSE FORCE 6 ─ 戦場日誌</small></h1>
     <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>REMAINING ENEMY</b><span id="enemy">1000</span></span></div>
-    <div class="radar"><span class="sw"></span><i style="--x:49%;--y:27%;--d:1.18s;--s:2.31s"></i><i style="--x:76%;--y:20%;--d:1.10s;--s:2.33s"></i><i style="--x:72%;--y:35%;--d:0.11s;--s:3.20s"></i><i style="--x:16%;--y:38%;--d:0.27s;--s:3.18s"></i><i style="--x:80%;--y:23%;--d:2.84s;--s:3.65s"></i><i style="--x:82%;--y:15%;--d:1.73s;--s:3.11s"></i><i style="--x:36%;--y:13%;--d:1.67s;--s:2.51s"></i><i style="--x:61%;--y:26%;--d:1.62s;--s:3.51s"></i><i style="--x:79%;--y:31%;--d:0.31s;--s:3.51s"></i><i style="--x:32%;--y:55%;--d:0.29s;--s:3.84s"></i><i style="--x:80%;--y:15%;--d:1.86s;--s:3.34s"></i><i style="--x:76%;--y:62%;--d:2.33s;--s:3.27s"></i><i style="--x:66%;--y:54%;--d:0.90s;--s:4.03s"></i><i style="--x:39%;--y:18%;--d:1.72s;--s:3.41s"></i><i style="--x:51%;--y:65%;--d:0.86s;--s:4.45s"></i><i style="--x:23%;--y:73%;--d:1.25s;--s:3.94s"></i><i style="--x:27%;--y:70%;--d:1.27s;--s:4.41s"></i><i style="--x:17%;--y:79%;--d:1.72s;--s:4.21s"></i><i style="--x:48%;--y:51%;--d:2.09s;--s:3.57s"></i><i style="--x:82%;--y:66%;--d:0.21s;--s:2.42s"></i><i style="--x:42%;--y:68%;--d:2.09s;--s:2.35s"></i><i style="--x:47%;--y:90%;--d:1.73s;--s:3.77s"></i><i style="--x:65%;--y:44%;--d:2.15s;--s:4.24s"></i><i style="--x:52%;--y:10%;--d:2.82s;--s:3.02s"></i><i style="--x:86%;--y:22%;--d:1.48s;--s:2.70s"></i><i style="--x:44%;--y:24%;--d:2.22s;--s:3.12s"></i></div><div class="warnstrip"><span>WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ WARNING ─ 敵 大群 接近中 ─ EDF! ─ </span></div>
+    <div class="unit"><div><b>兵科</b><span id="cls">レンジャー</span></div><div><b>Armor</b><span id="arm">100</span></div></div>
   </header>
 
   <section class="panel">
-    <span class="ttl">ARMED FORCES</span>
-    
+    <span class="ttl">日誌データ ─ 詳細</span>
+    <div class="wi" id="wi"></div>
     <div class="gauge life"><b>ARMOR ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
     <div class="gauge stam"><b>RANK ─ 次の階級まで <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
     <div class="row3">
@@ -142,20 +158,20 @@
   </section>
 
   <section class="panel">
-    <span class="ttl">ARMOR 今日の装甲</span>
+    <span class="ttl">コンディション選択</span>
     <ul class="moods" id="moods"></ul>
-    <span class="ttl" style="margin-top:6px">BATTLE REPORT 戦闘報告</span>
+    <span class="ttl" style="margin-top:6px">戦闘報告 ─ テキスト入力</span>
     <textarea id="body" placeholder="本日の戦況を報告せよ…"></textarea>
     <div class="hint" id="hint"></div>
     <button class="save" id="save">出撃!</button>
   </section>
 
   <section class="panel">
-    <span class="ttl">OPERATION MAP</span>
+    <span class="ttl">作戦カレンダー</span>
     <div class="cal" id="cal"></div>
   </section>
 
-  <h2>BATTLE LOG ─ 過去の戦闘記録</h2>
+  <h2>戦闘記録 ─ 過去の報告</h2>
   <div id="list"></div>
 </main>
 
@@ -165,9 +181,9 @@
 <script>
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
-const MOODS = [["最高", "FULL ARMOR"], ["良い", "STABLE"], ["普通", "DAMAGED"], ["微妙", "CRITICAL"], ["最悪", "DOWN!"]];
+const MOODS = [["最高", "Lv 8　☆8"], ["良い", "Lv 6　☆6"], ["普通", "Lv 4　☆4"], ["微妙", "Lv 2　☆2"], ["最悪", "Lv 0　☆1"]];
 const RANKS = ["新兵", "二等兵", "一等兵", "軍曹", "曹長", "少尉", "隊長"];
-let MSG_FILED = "MISSION COMPLETE ─ ミッション完了", MSG_PROMO = "RANK UP ─ 階級が上がった";
+let MSG_FILED = "MISSION COMPLETE ─ ミッション完了", MSG_PROMO = "階級が上がった! ─ RANK UP";
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
 const $ = id => document.getElementById(id);
 
@@ -228,7 +244,16 @@ function render() {
   $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
   countUp($("streak"), st);
   countUp($("total"), Object.keys(data).length);
-  $("enemy").textContent = Math.max(0, 1000 - Object.keys(data).length * 10);
+  const _total = Object.keys(data).length, _s = n => Math.max(1, Math.min(8, n)), _md = (data[selected] || {}).mood;
+  $("wi").innerHTML = [
+    ["★", _s(1 + Math.floor(st / 4)), "連続日数", st + " 日"],
+    ["☆", _s(1 + Math.floor(_total / 6)), "記録数", _total + " 件"],
+    ["★", _s(1 + rk), "階級", RANKS[rk]],
+    ["☆", _md ? _s(8 - MOODS.findIndex(x => x[0] === _md) * 2) : 1, "今日の状態", _md || "未記録"]
+  ].map(([t, n, l, v]) => `<div><i>(${t}${n})</i><b>${l}</b><span>: ${v}</span></div>`).join("");
+  $("cls").textContent = ["レンジャー", "ウイングダイバー", "エアレイダー", "フェンサー"][_total % 4];
+  $("arm").textContent = 100 + st * 10 + _total * 5;
+  $("enemy").textContent = Math.max(0, 1000 - _total * 10);
 
   const e = data[selected];
   $("body").value = e ? e.text : "";
