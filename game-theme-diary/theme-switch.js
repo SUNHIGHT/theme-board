@@ -71,7 +71,10 @@
     { id: "dq",     name: "DRAGON QUEST",      sub: "ドラゴンクエスト",         c1: "#7ec8ff", c2: "#04042c",
       titles: [ { id: "dq11", file: "dq11.html", name: "DRAGON QUEST XI", sub: "過ぎ去りし時を求めて" } ] },
     { id: "xenoblade", name: "XENOBLADE", sub: "ゼノブレイド",           c1: "#4a63ff", c2: "#0c1470",
-      titles: [ { id: "xb2", file: "xenoblade2.html", name: "XENOBLADE 2", sub: "アルストの空" } ] },
+      titles: [
+        { id: "xb2", file: "xenoblade2.html", name: "XENOBLADE 2", sub: "アルストの空", c1: "#4a63ff", c2: "#0c1470" },
+        { id: "xb3", file: "xenoblade3.html", name: "XENOBLADE 3", sub: "アイオニオンの記憶", c1: "#ff8240", c2: "#2b1163" }
+      ] },
     { id: "valkyrie", name: "VALKYRIE PROFILE", sub: "ヴァルキリープロファイル", c1: "#c9d6ff", c2: "#0a0820",
       titles: [ { id: "valkyrie", file: "valkyrie.html", name: "VALKYRIE PROFILE", sub: "レナス" } ] },
     { id: "mgs",     name: "METAL GEAR SOLID", sub: "メタルギアソリッドシリーズ", c1: "#e8a23a", c2: "#14110a",
