@@ -6,25 +6,45 @@
 <title>Game Theme Diary</title>
 <style>
   * { box-sizing:border-box; margin:0; }
+  [hidden] { display:none !important; }
   body { min-height:100vh; background:#0b0b0b; color:#fff; font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; font-weight:900; overflow-x:hidden;
     background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 2px,transparent 2px 28px); }
-  main { max-width:620px; margin:0 auto; padding:40px 16px; }
-  h1 { font-size:clamp(36px,9vw,64px); font-style:italic; letter-spacing:-.02em; transform:rotate(-2deg); margin-bottom:6px; animation:in .6s cubic-bezier(.2,.9,.3,1) both; }
-  p.sub { letter-spacing:.3em; font-size:12px; opacity:.7; margin-bottom:28px; }
-  .card { display:flex; align-items:center; gap:18px; margin-bottom:14px; padding:18px 22px; color:#fff; text-decoration:none; background:#171717;
-    border-left:14px solid var(--a); clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);
-    animation:in .5s calc(var(--i)*100ms + .2s) cubic-bezier(.2,.9,.3,1) both; transition:.15s; }
-  .card:hover { background:var(--a); color:var(--b); padding-left:40px; }
-  .card i { width:48px; height:48px; flex:none; background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%); border:3px solid #fff; transform:skew(-10deg); }
-  .card b { display:block; font-size:26px; letter-spacing:.1em; }
-  .card span { font-size:13px; opacity:.85; }
-  button.card { width:100%; font:inherit; text-align:left; cursor:pointer; border-top:0; border-right:0; border-bottom:0; }
+  main { max-width:680px; margin:0 auto; padding:36px 16px 60px; }
+  h1 { font-size:clamp(34px,9vw,60px); font-style:italic; letter-spacing:-.02em; transform:rotate(-2deg); margin-bottom:6px; animation:in .6s cubic-bezier(.2,.9,.3,1) both; }
+  p.sub { letter-spacing:.3em; font-size:12px; opacity:.7; margin-bottom:22px; }
+  #step { color:#ff9; margin:-10px 0 16px; }
+
+  .ctl { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; }
+  #q { flex:1 1 220px; min-width:0; padding:10px 14px; font-size:15px; font-weight:700; font-family:inherit; color:#fff; background:#141414; border:2px solid #fff; outline:none; }
+  #q:focus { border-color:#7fd4ff; }
+  #sort { padding:10px 12px; font-size:14px; font-weight:700; font-family:inherit; color:#fff; background:#141414; border:2px solid #fff; }
+  .chips { display:flex; gap:6px; flex-wrap:wrap; }
+  .chip { font:inherit; font-size:12px; letter-spacing:.1em; cursor:pointer; color:#fff; background:transparent; border:1px solid rgba(255,255,255,.5); padding:5px 12px; transform:skew(-10deg); transition:.12s; }
+  .chip:hover { background:rgba(255,255,255,.15); }
+  .chip.on { background:#fff; color:#111; border-color:#fff; }
+  .count { font-size:12px; opacity:.7; letter-spacing:.15em; }
+
+  .card { position:relative; display:flex; align-items:center; gap:16px; width:100%; margin:0 0 12px; padding:14px 56px 14px 20px; color:#fff; text-decoration:none; text-align:left; cursor:pointer;
+    font:inherit; background:#171717; border:0; border-left:12px solid var(--a);
+    clip-path:polygon(0 0,100% 0,calc(100% - 20px) 100%,0 100%); animation:in .4s calc(var(--i)*50ms) cubic-bezier(.2,.9,.3,1) both; transition:.15s; }
+  .card:hover { background:var(--a); color:var(--b); padding-left:34px; }
+  .card i.sw { width:44px; height:44px; flex:none; background:linear-gradient(135deg,var(--a) 50%,var(--b) 50%); border:3px solid #fff; transform:skew(-10deg); }
+  .card .tx { min-width:0; }
+  .card b { display:block; font-size:clamp(17px,4.6vw,24px); letter-spacing:.08em; overflow-wrap:anywhere; }
+  .card span.jp { font-size:12px; opacity:.85; }
+  .tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:5px; }
+  .tags u { text-decoration:none; font-size:10px; letter-spacing:.1em; padding:1px 8px; border:1px solid currentColor; opacity:.8; }
+  .card em { position:absolute; right:56px; top:8px; font-style:normal; font-size:10px; letter-spacing:.2em; background:#fff; color:#111; padding:1px 8px; transform:skew(-12deg); }
+  .star { position:absolute; right:28px; top:50%; transform:translateY(-50%); width:36px; height:36px; font-size:22px; line-height:1; cursor:pointer; color:#fff; background:transparent; border:0; opacity:.45; transition:.15s; }
+  .star:hover { opacity:1; transform:translateY(-50%) scale(1.2); }
+  .star.on { opacity:1; color:#ffd24a; }
+  .card:hover .star.on { color:#fff; }
   .back { background:none; border:0; color:#fff; font:900 12px sans-serif; letter-spacing:.2em; cursor:pointer; margin-bottom:12px; opacity:.8; }
   .back:hover { opacity:1; text-decoration:underline; }
-  .card { cursor:pointer; }
-  .card em { margin-left:auto; font-style:normal; font-size:11px; letter-spacing:.2em; background:#fff; color:#111; padding:2px 10px; transform:skew(-12deg); }
-  #last { display:none; margin-top:20px; font-size:13px; opacity:.8; }
-  @keyframes in { from { opacity:0; transform:translateX(-70px) skewX(8deg); } }
+  .empty { padding:24px 0; opacity:.8; font-size:14px; }
+  .empty button { margin-left:10px; }
+  @keyframes in { from { opacity:0; transform:translateX(-60px) skewX(8deg); } }
   @media (prefers-reduced-motion:reduce){ *{animation:none!important;transition:none!important} }
 </style>
 </head>
@@ -32,33 +52,113 @@
 <main>
   <h1>GAME THEME DIARY</h1>
   <p class="sub">GAME THEME DIARY ─ 好きなゲームのUIで日記を書く</p>
-  <p class="sub" id="step" style="color:#ff9;margin-top:-18px"></p>
+  <p class="sub" id="step"></p>
+  <div class="ctl" id="ctl">
+    <div class="row">
+      <input id="q" type="search" placeholder="ゲーム名・ジャンルで検索（例: souls / RPG / ホラー）" autocomplete="off">
+      <select id="sort" aria-label="並び順">
+        <option value="default">追加順</option>
+        <option value="name">名前順 A→Z</option>
+        <option value="recent">最近使った順</option>
+        <option value="fav">お気に入り優先</option>
+      </select>
+    </div>
+    <div class="chips" id="chips"></div>
+    <div class="count" id="count"></div>
+  </div>
   <div id="cards"></div>
-  <div id="last"></div>
 </main>
 <script src="theme-switch.js"></script>
 <script>
 const GAMES = window.DIARY_THEMES;
-let last = null; try { last = localStorage.getItem("diary-theme"); } catch {}
 const $ = id => document.getElementById(id);
-const sw = (g, i, extra) => `style="--a:${g.c1};--b:${g.c2};--i:${i}"`;
+const load = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch { return d; } };
+const save = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
 
-function showGames() {
-  $("step").textContent = "STEP 1 ─ SELECT GAME ─ ゲームを選ぶ";
-  $("cards").innerHTML = GAMES.map((g, i) =>
-    `<button class="card" data-g="${g.id}" ${sw(g, i)}><i></i><div><b>${g.name}</b><span>${g.sub}</span></div>${g.titles.some(t => t.id === last) ? "<em>前回</em>" : ""}</button>`).join("");
+const GENRES = [...new Set(GAMES.flatMap(g => g.genres))];
+const state = {
+  q: "", sort: load("diary-sort", "default"), genre: load("diary-genre", ""),
+  favs: new Set(load("diary-fav", [])), recent: load("diary-recent", []),
+  last: (() => { try { return localStorage.getItem("diary-theme"); } catch { return null; } })(),
+  game: null
+};
+if (!["default", "name", "recent", "fav"].includes(state.sort)) state.sort = "default";
+if (state.genre && state.genre !== "★" && !GENRES.includes(state.genre)) state.genre = "";
+$("sort").value = state.sort;
+
+const norm = s => String(s).toLowerCase().replace(/\s+/g, "");
+const hay = g => norm(g.name + g.sub + g.genres.join("") + g.titles.map(t => t.name + t.sub).join(""));
+const recentIdx = g => { const i = Math.min(...g.titles.map(t => { const k = state.recent.indexOf(t.id); return k < 0 ? 1e9 : k; })); return i; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function visibleGames() {
+  const n = norm(state.q);
+  let list = GAMES.map((g, i) => ({ g, i })).filter(({ g }) =>
+    (!n || hay(g).includes(n)) &&
+    (!state.genre || (state.genre === "★" ? state.favs.has(g.id) : g.genres.includes(state.genre))));
+  const by = {
+    default: (a, b) => a.i - b.i,
+    name: (a, b) => a.g.name.localeCompare(b.g.name),
+    recent: (a, b) => recentIdx(a.g) - recentIdx(b.g) || a.i - b.i,
+    fav: (a, b) => (state.favs.has(b.g.id) - state.favs.has(a.g.id)) || a.i - b.i
+  }[state.sort];
+  return list.sort(by).map(x => x.g);
 }
-function showTitles(g) {
+
+function renderChips() {
+  const chip = (v, label) => `<button class="chip ${state.genre === v ? "on" : ""}" data-genre="${esc(v)}">${esc(label)}</button>`;
+  $("chips").innerHTML = chip("", "ALL") + chip("★", "★ お気に入り") + GENRES.map(g => chip(g, g)).join("");
+}
+
+function renderGames() {
+  state.game = null;
+  $("ctl").hidden = false;
+  $("step").textContent = "STEP 1 ─ ゲームを選ぶ";
+  const list = visibleGames();
+  $("count").textContent = `${list.length} / ${GAMES.length} GAMES`;
+  $("cards").innerHTML = list.length ? list.map((g, i) => {
+    const used = g.titles.some(t => t.id === state.last);
+    return `<div class="card" role="button" tabindex="0" data-g="${g.id}" style="--a:${g.c1};--b:${g.c2};--i:${Math.min(i, 10)}">` +
+      `<i class="sw"></i><div class="tx"><b>${esc(g.name)}</b><span class="jp">${esc(g.sub)} ／ ${g.titles.length} TITLE${g.titles.length > 1 ? "S" : ""}</span>` +
+      `<div class="tags">${g.genres.map(x => `<u>${esc(x)}</u>`).join("")}</div></div>` +
+      (used ? "<em>前回</em>" : "") +
+      `<button class="star ${state.favs.has(g.id) ? "on" : ""}" data-fav="${g.id}" aria-label="お気に入り" aria-pressed="${state.favs.has(g.id)}">${state.favs.has(g.id) ? "★" : "☆"}</button></div>`;
+  }).join("") : `<div class="empty">該当するゲームがありません。<button class="chip" data-clear="1">条件をクリア</button></div>`;
+}
+
+function renderTitles(g) {
+  state.game = g;
+  $("ctl").hidden = true;
   $("step").textContent = `STEP 2 ─ ${g.name} ─ ナンバリングを選ぶ`;
   $("cards").innerHTML = `<button class="back" data-back="1">◀ BACK ─ ゲーム選択へ</button>` + g.titles.map((t, i) =>
-    `<a class="card" href="${t.file}" ${sw(g, i)}><i></i><div><b>${t.name}</b><span>${t.sub}</span></div>${t.id === last ? "<em>前回</em>" : ""}</a>`).join("");
+    `<a class="card" href="${t.file}" style="--a:${g.c1};--b:${g.c2};--i:${i};padding-right:20px"><i class="sw"></i><div class="tx"><b>${esc(t.name)}</b><span class="jp">${esc(t.sub)}</span></div>${t.id === state.last ? "<em style='right:20px'>前回</em>" : ""}</a>`).join("");
 }
-$("cards").onclick = e => {
-  if (e.target.closest("[data-back]")) return showGames();
-  const b = e.target.closest("[data-g]");
-  if (b) showTitles(GAMES.find(g => g.id === b.dataset.g));
-};
-showGames();
+
+function toggleFav(id) {
+  state.favs.has(id) ? state.favs.delete(id) : state.favs.add(id);
+  save("diary-fav", [...state.favs]);
+}
+
+$("q").addEventListener("input", e => { state.q = e.target.value; renderGames(); });
+$("sort").addEventListener("change", e => { state.sort = e.target.value; save("diary-sort", state.sort); renderGames(); });
+$("chips").addEventListener("click", e => {
+  const b = e.target.closest("[data-genre]"); if (!b) return;
+  state.genre = b.dataset.genre; save("diary-genre", state.genre); renderChips(); renderGames();
+});
+$("cards").addEventListener("click", e => {
+  if (e.target.closest("[data-back]")) return renderGames();
+  if (e.target.closest("[data-clear]")) { state.q = ""; state.genre = ""; $("q").value = ""; save("diary-genre", ""); renderChips(); return renderGames(); }
+  const f = e.target.closest("[data-fav]");
+  if (f) { e.preventDefault(); toggleFav(f.dataset.fav); return renderGames(); }
+  const c = e.target.closest("[data-g]");
+  if (c) renderTitles(GAMES.find(g => g.id === c.dataset.g));
+});
+$("cards").addEventListener("keydown", e => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches("[data-g]")) { e.preventDefault(); renderTitles(GAMES.find(g => g.id === e.target.dataset.g)); }
+});
+
+renderChips();
+renderGames();
 </script>
 </body>
 </html>
