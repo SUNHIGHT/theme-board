@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Football Diary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@1,800;1,900&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  /* Mobile-app home: royal-blue striped field, coin bar, pill tabs, framed banner, white rounded tiles with labels (after eFootball) */
+  :root { --bl:#0a14ee; --bl2:#070cb8; --bl3:#2a3cff; --ye:#fff200; --pk:#ff2d6f; --pu:#7b1fd8; --tx:#fff; --f:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN',sans-serif; --fi:'Montserrat','Zen Kaku Gothic New',sans-serif; }
+  * { box-sizing:border-box; margin:0; }
+  html, body { height:100%; }
+  body { font-family:var(--f); color:var(--tx); overflow:hidden; background:var(--bl); }
+  .bg { position:fixed; inset:0; background:var(--bl); overflow:hidden; } .bg i { position:absolute; display:block; }
+  .b1 { left:-10%; top:-20%; width:55%; height:160%; background:var(--bl2); clip-path:polygon(35% 0,100% 0,60% 100%,0 100%); }
+  .b2 { left:30%; top:-20%; width:30%; height:160%; background:var(--bl3); clip-path:polygon(40% 0,100% 0,60% 100%,0 100%); opacity:.7; }
+  .b3 { right:-10%; top:-10%; width:45%; height:140%; background:var(--bl2); clip-path:polygon(50% 0,100% 0,100% 100%,10% 100%); opacity:.8; }
+  .b4 { left:55%; top:30%; width:20%; height:90%; background:#1a28ff; clip-path:polygon(50% 0,100% 0,50% 100%,0 100%); opacity:.6; }
+  .app { position:relative; z-index:2; height:100%; display:grid; grid-template-rows:auto auto minmax(0,1fr) auto; padding:0 3% 1.6%; }
+
+  .top { display:flex; align-items:center; gap:4%; padding:10px 0 6px; font:900 clamp(20px,2.6vw,32px) var(--fi); }
+  .cn { display:flex; flex:none; align-items:center; gap:10px; white-space:nowrap; } .cn i { flex:none; } .cn i { width:clamp(30px,3.4vw,40px); aspect-ratio:1; border-radius:50%; display:grid; place-items:center; font:900 18px var(--fi); font-style:normal; background:radial-gradient(circle at 35% 30%,#ffe98a,#e0a010); color:#7a5000; border:3px solid #fff3c0; } .cn.g i { background:radial-gradient(circle at 35% 30%,#7a8aff,#2a2ad8); color:#fff; border-color:#a8b4ff; }
+  .ic { margin-left:auto; display:flex; gap:28px; align-items:center; margin-right:130px; } .ib { all:unset; cursor:pointer; position:relative; font-size:34px; line-height:1; transition:.12s; } .ib:hover { transform:scale(1.15); } .ib.pl { color:#ff9a1a; } .ib.ml { color:#ff2d8a; } .ib .bd { position:absolute; right:-10px; top:-12px; min-width:30px; height:30px; border-radius:15px; background:#ff3a3a; color:#fff; font:900 17px/30px var(--fi); text-align:center; padding:0 6px; }
+  .ib.bl { color:#ff4a6a; }
+
+  .tabs { display:flex; background:var(--bl3); border-radius:40px; padding:0; margin:4px 0 12px; overflow:hidden; box-shadow:0 0 0 2px rgba(255,255,255,.1); }
+  .tb { all:unset; cursor:pointer; flex:1; text-align:center; padding:10px 0; font:800 clamp(18px,2.4vw,28px) var(--fi); border-radius:40px; transition:.15s; } .tb.on { background:var(--ye); color:#111; flex:1.15; } .tb:not(.on):hover { background:rgba(255,255,255,.15); } .tb:focus-visible { outline:3px solid #fff; }
+
+  .main { min-height:0; display:flex; flex-direction:column; gap:12px; }
+  .ban { all:unset; cursor:pointer; position:relative; flex:1; min-height:150px; border:clamp(4px,.5vw,7px) solid var(--pk); border-radius:clamp(20px,2.6vw,36px); background:linear-gradient(100deg,#13061a,#4a0a2e 60%,#8a1040); overflow:hidden; box-shadow:0 0 22px rgba(255,45,111,.5); animation:pop .5s both; }
+  .ban::before { content:"Today's Match"; position:absolute; right:-2%; top:-6%; font:italic 900 clamp(70px,13vw,190px)/1 var(--fi); color:rgba(255,45,111,.12); white-space:nowrap; transform:skewX(-8deg); pointer-events:none; letter-spacing:-.03em; }
+  .ban .t { position:absolute; left:3.4%; top:9%; font:italic 900 clamp(28px,4.6vw,64px)/1.05 var(--fi); background:linear-gradient(180deg,#fff 30%,#ffc0d8); -webkit-background-clip:text; background-clip:text; color:transparent; letter-spacing:-.01em; filter:drop-shadow(0 4px 0 rgba(0,0,0,.5)); } .ban .t small { display:block; font-family:var(--f); font-style:normal; font-weight:900; font-size:.34em; -webkit-text-fill-color:#fff; color:#fff; margin-top:6px; }
+  .ban .fm { position:absolute; left:3.6%; bottom:6%; width:clamp(40px,5.2vw,70px); aspect-ratio:1.3; background:#fff; border-radius:10px; display:grid; place-items:center; font-size:clamp(24px,4vw,50px); color:#111; } .ban .fm::after { content:"🎁"; position:absolute; right:-24%; bottom:-30%; width:clamp(40px,5.4vw,70px); aspect-ratio:1; border-radius:50%; background:var(--pk); display:grid; place-items:center; font-size:clamp(20px,2.8vw,36px); border:3px solid #ff8ab0; }
+  .ph { position:absolute; right:1.4%; top:30%; bottom:3%; width:58%; display:flex; gap:1.2%; } .pc { position:relative; flex:1; overflow:hidden; background:var(--c,#444); transform:skewX(-4deg); border:2px solid rgba(255,255,255,.2); transition:.15s; cursor:pointer; } .pc::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 70% 25%, rgba(255,255,255,.5), transparent 45%), repeating-linear-gradient(120deg, rgba(0,0,0,.18) 0 6px, transparent 6px 14px); } .pc:hover { transform:skewX(-4deg) translateY(-6px); }
+  .pc b { position:absolute; left:8%; bottom:2%; font:italic 900 clamp(34px,6vw,84px)/1 var(--fi); color:rgba(255,255,255,.95); text-shadow:0 4px 0 rgba(0,0,0,.4); } .pc small { position:absolute; right:6%; top:6%; font:900 clamp(10px,1.2vw,15px) var(--f); background:rgba(0,0,0,.55); padding:1px 8px; border-radius:10px; } .pc em { position:absolute; left:8%; top:6%; font:900 clamp(11px,1.3vw,16px) var(--f); font-style:normal; text-shadow:0 2px 0 #000; }
+  .grp { display:flex; gap:2%; align-items:flex-end; flex:none; overflow-x:auto; overflow-y:hidden; padding:4px 0 4px; scrollbar-width:none; } .grp::-webkit-scrollbar { display:none; }
+  .g { display:flex; flex-direction:column; gap:6px; } .g h4 { font:900 clamp(16px,1.9vw,24px) var(--f); color:var(--ye); text-shadow:0 2px 0 rgba(0,0,0,.4); } .gt { display:flex; gap:clamp(8px,1.6vw,22px); }
+  .sep { align-self:stretch; width:3px; background:#fff; opacity:.9; margin:30px 2% 36px 0; flex:none; }
+  .tl { all:unset; cursor:pointer; width:clamp(92px,15vw,196px); display:flex; flex-direction:column; align-items:center; gap:8px; flex:none; animation:pop .4s calc(var(--i)*60ms + .2s) both; transition:.12s; } .tl:hover { transform:translateY(-5px); }
+  .tl .sq { width:100%; aspect-ratio:1.45; background:#fff; border-radius:clamp(14px,1.8vw,26px); display:grid; place-items:center; font-size:clamp(40px,6vw,84px); color:var(--pu); box-shadow:0 6px 0 rgba(0,0,40,.3); } .tl .sq b { font:italic 900 clamp(14px,2vw,26px)/1 var(--fi); display:block; text-align:center; }
+  .tl span.lb { font:900 clamp(13px,1.6vw,20px) var(--f); text-shadow:0 2px 0 rgba(0,0,0,.35); white-space:nowrap; } .tl:focus-visible { outline:3px solid var(--ye); outline-offset:4px; border-radius:20px; }
+
+  /* sub page */
+  .sub { display:flex; flex-direction:column; min-height:0; gap:12px; flex:1; animation:fade .3s both; }
+  .sh { display:flex; align-items:center; gap:14px; } .bk { all:unset; cursor:pointer; width:clamp(40px,4.4vw,56px); aspect-ratio:1; border-radius:50%; background:var(--ye); color:#111; display:grid; place-items:center; font:900 clamp(22px,2.6vw,32px) var(--fi); box-shadow:0 4px 0 rgba(0,0,40,.4); } .bk:hover { transform:scale(1.08); }
+  .sh h2 { font:italic 900 clamp(24px,3.6vw,46px)/1 var(--fi); text-shadow:0 4px 0 rgba(0,0,0,.35); } .sh h2 small { font:900 clamp(13px,1.6vw,20px) var(--f); font-style:normal; margin-left:12px; color:var(--ye); }
+  .card { background:#fff; color:#1a1a40; border-radius:clamp(18px,2.2vw,30px); padding:clamp(12px,1.6vw,22px); min-height:0; display:flex; flex-direction:column; gap:10px; flex:1; box-shadow:0 6px 0 rgba(0,0,40,.3); }
+  .days { display:flex; gap:8px; overflow-x:auto; scrollbar-width:none; flex:none; } .days::-webkit-scrollbar { display:none; } .dy { all:unset; cursor:pointer; flex:none; min-width:clamp(54px,6vw,76px); text-align:center; padding:6px 8px; border-radius:16px; background:var(--bl3); color:#fff; font:italic 900 clamp(16px,1.9vw,24px)/1.1 var(--fi); } .dy small { display:block; font:900 clamp(10px,1.1vw,13px) var(--f); font-style:normal; opacity:.85; } .dy.on { background:var(--ye); color:#111; } .dy.rec { box-shadow:inset 0 -5px 0 #3adf6a; } .dy:hover { filter:brightness(1.15); }
+  .moods { display:flex; gap:clamp(6px,1vw,14px); flex-wrap:wrap; list-style:none; padding:0; flex:none; } .mt { all:unset; cursor:pointer; padding:8px clamp(14px,2vw,28px); border-radius:18px; background:#eceaff; color:var(--pu); font:900 clamp(14px,1.7vw,22px) var(--f); border-bottom:5px solid #c8c0f0; transition:.12s; } .mt:hover { background:#dcd6ff; } .mt.on { background:var(--pu); color:#fff; border-bottom-color:#4a0fa0; transform:translateY(-2px); }
+  textarea { flex:1; min-height:100px; resize:none; width:100%; background:#f4f3ff; border:3px solid #d8d2ff; border-radius:20px; padding:12px 16px; color:#1a1a40; font:700 clamp(15px,1.8vw,20px)/1.8 var(--f); outline:0; } textarea:focus { border-color:var(--pu); background:#fff; }
+  .acts { display:flex; gap:12px; align-items:center; flex-wrap:wrap; flex:none; } .ko { all:unset; cursor:pointer; padding:10px clamp(28px,5vw,70px); border-radius:40px; background:var(--ye); color:#111; font:italic 900 clamp(18px,2.4vw,30px) var(--fi); box-shadow:0 5px 0 #b8aa00; transition:.12s; } .ko:hover { transform:translateY(-2px); box-shadow:0 7px 0 #b8aa00; } .ko:active { transform:translateY(3px); box-shadow:0 2px 0 #b8aa00; }
+  .dte { font:700 14px var(--f); border:2px solid #d8d2ff; border-radius:12px; padding:4px 8px; color:#1a1a40; background:#fff; } .hint { font-size:13px; font-weight:700; color:#d8206a; }
+  .ls { display:flex; flex-direction:column; gap:8px; overflow:auto; min-height:0; flex:1; } .rw { all:unset; cursor:pointer; box-sizing:border-box; display:grid; grid-template-columns:clamp(54px,6vw,80px) 1fr auto; gap:12px; align-items:center; background:#f4f3ff; border-radius:18px; padding:8px 14px; flex:none; animation:fade .3s calc(var(--i)*30ms) both; } .rw:hover { background:#e6e2ff; } .rw .d { font:italic 900 clamp(18px,2.2vw,28px)/1 var(--fi); color:var(--pu); text-align:center; } .rw .d small { display:block; font:900 11px var(--f); font-style:normal; color:#8a80c0; } .rw .x { font-weight:700; font-size:clamp(13px,1.5vw,17px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; } .rw .m { font:900 13px var(--f); background:var(--pu); color:#fff; border-radius:12px; padding:2px 12px; }
+  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; max-width:620px; } .cal div { aspect-ratio:1.3; border-radius:14px; display:grid; place-items:center; background:#eceaff; font:italic 900 clamp(14px,1.8vw,22px) var(--fi); color:#8a80c0; } .cal .dow { background:none; font:900 12px var(--f); font-style:normal; color:var(--pu); aspect-ratio:auto; } .cal .done { background:var(--pu); color:#fff; } .cal .today { outline:4px solid var(--pk); } .cal [data-go] { cursor:pointer; }
+  .st { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; overflow:auto; } .sb { background:#f4f3ff; border-radius:20px; padding:12px 16px; } .sb small { font:900 13px var(--f); color:#8a80c0; display:block; } .sb b { font:italic 900 clamp(30px,4vw,52px)/1.1 var(--fi); color:var(--pu); } .sb .tr { height:10px; background:#dcd6ff; border-radius:6px; margin-top:6px; overflow:hidden; } .sb .tr i { display:block; height:100%; background:var(--pu); border-radius:6px; }
+  .big { all:unset; cursor:pointer; display:block; background:#f4f3ff; border-radius:20px; padding:14px 20px; font:900 clamp(16px,2vw,22px) var(--f); border-bottom:5px solid #d8d2ff; } .big:hover { background:#e6e2ff; } .big small { display:block; font-size:13px; font-weight:700; color:#8a80c0; margin-top:2px; }
+  button:focus-visible, textarea:focus-visible { outline:3px solid var(--pk); outline-offset:2px; }
+
+  #ov { position:fixed; inset:0; z-index:60; display:none; place-content:center; text-align:center; overflow:hidden; background:radial-gradient(circle, rgba(10,20,238,.85), rgba(2,4,70,.96)); }
+  #ov.show { display:grid; animation:fade .2s both, ovOut .4s 2.4s forwards; cursor:pointer; }
+  #ov::before { content:""; position:absolute; inset:-20%; background:repeating-conic-gradient(from 0deg at 50% 50%, rgba(255,255,255,.12) 0 6deg, transparent 6deg 18deg); animation:spin 12s linear infinite; }
+  #ov b { position:relative; display:block; font:italic 900 clamp(60px,18vw,200px)/1 var(--fi); color:var(--ye); text-shadow:0 8px 0 #b8aa00, 0 0 40px rgba(255,242,0,.6); animation:gl .6s cubic-bezier(.2,1.4,.4,1) both; letter-spacing:-.02em; } #ov small { position:relative; font:900 clamp(16px,3vw,26px) var(--f); letter-spacing:.2em; background:var(--pk); padding:4px 30px; border-radius:30px; animation:gl .6s .2s both; }
+  @keyframes pop { from { opacity:0; transform:scale(.88); } } @keyframes fade { from { opacity:0; } } @keyframes ovOut { to { opacity:0; visibility:hidden; } } @keyframes spin { to { transform:rotate(360deg); } } @keyframes gl { from { opacity:0; transform:scale(2.2) rotate(-6deg); } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; } }
+  @media (max-width:760px) { body { overflow-y:auto; overflow-x:hidden; } .app { overflow-x:hidden; } .ic { margin-right:0; margin-left:auto; gap:16px; padding-right:12px; } .ban .fm { display:none; } .app { height:auto; min-height:100%; } .ic { margin-right:0; gap:18px; } .top { gap:10px; flex-wrap:wrap; padding-top:54px; } .ban { min-height:260px; } .ph { width:100%; top:48%; right:0; } .pc b { font-size:30px; } .ban .t { font-size:30px; } .sep { display:none; } .grp { flex-direction:column; align-items:stretch; } .g { margin-bottom:6px; } .gt { overflow-x:auto; } }
+</style>
+</head>
+<body>
+<div class="bg"><i class="b1"></i><i class="b2"></i><i class="b3"></i><i class="b4"></i></div>
+<div class="app">
+  <div class="top"><div class="cn"><i>E</i><span id="c1">0</span></div><div class="cn g"><i>G</i><span id="c2">0</span></div>
+    <div class="ic"><button class="ib pl" id="play" title="今日を書く">▶</button><button class="ib ml" id="mail" title="記録を見る">✉</button><button class="ib bl" id="bell" title="未記録の日">🔔<span class="bd" id="bd">0</span></button></div></div>
+  <div class="tabs" id="tabs"></div>
+  <div class="main" id="main"></div>
+  <div></div>
+</div>
+<div id="ov"><div><b id="ovT"></b><small id="ovS"></small></div></div>
+
+<script src="theme-switch.js" data-theme="efb"></script>
+<script>
+const KEY = "diary-shared-v1";
+const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MC = { "最高": "#d89a10", "良い": "#1a9a5a", "普通": "#2a6ad8", "微妙": "#7a4ad8", "最悪": "#c0203a", "": "#3a4a8a" };
+const TABS = ["Diary World", "Shop", "Extras"];
+const MS = [3, 7, 14, 30, 60, 100];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const DOW = ["日","月","火","水","木","金","土"];
+const $ = id => document.getElementById(id);
+const load = () => {
+  try {
+    let d = JSON.parse(localStorage.getItem(KEY));
+    if (!d) { d = {}; for (const k of LEGACY) { const o = JSON.parse(localStorage.getItem(k) || "{}"); for (const day in o) if (!d[day]) d[day] = o[day]; } }
+    return d;
+  } catch { return {}; }
+};
+const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
+const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const shift = (k, n) => { const d = new Date(k + "T00:00:00"); d.setDate(d.getDate() + n); return ymd(d); };
+const today = () => ymd(new Date());
+const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
+
+let data = load(), tab = 0, page = null, selected = today(), mood = null, draft = null, ovTimer;
+function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
+function streakCount() { const t = today(); return streakAt(data[t] ? t : shift(t, -1)); }
+function totalXp() {
+  let xp = 0, run = 0, prev = null;
+  for (const k of Object.keys(data).sort()) {
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
+    xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
+    prev = c;
+  }
+  return xp;
+}
+const unrec = () => Array.from({ length: 7 }, (_, i) => shift(today(), -i)).filter(k => !data[k]);
+const hoursLeft = () => { const n = new Date(), e = new Date(n); e.setHours(24, 0, 0, 0); const h = (e - n) / 36e5; return `残り${Math.floor(h)}時間 ${Math.floor((h % 1) * 60)}分`; };
+
+const TILES = [
+  ["リーグ・クラブ", [["▦", "カレンダー", "cal"]]],
+  ["ドリームチーム", [["✎", "試合", "write"], ["◎", "ゲームプラン", "plan"], ["▤", "マイチーム", "log"], ["✚", "契約", "stat"]]],
+  ["その他", [["⚙", "設定", "set"]]]
+];
+const PT = { write: "試合", cal: "カレンダー", plan: "ゲームプラン", log: "マイチーム", stat: "契約", set: "設定", shop: "ショップ" };
+
+function head() {
+  const xp = totalXp(); $("c1").textContent = xp; $("c2").textContent = streakCount(); const u = unrec().length; $("bd").textContent = u; $("bd").style.display = u ? "" : "none";
+  $("tabs").innerHTML = TABS.map((t, i) => `<button class="tb ${i === tab && !page ? "on" : ""}" data-t="${i}">${t}</button>`).join("");
+}
+function home() {
+  const t = today(), pcs = [3, 2, 1, 0].map(n => { const k = shift(t, -n), e = data[k], d = new Date(k + "T00:00:00"); return `<div class="pc" data-k="${k}" style="--c:${MC[e ? e.mood || "" : "" ]}"><em>${DOW[d.getDay()]}曜日</em><small>${e ? "記録済" : "未記録"}</small><b>${d.getDate()}</b></div>`; }).join("");
+  return `<button class="ban" id="ban"><div class="t">${data[t] ? "Today's Goal<br>Complete!" : "New Diary<br>Approach"}<small>${data[t] ? "今日の日記は記録済み" : hoursLeft()}</small></div><div class="fm">▶</div><div class="ph">${pcs}</div></button>
+    <div class="grp">${TILES.map(([h, ts], gi) => (gi ? `<div class="sep"></div>` : "") + `<div class="g"><h4>${h}</h4><div class="gt">${ts.map(([ic, lb, id], i) => `<button class="tl" data-p="${id}" style="--i:${gi * 2 + i}"><span class="sq">${ic}</span><span class="lb">${lb}</span></button>`).join("")}</div></div>`).join("")}</div>`;
+}
+function shop() {
+  const st = streakCount();
+  return `<div class="sub"><div class="card"><div class="ls">${MS.map((n, i) => `<div class="rw" style="--i:${i}"><div class="d">${n}<small>日</small></div><div class="x">${n}日連続で記録する</div><div class="m" style="background:${st >= n ? "#1a9a5a" : "#9a90c8"}">${st >= n ? "受取済み" : `あと${n - st}日`}</div></div>`).join("")}</div></div></div>`;
+}
+function extras() {
+  return `<div class="sub"><div class="card"><button class="big" id="theme">テーマ選択画面へ戻る<small>他のゲームのUIでも記録は共通です</small></button><button class="big" id="exp">記録を書き出す<small>JSONファイルとして保存</small></button><button class="big" id="imp">記録を読み込む<small>JSONファイルから復元</small></button></div></div>`;
+}
+function subPage() {
+  const all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0);
+  let body = "";
+  if (page === "write") {
+    const e = data[selected]; if (mood === null && e && draft === null) mood = e.mood;
+    const days = Array.from({ length: 10 }, (_, i) => shift(today(), -i)); if (!days.includes(selected)) days.unshift(selected);
+    body = `<div class="days">${days.map(k => `<button class="dy ${k === selected ? "on" : ""} ${data[k] ? "rec" : ""}" data-d="${k}">${new Date(k + "T00:00:00").getDate()}<small>${DOW[new Date(k + "T00:00:00").getDay()]}</small></button>`).join("")}</div>
+      <div class="card"><ul class="moods">${MOODS.map(m => `<li><button class="mt ${m === mood ? "on" : ""}" data-m="${m}">${m}</button></li>`).join("")}</ul>
+      <textarea id="ta" placeholder="今日はどんな試合(一日)だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
+      <div class="acts"><button class="ko" id="save">キックオフ!</button><input type="date" class="dte" id="dt" value="${selected}" max="${today()}"><span class="hint">${selected === today() ? "" : "過去の日付を編集中"}</span></div></div>`;
+  } else if (page === "log") {
+    const ks = all.sort().reverse();
+    body = `<div class="card"><div class="ls">${ks.length ? ks.map((k, i) => `<button class="rw" data-go="${k}" style="--i:${Math.min(i, 10)}"><div class="d">${new Date(k + "T00:00:00").getDate()}<small>${new Date(k + "T00:00:00").getMonth() + 1}月</small></div><div class="x">${esc(data[k].text.replace(/\s+/g, " "))}</div><div class="m">${esc(data[k].mood || "-")}</div></button>`).join("") : `<div class="rw"><div></div><div class="x">まだ記録がありません</div></div>`}</div></div>`;
+  } else if (page === "cal") {
+    const n = new Date(), y = n.getFullYear(), mo = n.getMonth(), first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
+    let c = DOW.map(x => `<div class="dow">${x}</div>`).join("") + "<div style='visibility:hidden'></div>".repeat(first);
+    for (let d = 1; d <= last; d++) { const k = ymd(new Date(y, mo, d)); c += `<div data-go="${k}" class="${data[k] ? "done" : ""} ${k === today() ? "today" : ""}">${d}</div>`; }
+    body = `<div class="card"><div style="font:900 18px var(--f)">${y}年${mo + 1}月</div><div class="cal">${c}</div></div>`;
+  } else if (page === "plan") {
+    const st = streakCount();
+    body = `<div class="card"><div class="ls">${MS.map((n, i) => `<div class="rw" style="--i:${i}"><div class="d">${n}<small>日</small></div><div class="x"><div class="sb" style="padding:4px 0;background:none"><div class="tr"><i style="width:${Math.min(st / n, 1) * 100}%"></i></div></div></div><div class="m">${Math.min(st, n)}/${n}</div></div>`).join("")}</div></div>`;
+  } else if (page === "stat") {
+    const mc = m => all.filter(k => data[k].mood === m).length;
+    body = `<div class="card"><div class="st"><div class="sb"><small>記録日数</small><b>${all.length}</b></div><div class="sb"><small>連続日数</small><b>${streakCount()}</b></div><div class="sb"><small>総文字数</small><b>${ch}</b></div><div class="sb"><small>経験値</small><b>${totalXp()}</b></div>
+      ${MOODS.map(m => `<div class="sb"><small>${m}</small><b>${mc(m)}</b><div class="tr"><i style="width:${all.length ? mc(m) / all.length * 100 : 0}%"></i></div></div>`).join("")}</div></div>`;
+  } else {
+    body = `<div class="card"><button class="big" id="theme">テーマ選択画面へ戻る<small>他のゲームのUIでも記録は共通です</small></button><button class="big" id="exp">記録を書き出す<small>JSONファイルとして保存</small></button><button class="big" id="imp">記録を読み込む<small>JSONファイルから復元</small></button></div>`;
+  }
+  return `<div class="sub"><div class="sh"><button class="bk" id="bk">‹</button><h2>${PT[page]}<small>${page === "write" ? dl(selected) : ""}</small></h2></div>${body}</div>`;
+}
+function render() { head(); $("main").innerHTML = page ? subPage() : tab === 0 ? home() : tab === 1 ? shop() : extras(); }
+function open(p, k) { if (p === "write") { selected = k || today(); const e = data[selected]; mood = e ? e.mood : null; draft = null; } page = p; render(); }
+function save() {
+  const ta = $("ta"); if (!ta) return; const text = ta.value.trim(); if (!text) { ta.focus(); return; }
+  const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
+  data[selected] = { mood, text }; store(data); draft = null;
+  const up = Math.floor(totalXp() / XP_PER_RANK) > before;
+  $("ovT").textContent = up ? "LEVEL UP!" : "GOAL!"; $("ovS").textContent = isNew ? `記録完了 ─ ${streakCount()}日連続` : "更新しました";
+  const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
+  clearTimeout(ovTimer); ovTimer = setTimeout(() => o.classList.remove("show"), 2900);
+  render();
+}
+document.addEventListener("click", e => {
+  const t = e.target.closest(".tb"); if (t) { tab = +t.dataset.t; page = null; return render(); }
+  if (e.target.closest("#play")) return open("write", today());
+  if (e.target.closest("#mail")) return open("log");
+  if (e.target.closest("#bell")) { const u = unrec(); return open("write", u.length ? u[u.length - 1] : today()); }
+  if (e.target.closest("#ban")) { if (!e.target.closest(".pc")) return open("write", today()); }
+  const pc = e.target.closest(".pc"); if (pc) return open("write", pc.dataset.k);
+  const tl = e.target.closest(".tl"); if (tl) return open(tl.dataset.p);
+  if (e.target.closest("#bk")) { page = null; return render(); }
+  const dy = e.target.closest(".dy"); if (dy) return open("write", dy.dataset.d);
+  const g = e.target.closest("[data-go]"); if (g) return open("write", g.dataset.go);
+  const mt = e.target.closest(".mt"); if (mt) { mood = mt.dataset.m; draft = $("ta").value; return render(); }
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#theme")) { location.href = "index.html"; return; }
+  if (e.target.closest("#exp")) { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" })); a.download = "diary-backup.json"; a.click(); return; }
+  if (e.target.closest("#imp")) { const f = document.createElement("input"); f.type = "file"; f.accept = "application/json"; f.onchange = () => f.files[0] && f.files[0].text().then(t => { try { const o = JSON.parse(t); for (const k in o) if (o[k] && typeof o[k].text === "string") data[k] = { mood: o[k].mood || null, text: o[k].text }; store(data); render(); } catch { alert("読み込みに失敗しました"); } }); f.click(); return; }
+  if (e.target.closest("#ov")) $("ov").classList.remove("show");
+});
+document.addEventListener("change", e => { if (e.target.id === "dt" && e.target.value) { draft = $("ta").value; selected = e.target.value; const x = data[selected]; if (x) mood = x.mood; render(); } });
+document.addEventListener("keydown", e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); return save(); }
+  if (e.key === "Escape") { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); if ($("ov").classList.contains("show")) $("ov").classList.remove("show"); else if (page) { page = null; render(); } return; }
+  if (/TEXTAREA|INPUT/.test(e.target.tagName)) return;
+  if (!page && (e.key === "q" || e.key === "ArrowLeft")) { tab = (tab + 2) % 3; render(); } else if (!page && (e.key === "e" || e.key === "ArrowRight")) { tab = (tab + 1) % 3; render(); }
+});
+setInterval(() => { if (!page && tab === 0 && !data[today()]) render(); }, 60000);
+render();
+</script>
+</body>
+</html>
