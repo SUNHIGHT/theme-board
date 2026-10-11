@@ -487,7 +487,7 @@
   document.head.appendChild(css);
 
   var btn = document.createElement("a");
-  btn.id = "ts-btn"; btn.href = "index.html"; btn.textContent = "\u2302 THEME";
+  btn.id = "ts-btn"; btn.href = "../"; btn.textContent = "\u2302 THEME";
   btn.setAttribute("aria-label", "テーマ選択に戻る");
   document.body.appendChild(btn);
   var note = document.createElement("div");
