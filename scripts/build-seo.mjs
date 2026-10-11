@@ -7,7 +7,7 @@
 //   - every listed theme page: <title>, meta description, canonical, OGP, and a <noscript> link back to the hub
 //   - index.html (the hub): the crawlable theme list, the counts, and the JSON-LD
 //   - sitemap.xml (with lastmod from git)
-// Pages that are not in the theme list (sync.html, resident1/2.html, ...) are left alone.
+// Pages that are not in the theme list (resident1/2.html, ...) are left alone.
 import fs from "node:fs";
 import path from "node:path";
 import vm from "node:vm";
@@ -77,8 +77,7 @@ const features = [
   "日付ごとの調子と本文の記録",
   "連続日数・ランクなどの表示",
   "カレンダーや履歴の表示(画面はテーマによって異なる)",
-  "登録不要・無料。記録はブラウザに保存",
-  "自分で用意した Cloudflare の同期サーバーによる端末間同期(任意)"
+  "登録不要・無料。記録はブラウザに保存"
 ];
 const jsonld = JSON.stringify({
   "@context": "https://schema.org",

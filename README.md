@@ -1,6 +1,6 @@
 # Game Theme Diary
 
-好きなゲームのメニュー画面風の見た目で、日記を書くWebアプリです(`game-theme-diary/`)。ビルド不要の静的HTMLで、日記は各端末のブラウザ(localStorage)に保存されます。複数端末での同期は、任意で `sync-worker/`(Cloudflare Workers + D1)を使います。
+好きなゲームのメニュー画面風の見た目で、日記を書くWebアプリです(`game-theme-diary/`)。ビルド不要の静的HTMLで、日記は各端末のブラウザ(localStorage)に保存されます。サーバーへは送信しません。
 
 ## 非公式ファンメイドについて
 
