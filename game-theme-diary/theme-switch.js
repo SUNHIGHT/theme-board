@@ -78,6 +78,8 @@
       titles: [ { id: "ace", file: "ace_attorney.html", name: "ACE ATTORNEY", sub: "逆転裁判" } ] },
     { id: "metalslug", name: "METAL SLUG",     sub: "メタルスラッグ",           c1: "#ffd400", c2: "#434c22",
       titles: [ { id: "metalslug", file: "metalslug.html", name: "METAL SLUG", sub: "出撃!" } ] },
+    { id: "saga", name: "ROMANCING SaGa", sub: "ロマンシング サガ",          c1: "#e8c46a", c2: "#07080b",
+      titles: [ { id: "romasaga2", file: "romasaga2.html", name: "ROMANCING SaGa 2: REVENGE OF THE SEVEN", sub: "未記の碑を鎮める" } ] },
     { id: "dq",     name: "DRAGON QUEST",      sub: "ドラゴンクエスト",         c1: "#7ec8ff", c2: "#04042c",
       titles: [
         { id: "dq9", file: "dq9.html", name: "DRAGON QUEST IX", sub: "星空の守り人" },
@@ -141,7 +143,7 @@
     backrooms: ["ホラー"], chrono: ["RPG"], edf: ["シューター", "アクション"], fallout: ["RPG", "シューター"],
     zzz: ["アクション", "RPG"], ff: ["RPG"], cyberpunk: ["RPG", "シューター"], mh: ["アクション"],
     splatoon: ["シューター", "アクション"], mario: ["アクション", "RPG"], zelda: ["アクション", "RPG"], danganronpa: ["アドベンチャー"], armoredcore: ["アクション", "シューター"],
-    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"], bokunatsu: ["アドベンチャー", "シミュレーション"], endfield: ["RPG", "シミュレーション"], fe: ["RPG", "シミュレーション"], balatro: ["シミュレーション"]
+    papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"], bokunatsu: ["アドベンチャー", "シミュレーション"], endfield: ["RPG", "シミュレーション"], fe: ["RPG", "シミュレーション"], balatro: ["シミュレーション"], saga: ["RPG"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
   // Display names are "<和名>風" (an unofficial, fan-made homage). The original names stay searchable through `alias`.
@@ -303,6 +305,13 @@
     "s": "METAL SLUG style",
     "t": {
      "metalslug": "メタルスラッグ風"
+    }
+   },
+   "saga": {
+    "n": "ロマンシング サガ風",
+    "s": "ROMANCING SaGa style",
+    "t": {
+     "romasaga2": "ロマンシング サガ2 リベンジオブザセブン風"
     }
    },
    "dq": {
