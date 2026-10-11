@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Codec Diary</title>
+<title>メタルギアソリッド 無線風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
@@ -103,8 +103,8 @@ function type(html, plain) {
 }
 function subtitle(done) {
   const e = data[selected];
-  if (done) { $("sub").innerHTML = `<span>わかった。<ruby>作戦<rt>ミッション</rt></ruby>に入る。</span>`; return; }
-  if (e) type("", e.text); else type("", selected === today() ? "……こちらスネーク、応答を待つ。今日の出来事を報告してくれ。" : "……この日の通信記録は残っていない。");
+  if (done) { $("sub").innerHTML = `<span>了解。今日の記録を保存した。</span>`; return; }
+  if (e) type("", e.text); else type("", selected === today() ? "……応答を待つ。今日の出来事を報告してくれ。" : "……この日の通信記録は残っていない。");
 }
 function render(done) {
   const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, st = streakCount(), e = data[selected], d = new Date(selected + "T00:00:00");
@@ -126,7 +126,7 @@ function save() {
   const before = Math.floor(totalXp() / XP_PER_RANK), isNew = !data[selected];
   data[selected] = { mood, text }; store(data); editing = false;
   const up = Math.floor(totalXp() / XP_PER_RANK) > before;
-  $("ovT").innerHTML = up ? "RANK UP" : "TRANSMISSION<br>COMPLETE"; $("ovS").textContent = isNew ? `${streakCount()} DAYS ─ 作戦開始` : "UPDATED";
+  $("ovT").innerHTML = up ? "RANK UP" : "TRANSMISSION<br>COMPLETE"; $("ovS").textContent = isNew ? `${streakCount()} DAYS ─ 記録完了` : "UPDATED";
   const o = $("ov"); o.classList.remove("show"); void o.offsetWidth; o.classList.add("show");
   clearTimeout(ovT); ovT = setTimeout(() => o.classList.remove("show"), 2600);
   render(true);

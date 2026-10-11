@@ -141,6 +141,333 @@
     papers: ["シミュレーション", "アドベンチャー"], aceattorney: ["アドベンチャー"], metalslug: ["シューター", "アクション"], dq: ["RPG"], valkyrie: ["RPG"], xenoblade: ["RPG"], nier: ["RPG", "アクション"], gravity: ["アクション", "アドベンチャー"], jump: ["アクション"], atelier: ["RPG", "シミュレーション"], paranoma: ["ホラー", "アドベンチャー"], bloodborne: ["RPG", "アクション", "ホラー"], efootball: ["シミュレーション"], pragmata: ["アクション", "シューター"], wiisports: ["シミュレーション"], smash: ["アクション"], coffeetalk: ["アドベンチャー"], toshidensetsu: ["アドベンチャー", "ホラー"], metaphor: ["RPG"], pokemon: ["RPG"], bokunatsu: ["アドベンチャー", "シミュレーション"], endfield: ["RPG", "シミュレーション"], fe: ["RPG", "シミュレーション"], balatro: ["シミュレーション"]
   };
   GAMES.forEach(function (g) { g.genres = GENRES[g.id] || []; });
+  // Display names are "<和名>風" (an unofficial, fan-made homage). The original names stay searchable through `alias`.
+  // Add an entry here when adding a game; games without an entry keep the name written in GAMES.
+  var DISPLAY = {
+   "persona": {
+    "n": "ペルソナ風",
+    "s": "PERSONA style",
+    "t": {
+     "p3": "ペルソナ3風",
+     "p3r": "ペルソナ3リロード風",
+     "p4g": "ペルソナ4ゴールデン風",
+     "p5": "ペルソナ5風",
+     "p5s": "ペルソナ5スクランブル風"
+    }
+   },
+   "destiny": {
+    "n": "デスティニー風",
+    "s": "DESTINY style",
+    "t": {
+     "destiny1": "デスティニー風",
+     "destiny2": "デスティニー2風"
+    }
+   },
+   "apex": {
+    "n": "エーペックス風",
+    "s": "APEX LEGENDS style",
+    "t": {
+     "apex": "エーペックス風"
+    }
+   },
+   "darksouls": {
+    "n": "ダークソウル風",
+    "s": "DARK SOULS style",
+    "t": {
+     "darksouls1": "ダークソウル風",
+     "darksouls2": "ダークソウルII風",
+     "darksouls3": "ダークソウルIII風"
+    }
+   },
+   "eldenring": {
+    "n": "エルデンリング風",
+    "s": "ELDEN RING style",
+    "t": {
+     "eldenring": "エルデンリング風"
+    }
+   },
+   "resident": {
+    "n": "バイオハザード風",
+    "s": "RESIDENT EVIL style",
+    "t": {
+     "re4": "バイオハザード4風"
+    }
+   },
+   "chrono": {
+    "n": "クロノ・トリガー風",
+    "s": "CHRONO TRIGGER style",
+    "t": {
+     "chrono": "クロノ・トリガー風"
+    }
+   },
+   "edf": {
+    "n": "地球防衛軍風",
+    "s": "EARTH DEFENSE FORCE style",
+    "t": {
+     "edf6": "地球防衛軍6風"
+    }
+   },
+   "fallout": {
+    "n": "フォールアウト風",
+    "s": "FALLOUT style",
+    "t": {
+     "fallout3": "フォールアウト3風",
+     "fallout4": "フォールアウト4風"
+    }
+   },
+   "zzz": {
+    "n": "ゼンレスゾーンゼロ風",
+    "s": "ZENLESS ZONE ZERO style",
+    "t": {
+     "zzz": "ゼンレスゾーンゼロ風"
+    }
+   },
+   "ff": {
+    "n": "ファイナルファンタジー風",
+    "s": "FINAL FANTASY style",
+    "t": {
+     "ff7": "ファイナルファンタジーVII風"
+    }
+   },
+   "cyberpunk": {
+    "n": "サイバーパンク2077風",
+    "s": "CYBERPUNK 2077 style",
+    "t": {
+     "cyberpunk": "サイバーパンク2077風"
+    }
+   },
+   "mh": {
+    "n": "モンスターハンター風",
+    "s": "MONSTER HUNTER style",
+    "t": {
+     "mh2g": "モンスターハンター2G風",
+     "mh4g": "モンスターハンター4G風"
+    }
+   },
+   "splatoon": {
+    "n": "スプラトゥーン風",
+    "s": "SPLATOON style",
+    "t": {
+     "splatoon3": "スプラトゥーン3風"
+    }
+   },
+   "mario": {
+    "n": "スーパーマリオ風",
+    "s": "SUPER MARIO style",
+    "t": {
+     "mario": "スーパーマリオブラザーズ風",
+     "mario_rpg": "スーパーマリオRPG風"
+    }
+   },
+   "zelda": {
+    "n": "ゼルダの伝説風",
+    "s": "THE LEGEND OF ZELDA style",
+    "t": {
+     "zelda_oot": "時のオカリナ風"
+    }
+   },
+   "danganronpa": {
+    "n": "ダンガンロンパ風",
+    "s": "DANGANRONPA style",
+    "t": {
+     "danganronpa": "ダンガンロンパ風"
+    }
+   },
+   "armoredcore": {
+    "n": "アーマード・コア風",
+    "s": "ARMORED CORE style",
+    "t": {
+     "ac6": "アーマード・コアVI風"
+    }
+   },
+   "papers": {
+    "n": "ペーパーズ・プリーズ風",
+    "s": "PAPERS, PLEASE style",
+    "t": {
+     "papers": "ペーパーズ・プリーズ風"
+    }
+   },
+   "aceattorney": {
+    "n": "逆転裁判風",
+    "s": "ACE ATTORNEY style",
+    "t": {
+     "ace": "逆転裁判風"
+    }
+   },
+   "metalslug": {
+    "n": "メタルスラッグ風",
+    "s": "METAL SLUG style",
+    "t": {
+     "metalslug": "メタルスラッグ風"
+    }
+   },
+   "dq": {
+    "n": "ドラゴンクエスト風",
+    "s": "DRAGON QUEST style",
+    "t": {
+     "dq9": "ドラゴンクエストIX風",
+     "dq11": "ドラゴンクエストXI風"
+    }
+   },
+   "xenoblade": {
+    "n": "ゼノブレイド風",
+    "s": "XENOBLADE style",
+    "t": {
+     "xb2": "ゼノブレイド2風",
+     "xb3": "ゼノブレイド3風"
+    }
+   },
+   "nier": {
+    "n": "ニーア オートマタ風",
+    "s": "NIER:AUTOMATA style",
+    "t": {
+     "nier": "ニーア オートマタ風"
+    }
+   },
+   "gravity": {
+    "n": "グラビティデイズ風",
+    "s": "GRAVITY DAZE style",
+    "t": {
+     "gd2": "グラビティデイズ2風"
+    }
+   },
+   "jump": {
+    "n": "ジャンプアルティメットスターズ風",
+    "s": "JUMP ULTIMATE STARS style",
+    "t": {
+     "jus": "ジャンプアルティメットスターズ風"
+    }
+   },
+   "atelier": {
+    "n": "アトリエ風",
+    "s": "ATELIER style",
+    "t": {
+     "sophie": "ソフィーのアトリエ風"
+    }
+   },
+   "paranoma": {
+    "n": "パラノマサイト風",
+    "s": "PARANORMASIGHT style",
+    "t": {
+     "paranoma": "パラノマサイト風"
+    }
+   },
+   "bloodborne": {
+    "n": "ブラッドボーン風",
+    "s": "BLOODBORNE style",
+    "t": {
+     "bb": "ブラッドボーン風"
+    }
+   },
+   "efootball": {
+    "n": "イーフットボール風",
+    "s": "EFOOTBALL style",
+    "t": {
+     "efb": "イーフットボール風"
+    }
+   },
+   "coffeetalk": {
+    "n": "コーヒートーク風",
+    "s": "COFFEE TALK style",
+    "t": {
+     "coffeetalk": "コーヒートーク風"
+    }
+   },
+   "toshidensetsu": {
+    "n": "都市伝説解体センター風",
+    "s": "URBAN LEGEND CENTER style",
+    "t": {
+     "toshidensetsu": "都市伝説解体センター風"
+    }
+   },
+   "pragmata": {
+    "n": "プラグマタ風",
+    "s": "PRAGMATA style",
+    "t": {
+     "prg": "プラグマタ風"
+    }
+   },
+   "metaphor": {
+    "n": "メタファー：リファンタジオ風",
+    "s": "METAPHOR: REFANTAZIO style",
+    "t": {
+     "metaphor": "メタファー：リファンタジオ風"
+    }
+   },
+   "pokemon": {
+    "n": "ポケモン風",
+    "s": "POKEMON style",
+    "t": {
+     "pokemon_dp": "ポケモン ダイヤモンド風"
+    }
+   },
+   "wiisports": {
+    "n": "Wiiスポーツ風",
+    "s": "WII SPORTS style",
+    "t": {
+     "wiis": "Wiiスポーツ風"
+    }
+   },
+   "smash": {
+    "n": "スマブラ風",
+    "s": "SUPER SMASH BROS. style",
+    "t": {
+     "smsp": "スマブラSP風"
+    }
+   },
+   "bokunatsu": {
+    "n": "ぼくのなつやすみ風",
+    "s": "BOKU NO NATSUYASUMI style",
+    "t": {
+     "bokunatsu": "ぼくのなつやすみ風"
+    }
+   },
+   "endfield": {
+    "n": "アークナイツ：エンドフィールド風",
+    "s": "ARKNIGHTS: ENDFIELD style",
+    "t": {
+     "endfield": "アークナイツ：エンドフィールド風"
+    }
+   },
+   "fe": {
+    "n": "ファイアーエムブレム風",
+    "s": "FIRE EMBLEM style",
+    "t": {
+     "fe_if": "ファイアーエムブレムif風"
+    }
+   },
+   "balatro": {
+    "n": "バラトロ風",
+    "s": "BALATRO style",
+    "t": {
+     "balatro": "バラトロ風"
+    }
+   },
+   "valkyrie": {
+    "n": "ヴァルキリープロファイル風",
+    "s": "VALKYRIE PROFILE style",
+    "t": {
+     "valkyrie": "ヴァルキリープロファイル風"
+    }
+   },
+   "mgs": {
+    "n": "メタルギアソリッド風",
+    "s": "METAL GEAR SOLID style",
+    "t": {
+     "mgs1": "メタルギアソリッド風",
+     "mgs1c": "メタルギアソリッド 無線風",
+     "mgs2": "メタルギアソリッド2風",
+     "mgs3": "メタルギアソリッド3風",
+     "mgs4": "メタルギアソリッド4風"
+    }
+   }
+  };
+  GAMES.forEach(function (g) {
+    var d = DISPLAY[g.id];
+    g.alias = g.name + " " + g.sub;
+    g.titles.forEach(function (t) { t.alias = t.name + " " + t.sub; if (d && d.t[t.id]) t.name = d.t[t.id]; });
+    if (d) { g.name = d.n; g.sub = d.s; }
+  });
   window.DIARY_THEMES = GAMES;
 
   var me = document.currentScript, current = me && me.dataset.theme;
@@ -163,6 +490,10 @@
   btn.id = "ts-btn"; btn.href = "index.html"; btn.textContent = "\u2302 THEME";
   btn.setAttribute("aria-label", "テーマ選択に戻る");
   document.body.appendChild(btn);
+  var note = document.createElement("div");
+  note.id = "ts-note"; note.textContent = "非公式ファンメイド"; note.setAttribute("aria-hidden", "true");
+  note.style.cssText = "position:fixed;top:46px;right:14px;z-index:49;font:700 10px/1 sans-serif;letter-spacing:.12em;color:#fff;opacity:.55;pointer-events:none;text-shadow:0 1px 2px #000";
+  document.body.appendChild(note);
 })();
 
 // ---- Diary sync (optional) -------------------------------------------------------------

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pip-Boy Diary</title>
+<title>フォールアウト3風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=DotGothic16&display=swap" rel="stylesheet">
@@ -97,7 +97,7 @@
 <body>
 <div class="stage">
   <div class="pip">
-    <div class="plate">ROBCO INDUSTRIES (TM) ─ PIP-BOY 3000</div>
+    <div class="plate">DIARY INDUSTRIES ─ WRIST LOG 3000</div>
     <i class="screw s1"></i><i class="screw s2"></i><i class="screw s3"></i><i class="screw s4"></i>
     <div class="knob k1"></div><div class="knob k2"></div><div class="knob k3"></div>
     <div class="screen">
@@ -185,7 +185,7 @@ function render() {
     list.innerHTML = rows(MOODS.map(([m, t]) => `<span>${t}</span><small>${m}</small>`), mi);
     const today = selected === ymd(new Date());
     det.innerHTML = `<div class="dh"><b>${fmt(selected)}</b><span id="moodChip">${mood ? MOODS.find(x => x[0] === mood)[1] : "NO DATA"}</span></div>
-      <textarea id="body" placeholder="PIP-BOY に記録する…"></textarea>
+      <textarea id="body" placeholder="腕のログに記録する…"></textarea>
       <div class="acts"><span class="hintx">${today ? "" : "過去の日付を編集中です(MAP で日付を選べます)"}</span><button class="btn" id="save">[ SAVE ]</button></div>`;
     $("body").value = draft; $("body").addEventListener("input", e => { draft = e.target.value; });
   } else if (tab === 2) {

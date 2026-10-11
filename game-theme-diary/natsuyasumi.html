@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Summer Vacation Diary</title>
+<title>ぼくのなつやすみ風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hachi+Maru+Pop&family=Zen+Maru+Gothic:wght@500;700;900&family=Yusei+Magic&display=swap" rel="stylesheet">
@@ -143,7 +143,7 @@ function title() {
   const M = ["最初から始める", "途中から続ける", "夏休みの思い出", "設定"];
   return `<div class="sky" style="position:absolute;inset:0"><div class="cl" style="left:-6cqw;top:30cqw;width:60cqw;height:22cqw;--t:50s"></div><div class="cl" style="left:30cqw;top:44cqw;width:70cqw;height:28cqw;--t:60s"></div><div class="cl" style="left:60cqw;top:20cqw;width:46cqw;height:16cqw;--t:45s"></div></div>
   <div class="ttl">ぼくのにっき<small>TM</small></div><div class="tm">${M.map((t, i) => `<button class="ti ${i === ti ? "on" : ""}" data-t="${i}">${t}</button>`).join("")}</div>
-  <div class="cp">© ${new Date().getFullYear()} ぼくのなつやすみ日記 (非公式)</div>`;
+  <div class="cp">© ${new Date().getFullYear()} ぼくのにっき (非公式ファンメイド)</div>`;
 }
 function desk() {
   const d = new Date(), xp = totalXp();
@@ -186,7 +186,7 @@ function items(forceKind) {
   else if (kind === "list") pv = `<h5>日記ひらいて</h5><div class="pr">${all.sort().reverse().slice(0, 30).map(k => `<button class="rw" data-go="${k}"><b>${md(k)}</b>${esc(data[k].text.replace(/\s+/g, " "))}</button>`).join("") || "<div class='rw'>まだ日記がありません</div>"}</div>`;
   else if (kind === "wx") { const mx = Math.max(1, ...WX.map(([m]) => all.filter(k => data[k].mood === m).length)); pv = `<h5>てんき</h5><div class="pr">${WX.map(([m, ic]) => { const c = all.filter(k => data[k].mood === m).length; return `<div class="br"><span>${ic}${m}</span><div class="t"><i style="width:${c / mx * 100}%"></i></div><b>${c}</b></div>`; }).join("")}</div>`; }
   else { const xp = totalXp(); pv = `<h5>おサイフ</h5><div class="pr"><div class="rw"><b>ランク</b>${Math.floor(xp / XP_PER_RANK) + 1}</div><div class="rw"><b>けいけんち</b>¥${xp}</div><div class="rw"><b>れんぞく</b>${streakCount()}日</div></div><br><button class="btn2" id="theme">テーマ選択にもどる<small>ほかのゲームの見た目でも きろくは共通です</small></button><button class="btn2" id="exp">きろくを書き出す<small>JSONファイルで保存</small></button><button class="btn2" id="imp">きろくを読み込む<small>JSONファイルから復元</small></button>`; }
-  return `<div class="gr" style="position:absolute;inset:0"></div><div class="box li"><h4>持ちもの大百科</h4>${ITEMS.map((x, i) => `<button class="ib ${i === ii ? "on" : ""}" data-i="${i}">${x[0]}</button>`).join("")}</div>
+  return `<div class="gr" style="position:absolute;inset:0"></div><div class="box li"><h4>もちものずかん</h4>${ITEMS.map((x, i) => `<button class="ib ${i === ii ? "on" : ""}" data-i="${i}">${x[0]}</button>`).join("")}</div>
     <div class="pv">${pv}</div><div class="box dsc">${esc(it[1])}</div><button class="back" id="back" style="bottom:.6cqw">✕ もどる</button>`;
 }
 function render() {

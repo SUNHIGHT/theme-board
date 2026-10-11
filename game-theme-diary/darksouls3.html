@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lothric Diary</title>
+<title>ダークソウルIII風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Shippori+Mincho+B1:wght@500;800&display=swap" rel="stylesheet">
@@ -119,7 +119,7 @@
 <body>
 <main>
   <header>
-    <div class="op">BONFIRE ─ FIRELINK SHRINE ─ ロスリック</div>
+    <div class="op">EMBER ─ ASH SHRINE ─ 灰の城</div>
     <h1>LOTHRIC<small>DIARY ─ 薪の王たちの日誌</small></h1>
     <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>SOULS</b><span id="souls">0</span></span></div>
     
@@ -147,7 +147,7 @@
   </section>
 
   <section class="panel">
-    <span class="ttl">BONFIRE CALENDAR</span>
+    <span class="ttl">EMBER CALENDAR</span>
     <div class="cal" id="cal"></div>
   </section>
 
@@ -161,9 +161,9 @@
 <script>
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
-const MOODS = [["最高", "PRAISE THE SUN"], ["良い", "BONFIRE LIT"], ["普通", "ASHEN"], ["微妙", "HOLLOWING"], ["最悪", "YOU DIED"]];
+const MOODS = [["最高", "BRIGHT DAY"], ["良い", "EMBER KEPT"], ["普通", "ASHEN"], ["微妙", "HOLLOWING"], ["最悪", "YOU DIED"]];
 const RANKS = ["UNKINDLED", "ASHEN ONE", "EMBER", "CHAMPION", "LORD OF CINDER", "FIRE KEEPER", "THE FIRST FLAME"];
-const MSG_FILED = "BONFIRE LIT", MSG_PROMO = "HEIR OF FIRE ─ 昇格";
+const MSG_FILED = "EMBER KEPT", MSG_PROMO = "EMBER RISES ─ 昇格";
 const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
 const $ = id => document.getElementById(id);
 
