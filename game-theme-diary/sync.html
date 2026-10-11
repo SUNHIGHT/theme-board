@@ -82,10 +82,11 @@
   </section>
 </main>
 
-<script src="theme-switch.js"></script>
+<script src="theme-switch.js?v=sync1"></script>
 <script>
 const $ = id => document.getElementById(id);
 const S = window.DiarySync;
+if (!S) { document.querySelector("main").insertAdjacentHTML("afterbegin", '<section style="border-color:#a33"><h2 style="color:#ff9a9a">読み込みに失敗しました</h2><p style="font-size:14px">古いファイルが残っているようです。ページを強制再読み込み(Ctrl+Shift+R)してください。それでも直らない場合は、少し待ってからもう一度開いてください。</p></section>'); throw new Error("DiarySync is not loaded"); }
 const c0 = S.getConfig(); if (c0) { $("url").value = c0.url || ""; $("tok").value = c0.token || ""; }
 
 function render() {
