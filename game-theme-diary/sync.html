@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>同期設定 | Game Theme Diary</title>
+<style>
+  * { box-sizing:border-box; margin:0; }
+  body { min-height:100vh; background:#0b0b0b; color:#f2f2f2; font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif; line-height:1.7;
+    background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.04) 0 2px,transparent 2px 28px); }
+  main { max-width:680px; margin:0 auto; padding:28px 16px 64px; }
+  a.back { color:#9fd8ff; font-size:13px; letter-spacing:.1em; text-decoration:none; } a.back:hover { text-decoration:underline; }
+  h1 { font-size:clamp(26px,6vw,38px); margin:10px 0 4px; letter-spacing:.02em; }
+  p.lead { color:#c8c8c8; font-size:14px; margin-bottom:22px; }
+  section { background:#151515; border:1px solid #333; border-radius:10px; padding:16px 18px; margin-bottom:16px; }
+  h2 { font-size:15px; letter-spacing:.08em; margin-bottom:10px; color:#ffe27a; }
+  label { display:block; font-size:13px; color:#cfcfcf; margin:10px 0 4px; }
+  input[type=text], input[type=url], input[type=password] { width:100%; padding:10px 12px; font:inherit; font-size:15px; color:#fff; background:#0f0f0f; border:2px solid #555; border-radius:6px; outline:0; }
+  input:focus { border-color:#7fd4ff; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+  button { font:inherit; font-size:14px; font-weight:700; cursor:pointer; color:#111; background:#fff; border:0; border-radius:6px; padding:9px 16px; }
+  button:hover { background:#ffe27a; } button.sec { color:#fff; background:#2a2a2a; border:1px solid #666; } button.sec:hover { background:#3a3a3a; } button.dg { color:#ffb3b3; background:#2a1a1a; border:1px solid #774; }
+  button:disabled { opacity:.5; cursor:default; }
+  .st { display:flex; align-items:center; gap:10px; font-size:15px; } .dot { width:12px; height:12px; border-radius:50%; background:#777; flex:none; } .dot.ok { background:#4cd964; box-shadow:0 0 8px #4cd964; } .dot.err { background:#ff5a5a; } .dot.busy { background:#ffd24a; }
+  .meta { font-size:13px; color:#aaa; margin-top:6px; }
+  .note { font-size:12px; color:#9a9a9a; margin-top:8px; }
+  code { background:#222; padding:1px 6px; border-radius:4px; font-size:12px; }
+  details summary { cursor:pointer; color:#9fd8ff; font-size:13px; }
+  ol { padding-left:20px; font-size:13px; color:#cfcfcf; } li { margin:4px 0; }
+</style>
+</head>
+<body>
+<main>
+  <a class="back" href="index.html">← テーマ選択にもどる</a>
+  <h1>同期設定</h1>
+  <p class="lead">別の端末でも同じ日記を使うための設定です。Cloudflare に作った同期サーバー(<code>sync-worker</code>)につなぎます。日記は全テーマ共通で同期されます。</p>
+
+  <section>
+    <h2>現在の状態</h2>
+    <div class="st"><span class="dot" id="dot"></span><span id="stx">未設定</span></div>
+    <div class="meta" id="meta"></div>
+  </section>
+
+  <section>
+    <h2>つなぎ先</h2>
+    <label for="url">Worker のURL(例: https://diary-sync.あなたの名前.workers.dev)</label>
+    <input id="url" type="url" placeholder="https://diary-sync.xxxx.workers.dev" autocomplete="off">
+    <label for="tok">合言葉(トークン)</label>
+    <input id="tok" type="password" placeholder="Worker に設定した SYNC_TOKEN と同じもの" autocomplete="off">
+    <div class="row">
+      <button class="sec" id="gen" type="button">合言葉を生成</button>
+      <button class="sec" id="show" type="button">表示 / 非表示</button>
+      <button class="sec" id="copy" type="button">コピー</button>
+    </div>
+    <p class="note">合言葉は、各端末で同じものを入れます。生成した合言葉は、Worker 側の <code>SYNC_TOKEN</code> にも同じ値を登録してください(手順は <code>sync-worker/README.md</code>)。</p>
+    <div class="row">
+      <button id="test" type="button">接続テスト</button>
+      <button id="save" type="button">保存して同期</button>
+      <button class="dg" id="clear" type="button">同期をやめる</button>
+    </div>
+  </section>
+
+  <section>
+    <h2>操作</h2>
+    <div class="row">
+      <button id="now" type="button">今すぐ同期</button>
+      <button class="sec" id="pushall" type="button">この端末の記録を全部送り直す</button>
+      <button class="sec" id="pullall" type="button">サーバーの記録を全部受け取り直す</button>
+    </div>
+    <p class="note">同じ日が両方にある場合は、あとから書いたほうが残ります(日付ごと)。通常は「今すぐ同期」だけで足ります。</p>
+  </section>
+
+  <section>
+    <details>
+      <summary>つなぎ方の流れ(要約)</summary>
+      <ol>
+        <li>Cloudflare で D1 データベースと Worker を作り、<code>SYNC_TOKEN</code> を登録する。</li>
+        <li>この画面で Worker のURLと合言葉を入れて「保存して同期」。</li>
+        <li>別の端末でも、同じURLと合言葉を入れる。</li>
+      </ol>
+    </details>
+  </section>
+</main>
+
+<script src="theme-switch.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const S = window.DiarySync;
+const c0 = S.getConfig(); if (c0) { $("url").value = c0.url || ""; $("tok").value = c0.token || ""; }
+
+function render() {
+  const st = S.status(), c = S.getConfig();
+  $("dot").className = "dot " + ({ ok: "ok", err: "err", busy: "busy" }[st.state] || "");
+  $("stx").textContent = !c ? "未設定(この端末の中だけに保存されています)" : st.state === "ok" ? "同期できています" : st.state === "err" ? "同期に失敗: " + st.msg : st.state === "busy" ? "同期中…" : "設定済み";
+  const bits = ["この端末の記録: " + S.localCount() + "日分"];
+  if (st.last) bits.push("最後の同期: " + new Date(st.last).toLocaleString());
+  if (st.state === "ok" && st.pushed !== undefined) bits.push("送信 " + st.pushed + "件 / 受信 " + st.pulled + "件");
+  $("meta").textContent = bits.join("  ／  ");
+}
+window.addEventListener("diarysync", render);
+const cur = () => ({ url: $("url").value.trim(), token: $("tok").value.trim() });
+const need = () => { const v = cur(); if (!v.url || !v.token) { alert("URLと合言葉を入力してください"); return null; } return v; };
+const busy = (b, on) => { document.querySelectorAll("button").forEach(x => x.disabled = on); };
+
+$("gen").onclick = () => { const a = new Uint8Array(24); crypto.getRandomValues(a); $("tok").value = Array.from(a, x => x.toString(16).padStart(2, "0")).join(""); $("tok").type = "text"; };
+$("show").onclick = () => { $("tok").type = $("tok").type === "password" ? "text" : "password"; };
+$("copy").onclick = () => { navigator.clipboard && navigator.clipboard.writeText($("tok").value).then(() => { $("copy").textContent = "コピーしました"; setTimeout(() => $("copy").textContent = "コピー", 1500); }); };
+$("test").onclick = async () => { const v = need(); if (!v) return; busy(0, true); try { const r = await S.ping(v.url, v.token); alert("接続できました。サーバー上の記録: " + r.count + "日分"); } catch (e) { alert("つながりませんでした: " + (e.message || e)); } busy(0, false); };
+$("save").onclick = async () => { const v = need(); if (!v) return; busy(0, true); try { await S.ping(v.url, v.token); } catch (e) { alert("つながりませんでした: " + (e.message || e)); busy(0, false); return; } S.setConfig(v.url, v.token); await S.sync({ noReload: true }); busy(0, false); render(); };
+$("clear").onclick = () => { if (confirm("この端末の同期をやめます。日記のデータは端末に残ります。よろしいですか？")) { S.clearConfig(); render(); } };
+$("now").onclick = async () => { busy(0, true); await S.sync({ noReload: true }); busy(0, false); render(); };
+$("pushall").onclick = async () => { if (!confirm("この端末の記録を、すべてサーバーへ送り直します。(新しい更新だけがサーバーに反映されます)")) return; busy(0, true); await S.sync({ fullPush: true, noReload: true }); busy(0, false); render(); };
+$("pullall").onclick = async () => { busy(0, true); await S.sync({ fullPull: true, noReload: true }); busy(0, false); render(); };
+render();
+</script>
+</body>
+</html>
