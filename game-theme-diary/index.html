@@ -13,6 +13,7 @@
   h1 { font-size:clamp(34px,9vw,60px); font-style:italic; letter-spacing:-.02em; transform:rotate(-2deg); margin-bottom:6px; animation:in .6s cubic-bezier(.2,.9,.3,1) both; }
   p.sub { letter-spacing:.3em; font-size:12px; opacity:.7; margin-bottom:22px; }
   #step { color:#ff9; margin:-10px 0 16px; }
+  .about { margin-top:40px; padding-top:18px; border-top:1px solid #333; font-weight:500; font-size:12px; line-height:1.9; color:#9a9a9a; } .about b { display:block; font-size:12px; letter-spacing:.2em; margin-bottom:6px; color:#c8c8c8; } .about p { margin-bottom:8px; } .about strong { color:#e0e0e0; }
   .syncl { position:relative; z-index:10; float:right; font-size:12px; letter-spacing:.12em; color:#9fd8ff; text-decoration:none; border:1px solid #9fd8ff66; padding:4px 12px; border-radius:20px; margin-top:4px; } .syncl:hover { background:#9fd8ff22; }
 
   .ctl { display:flex; flex-direction:column; gap:10px; margin-bottom:20px; }
@@ -69,6 +70,11 @@
     <div class="count" id="count"></div>
   </div>
   <div id="cards"></div>
+  <footer id="about" class="about">
+    <b>このサイトについて</b>
+    <p>ここにあるテーマは、各ゲームのメニュー画面の雰囲気をまねて、個人が趣味で作った<strong>非公式のファンメイド</strong>です。各ゲームの制作会社・発売元とは、一切関係がありません。公式の画像・ロゴ・キャラクター・音声・フォントは使っておらず、見た目はすべて自作のコード(CSS/SVG)で、似せて作ったものです。</p>
+    <p>ゲームのタイトルや名称は、それぞれの権利者の商標または登録商標です。「○○風」という表記は、そのゲームの画面の雰囲気を説明するためのもので、公式を名乗るものではありません。営利目的では運営していません。権利者の方からご連絡があった場合は、速やかに対応します(GitHub の Issues へお知らせください)。</p>
+  </footer>
 </main>
 <script src="theme-switch.js"></script>
 <script>
@@ -89,7 +95,7 @@ if (state.genre && state.genre !== "★" && !GENRES.includes(state.genre)) state
 $("sort").value = state.sort;
 
 const norm = s => String(s).toLowerCase().replace(/\s+/g, "");
-const hay = g => norm(g.name + g.sub + g.genres.join("") + g.titles.map(t => t.name + t.sub).join(""));
+const hay = g => norm(g.name + g.sub + (g.alias || "") + g.genres.join("") + g.titles.map(t => t.name + t.sub + (t.alias || "")).join(""));
 const recentIdx = g => { const i = Math.min(...g.titles.map(t => { const k = state.recent.indexOf(t.id); return k < 0 ? 1e9 : k; })); return i; };
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 

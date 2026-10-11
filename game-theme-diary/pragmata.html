@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Cabin Diary</title>
+<title>プラグマタ風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Zen+Kaku+Gothic+New:wght@500;700&display=swap" rel="stylesheet">
@@ -66,9 +66,9 @@
 <body>
 <div class="bg"></div><div class="scan"></div>
 <div class="app">
-  <div class="top"><h1>Cabin's Stamp Club</h1><div class="res"><div><i></i><span id="r1">0</span></div><div><i></i><span id="r2">0</span></div></div></div>
+  <div class="top"><h1>Diary Stamp Club</h1><div class="res"><div><i></i><span id="r1">0</span></div><div><i></i><span id="r2">0</span></div></div></div>
   <div class="main"><div class="side" id="side"></div><div class="fr" id="board"></div><div class="fr" id="detail"></div></div>
-  <div class="foot"><div id="msg">Select a location to stamp.</div><div><span><kbd>✕</kbd>Confirm (Ctrl+Enter)</span><span><kbd>◯</kbd>Back (Esc)</span><span><kbd>↕</kbd>Move</span><span><kbd>Q</kbd><kbd>E</kbd>Board</span></div></div>
+  <div class="foot"><div id="msg">Choose a day to stamp.</div><div><span><kbd>✕</kbd>Confirm (Ctrl+Enter)</span><span><kbd>◯</kbd>Back (Esc)</span><span><kbd>↕</kbd>Move</span><span><kbd>Q</kbd><kbd>E</kbd>Board</span></div></div>
 </div>
 <div id="ov"><div class="bx"><b id="ovT"></b><small id="ovS"></small></div></div>
 
@@ -120,7 +120,7 @@ function render() {
   const w = win(page), lc = lineCount(page), sc = stamped(page), t = today();
   const st = [[lc >= 1, "▥", "Bingo"], [lc >= 3, "▦", "Triple Bingo"], [sc === 9, "✦", "Blackout"]];
   $("board").innerHTML = `<div class="fh">0${page + 1} ${NAMES[page % NAMES.length]} Board</div>
-    <div class="chain"><div class="cab">CABIN<small>SYSTEM</small></div>${st.map(([ok, ic, n], i) => (i ? `<span class="ar">›</span>` : "") + `<div class="st ${ok ? "ok" : ""}"><b>${ic}</b>${n}</div>`).join("")}</div>
+    <div class="chain"><div class="cab">DIARY<small>SYSTEM</small></div>${st.map(([ok, ic, n], i) => (i ? `<span class="ar">›</span>` : "") + `<div class="st ${ok ? "ok" : ""}"><b>${ic}</b>${n}</div>`).join("")}</div>
     <div class="bd"><div class="tb">Total Bingos<br><span>${lc} / 8</span></div>
       <div class="lg"><div><i class="c"></i>Stamped</div><div><i class="r"></i>Tough day</div><div><i class="q"></i>Empty</div></div>
       <div class="brd">${w.map((k, i) => { const e = data[k], d = new Date(k + "T00:00:00"), m = e && MOODS.find(x => x[0] === e.mood);
@@ -132,7 +132,7 @@ function render() {
     <ul class="mo">${MOODS.map(([m, en]) => `<li><button class="mb ${m === mood ? "on" : ""}" data-m="${m}">${m} ${en}</button></li>`).join("")}</ul>
     <textarea id="ta" placeholder="Diary data will be uploaded to the Shelter. 今日はどんな一日だった？">${esc(draft !== null ? draft : (e ? e.text : ""))}</textarea>
     <div class="ac"><button class="stp" id="save">STAMP</button><input type="date" class="dte" id="dt" value="${k}" max="${today()}"><span class="hint">${k === today() ? "" : "Editing a past date"}</span></div></div>`;
-  $("msg").textContent = e ? "Stamp again to update this entry." : "Select a location to stamp.";
+  $("msg").textContent = e ? "Stamp again to update this entry." : "Choose a day to stamp.";
 }
 function jumpTo(k) { const ago = Math.round((new Date(today() + "T00:00:00") - new Date(k + "T00:00:00")) / 864e5); page = Math.floor(ago / 9); cur = 8 - (ago % 9); mood = null; draft = null; render(); }
 function save() {

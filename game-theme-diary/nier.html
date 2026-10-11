@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>YoRHa Diary</title>
+<title>ニーア オートマタ風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
@@ -168,7 +168,7 @@ function content(it, i) {
 function statusHtml() {
   const xp = totalXp(), lv = Math.floor(xp / XP_PER_RANK) + 1, st = streakCount(), n = Object.keys(data).length, ch = Object.values(data).reduce((s, x) => s + x.text.length, 0);
   const boxes = Array.from({ length: 10 }, (_, i) => `<u class="${data[shift(today(), -(9 - i))] ? "on" : ""}"></u>`).join("");
-  return `<div class="stp"><h3>ステータス</h3><div class="hd"><span>2B</span><span>Lv：${lv}</span></div>
+  return `<div class="stp"><h3>ステータス</h3><div class="hd"><span>DIARY</span><span>Lv：${lv}</span></div>
     <div class="r"><span>記録数：</span><b>${n}</b></div><div class="r"><span>総文字数：</span><b>${ch}</b></div><div class="r"><span>経験値：</span><b>${xp}</b></div>
     <div class="r"><span>HP：<span class="hpb"><i style="width:${Math.min(st / 30, 1) * 100}%"></i></span></span><b>${st}/30</b></div><hr>
     <div class="r"><span>今月：</span><b>${cnt(k => k.startsWith(today().slice(0, 7)))}</b></div><div class="r"><span>最高の日：</span><b>${cnt(k => data[k].mood === "最高")}</b></div><div class="r"><span>良い日：</span><b>${cnt(k => data[k].mood === "良い")}</b></div><div class="r"><span>連続の最大：</span><b>${maxStreak()}</b></div>

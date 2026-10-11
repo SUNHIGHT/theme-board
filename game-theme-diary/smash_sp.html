@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Smash Diary</title>
+<title>スマブラSP風 ─ 日記</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800;900&display=swap" rel="stylesheet">
@@ -50,7 +50,7 @@
 <div class="stage" id="stage">
   <div id="scr"></div>
   <div class="side">
-    <button class="sb w" data-s="home" title="トップへ">⌂</button><button class="sb" data-s="status" title="ステータス">▣</button><button class="sb" data-s="play" title="いろんなあそび">◧</button>
+    <button class="sb w" data-s="home" title="トップへ">⌂</button><button class="sb" data-s="status" title="ステータス">▣</button><button class="sb" data-s="play" title="しらべる">◧</button>
     <button class="sb" data-s="mail" title="未記録の日">✉<b id="mailb">0</b></button><button class="sb" data-s="online" title="せってい">⚙</button><button class="sb" data-s="help" title="ヘルプ">?</button><div class="clk" id="clk">12:34</div>
   </div>
   <div class="subt" id="subt"></div>
@@ -81,19 +81,19 @@ const today = () => ymd(new Date());
 const dl = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}月${d.getDate()}日（${DOW[d.getDay()]}）`; };
 
 const TOP = [
-  { id: "smash", c: "#d8200c", pts: "0,0 306,0 262,214 0,214", lbl: [[34, 160, "大乱闘", 38, "t1"]], rb: [[78, 128, "だいらんとう"]], sub: "まずはここから 基本の<ruby>遊<rt>あそ</rt></ruby>び！", nb: { r: "play", d: "secret", rd: "coll" } },
-  { id: "play", c: "#1a86e8", pts: "318,0 573,0 573,120 304,120", lbl: [[420, 88, "いろんなあそび", 21, "t2"]], sub: "ちょうしや れんぞくの きろくを チェックしよう！", nb: { l: "smash", d: "coll" } },
-  { id: "coll", c: "#e8409a", pts: "410,126 573,126 573,196 396,196", lbl: [[440, 183, "コレクション", 19, "t2"]], sub: "これまでに 書いた日記を ふりかえろう！", nb: { l: "smash", u: "play", d: "online" } },
-  { id: "online", c: "#f08a14", pts: "296,202 573,202 573,320 282,320", lbl: [[348, 304, "オンライン", 26, "t2"]], sub: "テーマの切りかえや データの書き出しは ここから！", nb: { l: "secret", u: "coll" } },
+  { id: "smash", c: "#d8200c", pts: "0,0 306,0 262,214 0,214", lbl: [[34, 160, "日記", 40, "t1"]], rb: [[78, 128, "にっき"]], sub: "まずは ここから 日記を はじめよう！", nb: { r: "play", d: "secret", rd: "coll" } },
+  { id: "play", c: "#1a86e8", pts: "318,0 573,0 573,120 304,120", lbl: [[420, 88, "しらべる", 21, "t2"]], sub: "ちょうしや れんぞくの きろくを チェックしよう！", nb: { l: "smash", d: "coll" } },
+  { id: "coll", c: "#e8409a", pts: "410,126 573,126 573,196 396,196", lbl: [[440, 183, "きおく", 19, "t2"]], sub: "これまでに 書いた日記を ふりかえろう！", nb: { l: "smash", u: "play", d: "online" } },
+  { id: "online", c: "#f08a14", pts: "296,202 573,202 573,320 282,320", lbl: [[348, 304, "せってい", 26, "t2"]], sub: "テーマの切りかえや データの書き出しは ここから！", nb: { l: "secret", u: "coll" } },
   { id: "secret", c: "#20a028", pts: "0,220 270,220 270,320 0,320", lbl: [[40, 300, "ステータス", 24, "t2"]], sub: "ランクや けいけんちを かくにんしよう！", nb: { u: "smash", r: "online" } }
 ];
 const ICON = { smash: "✎", play: "❖", coll: "▤", online: "⚙", secret: "★" };
 const ICONPOS = { smash: [150, 110, 40], play: [492, 60, 34], coll: [490, 156, 26], online: [440, 250, 38], secret: [140, 262, 36] };
 const SUBM = [
-  { id: "normal", pts: "70,48 380,48 366,138 56,138", big: true, lbl: "通常戦", rb: "つうじょうせん", sub: "今日の日記を 書く 基本のきろく！", ic: "✎" },
-  { id: "team", pts: "58,148 178,148 168,236 48,236", lbl: "団体戦", rb: "だんたいせん", sub: "日付を えらんで 書く！", ic: "☗" },
-  { id: "tourn", pts: "196,164 372,164 366,224 190,224", lbl: "トーナメント", sub: "カレンダーから 日記を えらぶ！", ic: "▦" },
-  { id: "special", pts: "176,238 340,238 334,286 170,286", lbl: "スペシャル乱闘", rb: "らんとう", sub: "過去の日記を ランダムに ふりかえる！", ic: "✦" }
+  { id: "normal", pts: "70,48 380,48 366,138 56,138", big: true, lbl: "今日の日記", rb: "きょうの", sub: "今日の日記を 書く 基本のきろく！", ic: "✎" },
+  { id: "team", pts: "58,148 178,148 168,236 48,236", lbl: "過去の日", rb: "かこの", sub: "日付を えらんで 書く！", ic: "☗" },
+  { id: "tourn", pts: "196,164 372,164 366,224 190,224", lbl: "カレンダー", sub: "カレンダーから 日記を えらぶ！", ic: "▦" },
+  { id: "special", pts: "176,238 340,238 334,286 170,286", lbl: "ふりかえり", rb: "ひとつ", sub: "過去の日記を ランダムに ふりかえる！", ic: "✦" }
 ];
 let data = load(), scr = "top", cur = "smash", sub = "normal", page = null, selected = today(), mood = null, draft = null, ovTimer, rndKey = null;
 function streakAt(k) { let n = 0, c = k; while (data[c]) { n++; c = shift(c, -1); } return n; }
@@ -126,7 +126,7 @@ function topSvg() {
 function subSvg() {
   let h = `<div class="pg" style="--pc:#c4160a;padding:0;background:#c4160a"><svg class="menu" style="position:absolute;left:0;top:0;width:89.5cqw;height:calc(56.25cqw - 11cqw)" viewBox="0 0 573 320" preserveAspectRatio="none"><rect width="573" height="320" fill="#c4160a"/><polygon points="0,0 573,0 573,320 520,320" fill="#a30e06"/>
     <polygon points="400,0 573,0 573,182 380,182" fill="#3a1a5a"/><g opacity=".6">${Array.from({ length: 14 }, (_, i) => `<line x1="486" y1="96" x2="${400 + i * 14}" y2="${i % 2 ? 0 : 182}" stroke="${i % 3 ? "#ffb02a" : "#fff"}" stroke-width="3"/>`).join("")}</g>
-    <text x="52" y="30" font-size="15" fill="#fff" style="font-weight:900" stroke="#000" stroke-width="3" paint-order="stroke">大乱闘</text><circle cx="36" cy="24" r="10" fill="#fff"/><text x="36" y="30" font-size="14" fill="#c4160a" text-anchor="middle" style="font-weight:900">✎</text>`;
+    <text x="52" y="30" font-size="15" fill="#fff" style="font-weight:900" stroke="#000" stroke-width="3" paint-order="stroke">日記</text><circle cx="36" cy="24" r="10" fill="#fff"/><text x="36" y="30" font-size="14" fill="#c4160a" text-anchor="middle" style="font-weight:900">✎</text>`;
   SUBM.forEach(s => {
     const on = s.id === sub; const [a] = s.pts.split(" ").map(p => p.split(",").map(Number));
     const xs = s.pts.split(" ").map(p => +p.split(",")[0]), ys = s.pts.split(" ").map(p => +p.split(",")[1]), cx = (Math.min(...xs) + Math.max(...xs)) / 2 + 14, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
@@ -139,7 +139,7 @@ function subSvg() {
 function pageHtml() {
   const all = Object.keys(data), ch = all.reduce((s, k) => s + data[k].text.length, 0);
   const COL = { write: "#c4160a", cal: "#c4160a", log: "#e8409a", play: "#1a86e8", online: "#f08a14", status: "#20a028", rnd: "#c4160a", help: "#555", mail: "#c4160a" };
-  const TT = { write: "通常戦", cal: "トーナメント", log: "コレクション", play: "いろんなあそび", online: "オンライン", status: "ステータス", rnd: "スペシャル乱闘", help: "ヘルプ", mail: "未記録の日" };
+  const TT = { write: "今日の日記", cal: "カレンダー", log: "きおく", play: "しらべる", online: "せってい", status: "ステータス", rnd: "ふりかえり", help: "ヘルプ", mail: "未記録の日" };
   let b = "";
   if (page === "write") {
     const e = data[selected]; if (mood === null && e && draft === null) mood = e.mood;
