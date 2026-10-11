@@ -152,3 +152,111 @@
   btn.setAttribute("aria-label", "テーマ選択に戻る");
   document.body.appendChild(btn);
 })();
+
+// ---- Diary sync (optional) -------------------------------------------------------------
+// Keeps the shared diary (localStorage "diary-shared-v1") in sync with the Cloudflare Worker in /sync-worker.
+// Enabled only when a Worker URL + token are saved on sync.html. Every theme page loads this file, so no theme needs changes.
+// - Every write to the diary key is stamped with `updatedAt` per changed entry (extra field; themes ignore it).
+// - Local changes are pushed (debounced); remote changes are pulled on load / focus / every minute (last-write-wins per day).
+(function () {
+  var KEY = "diary-shared-v1", CFG = "diary-sync-config", ST = "diary-sync-state";
+  var rawSet = Storage.prototype.setItem, rawGet = Storage.prototype.getItem;
+  function jget(k, d) { try { var v = rawGet.call(localStorage, k); return v ? JSON.parse(v) : d; } catch (e) { return d; } }
+  function jset(k, v) { try { rawSet.call(localStorage, k, JSON.stringify(v)); } catch (e) {} }
+  function same(a, b) { return !!a && !!b && (a.mood || null) === (b.mood || null) && a.text === b.text; }
+  function cfg() { var c = jget(CFG, null); return c && c.url && c.token ? { url: String(c.url).replace(/\/+$/, ""), token: c.token } : null; }
+  var timer, running = false, status = { state: cfg() ? "idle" : "off", msg: "", last: (jget(ST, {}) || {}).last || 0 };
+
+  function paint() {
+    var b = document.getElementById("ts-btn"); if (!b) return;
+    var icon = { off: "", idle: " ☁", busy: " ☁…", ok: " ☁", err: " ☁✕" }[status.state] || "";
+    b.textContent = "⌂ THEME" + icon; b.title = status.msg || "";
+  }
+  function emit() { paint(); try { window.dispatchEvent(new CustomEvent("diarysync", { detail: status })); } catch (e) {} }
+  function schedule(ms) { clearTimeout(timer); if (cfg()) timer = setTimeout(function () { sync(); }, ms); }
+
+  // Stamp changed entries on every write of the diary key, then schedule a push.
+  Storage.prototype.setItem = function (k, v) {
+    if (this === localStorage && k === KEY) {
+      try {
+        var prev = jget(KEY, {}), next = JSON.parse(v), now = Date.now();
+        for (var d in next) { var n = next[d], p = prev[d]; if (!n || typeof n !== "object") continue; n.updatedAt = (p && same(p, n)) ? (p.updatedAt || n.updatedAt || 1) : now; }
+        v = JSON.stringify(next);
+      } catch (e) {}
+    }
+    rawSet.call(this, k, v);
+    if (this === localStorage && k === KEY) schedule(1500);
+  };
+
+  function api(c, path, opt) {
+    opt = opt || {}; opt.headers = Object.assign({ Authorization: "Bearer " + c.token }, opt.headers || {});
+    return fetch(c.url + path, opt).then(function (r) {
+      if (r.status === 401) throw new Error("合言葉(トークン)が違います (401)");
+      if (!r.ok) throw new Error("サーバーエラー " + r.status);
+      return r.json();
+    });
+  }
+  function pending(s) {
+    var data = jget(KEY, {}), out = [], maxU = s.pushed || 0, stamped = false;
+    for (var d in data) { var e = data[d]; if (!e || typeof e.text !== "string") continue; if (!e.updatedAt) { e.updatedAt = 1; stamped = true; } if (e.updatedAt > (s.pushed || 0)) out.push({ date: d, mood: e.mood || null, text: e.text, updatedAt: e.updatedAt }); if (e.updatedAt > maxU) maxU = e.updatedAt; }
+    if (stamped) rawSet.call(localStorage, KEY, JSON.stringify(data));
+    return { out: out, maxU: maxU };
+  }
+  function push(c, out) { var p = Promise.resolve(); for (var i = 0; i < out.length; i += 200) (function (chunk) { p = p.then(function () { return api(c, "/api/entries", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ entries: chunk }) }); }); })(out.slice(i, i + 200)); return p; }
+  function merge(rows) {
+    var data = jget(KEY, {}), changed = 0;
+    rows.forEach(function (r) {
+      var l = data[r.date];
+      if (!l || (r.updatedAt > (l.updatedAt || 0) && !same(l, r))) { data[r.date] = { mood: r.mood || null, text: r.text, updatedAt: r.updatedAt }; changed++; }
+      else if (same(l, r) && !l.updatedAt) l.updatedAt = r.updatedAt;
+    });
+    rawSet.call(localStorage, KEY, JSON.stringify(data));
+    return changed;
+  }
+  function pull(c, s, acc) {
+    return api(c, "/api/entries?since=" + (s.cursor || 0)).then(function (res) {
+      acc.changed += merge(res.entries || []); acc.count += (res.entries || []).length; s.cursor = res.cursor || s.cursor;
+      return res.more ? pull(c, s, acc) : acc;
+    });
+  }
+  function typing() { var a = document.activeElement; return !!a && (a.tagName === "TEXTAREA" || a.tagName === "INPUT") && !!a.value; }
+
+  function sync(opts) {
+    opts = opts || {}; var c = cfg();
+    if (!c) { status = { state: "off", msg: "", last: status.last }; emit(); return Promise.resolve(status); }
+    if (running) return Promise.resolve(status);
+    running = true; status.state = "busy"; status.msg = "同期中…"; emit();
+    var s = jget(ST, { cursor: 0, pushed: 0 });
+    if (opts.fullPull) s.cursor = 0; if (opts.fullPush) s.pushed = 0;
+    var pd = pending(s), acc = { changed: 0, count: 0 };
+    return push(c, pd.out).then(function () { s.pushed = pd.maxU; return pull(c, s, acc); }).then(function () {
+      s.last = Date.now(); jset(ST, s);
+      status = { state: "ok", msg: "同期済み " + new Date(s.last).toLocaleTimeString(), last: s.last, pushed: pd.out.length, pulled: acc.count, changed: acc.changed };
+      emit();
+      if (acc.changed && !opts.noReload && document.getElementById("ts-btn") && !typing()) location.reload();
+      return status;
+    }).catch(function (err) {
+      status = { state: "err", msg: err && err.message ? err.message : "同期に失敗しました", last: status.last }; emit(); return status;
+    }).then(function (r) { running = false; return r; });
+  }
+  function flush() { // best-effort push when the page is being closed
+    var c = cfg(); if (!c) return; var pd = pending(jget(ST, { cursor: 0, pushed: 0 })); if (!pd.out.length) return;
+    try { fetch(c.url + "/api/entries", { method: "PUT", keepalive: true, headers: { Authorization: "Bearer " + c.token, "Content-Type": "application/json" }, body: JSON.stringify({ entries: pd.out.slice(0, 20) }) }); } catch (e) {}
+  }
+
+  window.DiarySync = {
+    sync: sync,
+    getConfig: function () { return jget(CFG, null); },
+    setConfig: function (url, token) { jset(CFG, { url: url, token: token }); status = { state: url && token ? "idle" : "off", msg: "", last: status.last }; emit(); },
+    clearConfig: function () { try { localStorage.removeItem(CFG); } catch (e) {} status = { state: "off", msg: "", last: status.last }; emit(); },
+    ping: function (url, token) { return api({ url: String(url).replace(/\/+$/, ""), token: token }, "/api/ping"); },
+    resetState: function () { jset(ST, { cursor: 0, pushed: 0 }); },
+    status: function () { return status; },
+    localCount: function () { return Object.keys(jget(KEY, {})).length; }
+  };
+  document.addEventListener("DOMContentLoaded", function () { paint(); schedule(600); });
+  document.addEventListener("visibilitychange", function () { if (document.visibilityState === "visible") schedule(300); else flush(); });
+  window.addEventListener("online", function () { schedule(300); });
+  window.addEventListener("pagehide", flush);
+  setInterval(function () { if (document.visibilityState === "visible") sync(); }, 60000);
+})();
