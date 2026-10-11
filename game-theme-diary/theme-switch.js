@@ -46,7 +46,10 @@
         { id: "fallout4", file: "fallout4.html", name: "FALLOUT 4", sub: "コモンウェルス" }
       ] },
     { id: "zzz",    name: "ZENLESS ZONE ZERO", sub: "ゼンレスゾーンゼロ",       c1: "#e1ff00", c2: "#09090a",
-      titles: [ { id: "zzz", file: "zzz.html", name: "ZENLESS ZONE ZERO", sub: "ニューエリー都" } ] },
+      titles: [
+        { id: "zzz", file: "zzz.html", name: "ZENLESS ZONE ZERO", sub: "ニューエリー都" },
+        { id: "zzz_battle", file: "zzz_battle.html", name: "ZENLESS ZONE ZERO (BATTLE)", sub: "書いた文字で撃破" }
+      ] },
     { id: "ff",     name: "FINAL FANTASY",     sub: "ファイナルファンタジー",   c1: "#6dffc4", c2: "#0c1d82",
       titles: [ { id: "ff7", file: "ff7.html", name: "FINAL FANTASY VII", sub: "ミッドガル" } ] },
     { id: "cyberpunk", name: "CYBERPUNK 2077", sub: "サイバーパンク2077",       c1: "#fcee0a", c2: "#08070b",
@@ -219,7 +222,8 @@
     "n": "ゼンレスゾーンゼロ風",
     "s": "ZENLESS ZONE ZERO style",
     "t": {
-     "zzz": "ゼンレスゾーンゼロ風"
+     "zzz": "ゼンレスゾーンゼロ風",
+     "zzz_battle": "ゼンレスゾーンゼロ風（戦闘）"
     }
    },
    "ff": {
