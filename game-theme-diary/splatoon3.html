@@ -530,33 +530,67 @@ function drawArena(c, W, H, R) {
   c.restore();
   return floor;
 }
-// Paint cells so the inked area matches the percentages: each team grows outward from its base along a
-// wavy front; whatever neither team reaches stays bare. Returns jobs ordered by spread time.
+// Paint so the inked area matches the percentages: each team claims grid cells outward from its base along a
+// wavy front (whatever neither reaches stays bare), and every claimed cell is rendered as an ink splash -
+// lumpy blob, tapered spikes ending in droplets, loose spray - so edges look splattered, not round.
+const FIT = 1; // splash spill vs. gaps between blobs roughly cancel out (measured: painted area within ~2pt of the shown %)
+function mkSplash(R, spikes, spikeLen, drops) {
+  return { blob: Array.from({ length: 9 }, () => .74 + R() * .44), rot: R() * 6.28,
+    spikes: Array.from({ length: spikes }, () => ({ a: R() * 6.28, l: spikeLen[0] + R() * spikeLen[1], w: .16 + R() * .16 })),
+    drops: Array.from({ length: drops }, () => ({ a: R() * 6.28, d: 1.5 + R() * 1.5, s: .1 + R() * .18 })) };
+}
 function turfJobs(k, m, W, H, cols, n) {
-  const R = rnd(seedOf(k) + 21), cs = W / n, rows = Math.ceil(H / cs), cells = [], asp = H / W;
+  const R = rnd(seedOf(k) + 21), cs = W / n, rows = Math.ceil(H / cs), cells = [], asp = H / W, own = new Int8Array(n * rows);
   const ph = Array.from({ length: 12 }, () => R() * 6.28), fq = Array.from({ length: 12 }, () => 3 + R() * 5);
   const wav = (u, v, o) => Math.sin(u * fq[o] + ph[o]) * Math.sin(v * fq[o + 1] + ph[o + 1]) + .6 * Math.sin(u * fq[o + 2] - v * fq[o + 3] + ph[o + 2]);
   for (let j = 0; j < rows; j++) for (let i = 0; i < n; i++) {
     const u = (i + .5) / n, v = (j + .5) * cs / H, e = .15 * Math.abs(v - .5) / .42;
-    if (v > .08 && v < .92 && u > .05 + e && u < .95 - e) cells.push({ u, v, x: (i + .5) * cs, y: (j + .5) * cs });
+    if (v > .08 && v < .92 && u > .05 + e && u < .95 - e) cells.push({ i, j, u, v, x: (i + .5) * cs, y: (j + .5) * cs });
   }
   const dist = (c, bu) => Math.hypot(c.u - bu, (c.v - .5) * asp);
   cells.forEach(c => { c.pm = dist(c, .09) + .15 * wav(c.u, c.v, 0) + .05 * R(); c.pe = dist(c, .91) + .15 * wav(c.u, c.v, 4) + .05 * R(); c.tone = .5 + .3 * wav(c.u * 2.2, c.v * 2.2, 8); });
-  const nm = Math.round(cells.length * m.me / 100), ne = Math.round(cells.length * m.en / 100), jobs = [];
-  const mine = [...cells].sort((a, b) => a.pm - b.pm).slice(0, nm); mine.forEach((c, i) => { c.t = 1; jobs.push({ ...c, col: cols[0], o: i / Math.max(1, nm) }); });
-  [...cells].filter(c => !c.t).sort((a, b) => a.pe - b.pe).slice(0, ne).forEach((c, i) => jobs.push({ ...c, col: cols[1], o: i / Math.max(1, ne) }));
-  jobs.forEach(j => { j.r = cs * (.66 + R() * .22); j.dx = (R() - .5) * cs * .35; j.dy = (R() - .5) * cs * .35; j.hi = R() < .12; j.cs = cs; j.fill = shade(j.col, .16 * Math.max(0, Math.min(1, j.tone))); j.rim = shade(j.col, .5); });
+  const nm = Math.round(cells.length * m.me / 100 * FIT), ne = Math.round(cells.length * m.en / 100 * FIT), jobs = [];
+  [...cells].sort((a, b) => a.pm - b.pm).slice(0, nm).forEach((c, i) => { c.t = 1; own[c.j * n + c.i] = 1; jobs.push({ ...c, team: 1, col: cols[0], o: i / Math.max(1, nm) }); });
+  [...cells].filter(c => !c.t).sort((a, b) => a.pe - b.pe).slice(0, ne).forEach((c, i) => { own[c.j * n + c.i] = 2; jobs.push({ ...c, team: 2, col: cols[1], o: i / Math.max(1, ne) }); });
+  const interior = jb => { for (let dj = -3; dj <= 3; dj++) for (let di = -3; di <= 3; di++) { const ii = jb.i + di, jj = jb.j + dj; if (ii < 0 || jj < 0 || ii >= n || jj >= rows || own[jj * n + ii] !== jb.team) return false; } return true; };
+  jobs.forEach(jb => {
+    jb.cx = jb.x; jb.cy = jb.y; jb.r = cs * (.6 + R() * .2); jb.x += (R() - .5) * cs * .35; jb.y += (R() - .5) * cs * .35; jb.cs = cs; jb.hi = R() < .1;
+    jb.fill = shade(jb.col, .16 * Math.max(0, Math.min(1, jb.tone))); jb.rim = shade(jb.col, .45);
+    jb.s = mkSplash(R, R() < .5 ? 1 + Math.floor(R() * 3) : 0, [1.3, 1.1], R() < .45 ? 1 + Math.floor(R() * 3) : 0);
+    // deep inside its own turf a cell sometimes lands as a big impact splash: visible while the ink spreads,
+    // later swallowed by the turf, and too short to reach past the front
+    if (R() < .07 && interior(jb)) { jb.big = cs * (1.6 + R() * .5); jb.bs = mkSplash(R, 5 + Math.floor(R() * 4), [1.05, .3], 3 + Math.floor(R() * 4)); }
+  });
   return jobs.sort((a, b) => a.o - b.o);
 }
 const shade = (hex, f) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - f)).toString(16).padStart(2, "0")).join("");
+// one splash: lumpy blob + tapered spikes with a droplet at the tip + loose drops (each part filled on its own)
+function splash(c, x, y, r, s, stroke) {
+  const draw = () => stroke ? c.stroke() : c.fill(), n = s.blob.length;
+  const pts = s.blob.map((f, i) => { const a = s.rot + i / n * 6.283; return [x + Math.cos(a) * r * f, y + Math.sin(a) * r * f]; });
+  c.beginPath(); let m = [(pts[n - 1][0] + pts[0][0]) / 2, (pts[n - 1][1] + pts[0][1]) / 2]; c.moveTo(m[0], m[1]);
+  for (let i = 0; i < n; i++) { const p = pts[i], q = pts[(i + 1) % n]; c.quadraticCurveTo(p[0], p[1], (p[0] + q[0]) / 2, (p[1] + q[1]) / 2); }
+  c.closePath(); draw();
+  for (const k of s.spikes) {
+    const ca = Math.cos(k.a), sa = Math.sin(k.a), w = r * k.w, bx = x + ca * r * .55, by = y + sa * r * .55, tx = x + ca * r * k.l, ty = y + sa * r * k.l;
+    c.beginPath(); c.moveTo(bx - sa * w, by + ca * w); c.quadraticCurveTo(x + ca * r * (k.l * .7), y + sa * r * (k.l * .7), tx, ty); c.quadraticCurveTo(x + ca * r * (k.l * .7), y + sa * r * (k.l * .7), bx + sa * w, by - ca * w); c.closePath(); draw();
+    c.beginPath(); c.arc(tx, ty, w * .85, 0, 7); draw();
+  }
+  for (const d of s.drops) { c.beginPath(); c.arc(x + Math.cos(d.a) * r * d.d, y + Math.sin(d.a) * r * d.d, r * d.s, 0, 7); draw(); }
+}
 // final look: all dark rims first, then the fills, so each team's ink gets an outline but no inner seams
 function paintTurf(c, jobs) {
-  for (const j of jobs) { c.fillStyle = j.rim; c.beginPath(); c.arc(j.x + j.dx, j.y + j.dy, j.r + j.cs * .14, 0, 7); c.fill(); }
-  for (const j of jobs) paintCell(c, j);
+  c.lineJoin = "round";
+  for (const j of jobs) { c.strokeStyle = j.rim; c.lineWidth = j.cs * .22; splash(c, j.x, j.y, j.r, j.s, true); }
+  for (const j of jobs) paintCell(c, j, false);
 }
-function paintCell(c, j) {
-  c.fillStyle = j.fill; c.beginPath(); c.arc(j.x + j.dx, j.y + j.dy, j.r, 0, 7); c.fill();
-  if (j.hi) { c.fillStyle = "rgba(255,255,255,.3)"; c.beginPath(); c.ellipse(j.x + j.dx - j.r * .3, j.y + j.dy - j.r * .35, j.r * .4, j.r * .2, -.5, 0, 7); c.fill(); }
+function paintCell(c, j, anim = true) {
+  c.fillStyle = j.fill;
+  if (anim && j.big) splash(c, j.x, j.y, j.big, j.bs);
+  // solid core so the turf has no pinholes; the splash on top gives the splattered edge
+  c.beginPath(); c.arc(j.cx, j.cy, j.cs * .74, 0, 7); c.fill();
+  splash(c, j.x, j.y, j.r, j.s);
+  if (j.hi) { c.fillStyle = "rgba(255,255,255,.28)"; c.beginPath(); c.ellipse(j.x - j.r * .3, j.y - j.r * .35, j.r * .4, j.r * .18, -.5, 0, 7); c.fill(); }
 }
 function drawBases(c, W, H, cols) { [[.09, cols[0]], [.91, cols[1]]].forEach(([x, col]) => { c.beginPath(); c.arc(x * W, H / 2, W * .03, 0, 7); c.fillStyle = col; c.fill(); c.lineWidth = Math.max(2, W / 200); c.strokeStyle = "#fff"; c.stroke(); }); }
 function stageThumb(cv, k) {
