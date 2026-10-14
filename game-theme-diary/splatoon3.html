@@ -77,6 +77,7 @@
   .hintL button { all:unset; cursor:pointer; display:flex; align-items:center; gap:.5vw; padding:.4vh 1vw .4vh .4vw; border-radius:999px; background:rgba(20,20,26,.9); box-shadow:0 0 0 2px #2a2a32; }
   .hintL i { font-style:normal; display:grid; place-items:center; width:min(3vh,1.7vw); aspect-ratio:1; border-radius:50%; background:#fff; color:#111; font:400 min(1.8vh,1vw) var(--fl); }
   .hintL button:hover, .hintL button:focus-visible { box-shadow:0 0 0 2px var(--c); outline:0; }
+  #bSe.off { opacity:.55; } #bSe.off i { background:#555; color:#ddd; }
 
   /* ---------- top-right: pills ---------- */
   .pills { position:fixed; z-index:6; right:1.6vw; top:2vh; margin-right:min(130px,11vw); display:flex; flex-direction:column; align-items:flex-end; gap:.8vh; }
@@ -262,7 +263,7 @@
 <div class="tabs" id="tabs"><span class="lr">L</span><span id="tabBtns" style="display:flex;gap:.5vw"></span><span class="lr r">R</span></div>
 <div class="sub" id="sub"></div>
 <div class="cardWrap"><button class="card" id="card"></button><div class="modeBadge" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z" fill="#fff3d8" stroke="#2a1208" stroke-width="2"/></svg></div></div>
-<div class="hintL"><button id="bBack"><i>B</i>テーマ選択へ</button><button id="bSwap"><i>L</i><i>R</i>きりかえ</button><button id="bGo"><i>A</i>けってい</button></div>
+<div class="hintL"><button id="bBack"><i>B</i>テーマ選択へ</button><button id="bSwap"><i>L</i><i>R</i>きりかえ</button><button id="bGo"><i>A</i>けってい</button><button id="bSe" aria-pressed="true"><i>M</i><span id="seL">SE ON</span></button></div>
 
 <div class="pills">
   <div class="prow"><span class="pill"><span class="ic ink"><svg viewBox="0 0 20 20" width="70%"><path d="M10 2s6 7 6 10a6 6 0 0 1-12 0c0-3 6-10 6-10z" fill="#fff"/></svg></span><span id="pDays">000</span></span>
@@ -350,6 +351,92 @@ const sleep = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
 const pad = (n, w) => String(Math.max(0, Math.round(n))).padStart(w, "0");
 function rnd(seed) { let s = (seed * 9301 + 49297) % 233280 || 1; return () => (s = (s * 9301 + 49297) % 233280) / 233280; }
 const seedOf = k => +k.replace(/-/g, "") % 99991;
+
+// ---------- SE: everything synthesized with WebAudio (wet squelches, bubbly UI blips, an original win jingle) ----------
+const SE = (() => {
+  const PREF = "splatoon3-se";
+  let ac = null, master, wet, noiseBuf, on = true, last = {};
+  try { on = localStorage.getItem(PREF) !== "off"; } catch {}
+  function init() {
+    if (ac) { if (ac.state === "suspended") ac.resume(); return ac; }
+    const A = window.AudioContext || window.webkitAudioContext; if (!A) return null;
+    ac = new A();
+    const comp = ac.createDynamicsCompressor(); comp.threshold.value = -16; comp.ratio.value = 5; comp.connect(ac.destination);
+    master = ac.createGain(); master.gain.value = 1.5; master.connect(comp);
+    // short splashy room so everything sounds a bit wet
+    const conv = ac.createConvolver(), len = ac.sampleRate * .6 | 0, ir = ac.createBuffer(2, len, ac.sampleRate);
+    for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3.2); }
+    conv.buffer = ir; wet = ac.createGain(); wet.gain.value = .22; wet.connect(conv); conv.connect(master);
+    noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate); const n = noiseBuf.getChannelData(0); for (let i = 0; i < n.length; i++) n[i] = Math.random() * 2 - 1;
+    return ac;
+  }
+  const ready = () => on && init();
+  const gap = (id, ms) => { const t = performance.now(); if (last[id] && t - last[id] < ms) return false; last[id] = t; return true; };
+  const out = (node, w) => { node.connect(master); if (w) { const g = ac.createGain(); g.gain.value = w; node.connect(g); g.connect(wet); } };
+  const env = (g, T, a, v, d) => { g.gain.setValueAtTime(.0001, T); g.gain.exponentialRampToValueAtTime(v, T + a); g.gain.exponentialRampToValueAtTime(.0001, T + a + d); };
+  function tone({ type = "sine", f0, f1, t = 0, a = .004, d = .12, v = .25, w = .3, lp, vib }) {
+    const T = ac.currentTime + t, o = ac.createOscillator(), g = ac.createGain(); let n = o;
+    o.type = type; o.frequency.setValueAtTime(f0, T); if (f1) o.frequency.exponentialRampToValueAtTime(f1, T + a + d);
+    if (lp) { const f = ac.createBiquadFilter(); f.type = "lowpass"; f.frequency.value = lp; f.Q.value = 4; o.connect(f); n = f; }
+    if (vib) { const l = ac.createOscillator(), lg = ac.createGain(); l.frequency.value = vib; lg.gain.value = f0 * .03; l.connect(lg); lg.connect(o.frequency); l.start(T); l.stop(T + a + d + .05); }
+    env(g, T, a, v, d); n.connect(g); out(g, w); o.start(T); o.stop(T + a + d + .05);
+  }
+  function noise({ t = 0, a = .003, d = .15, v = .25, type = "bandpass", f0 = 2000, f1, q = 1, w = .3 }) {
+    const T = ac.currentTime + t, s = ac.createBufferSource(), f = ac.createBiquadFilter(), g = ac.createGain();
+    s.buffer = noiseBuf; s.loop = true; f.type = type; f.Q.value = q; f.frequency.setValueAtTime(f0, T); if (f1) f.frequency.exponentialRampToValueAtTime(f1, T + a + d);
+    env(g, T, a, v, d); s.connect(f); f.connect(g); out(g, w); s.start(T, Math.random() * .8); s.stop(T + a + d + .05);
+  }
+  const N = semi => 440 * Math.pow(2, (semi - 9) / 12); // semitones from C4
+  // one wet ink hit: squelch (falling band noise) + body thump + a couple of droplets
+  function inkHit(p = 1, v = 1, t = 0) {
+    const r = .8 + Math.random() * .5;
+    noise({ t, d: .07 + Math.random() * .08, v: .32 * v, f0: 2600 * r * p, f1: 260 * r, q: 2.4, w: .35 });
+    noise({ t, d: .09, v: .3 * v, type: "lowpass", f0: 520 * r, f1: 70, q: 1, w: .1 });
+    tone({ t, f0: 210 * r * p, f1: 55, d: .08, v: .2 * v, w: 0 });
+    for (let i = 0; i < 2; i++) if (Math.random() > .35) tone({ t: t + .04 + Math.random() * .1, f0: 900 + Math.random() * 900, f1: 1800 + Math.random() * 1400, d: .035, v: .05 * v, w: .5 });
+  }
+  const api = {
+    get on() { return on; },
+    toggle() { on = !on; try { localStorage.setItem(PREF, on ? "on" : "off"); } catch {} if (on) { init(); api.ok(); } return on; },
+    // bubbly cursor blip
+    hover() { if (!ready() || !gap("hover", 60)) return; tone({ f0: 1300, f1: 2100, d: .035, v: .06, w: .4 }); },
+    move() { if (!ready() || !gap("move", 40)) return; tone({ f0: 620, f1: 1250, d: .05, v: .14, w: .35 }); noise({ d: .02, v: .05, type: "highpass", f0: 5000 }); },
+    page() { if (!ready()) return; noise({ d: .14, v: .1, f0: 900, f1: 3500, q: .8 }); tone({ t: .05, f0: 500, f1: 1000, d: .06, v: .12 }); },
+    // L/R mode swap: whoosh + bloop pitched per mode + squish
+    swap(i = 0) { if (!ready()) return; const p = [1, 1.19, 1.33, 1.5][i % 4];
+      noise({ a: .03, d: .16, v: .12, f0: 500, f1: 4000, q: .7, w: .2 }); tone({ t: .04, f0: 240 * p, f1: 720 * p, d: .09, v: .22 }); tone({ t: .09, f0: 980 * p, f1: 1500 * p, d: .05, v: .1 }); inkHit(1.2, .45, .05); },
+    // decide: squish + two-note rise
+    ok() { if (!ready()) return; inkHit(1.1, .6); tone({ type: "triangle", f0: N(12), t: .02, d: .07, v: .18 }); tone({ type: "triangle", f0: N(19), t: .08, d: .14, v: .18, w: .5 }); },
+    back() { if (!ready()) return; tone({ f0: 760, f1: 240, d: .13, v: .2 }); noise({ d: .1, v: .12, type: "lowpass", f0: 1200, f1: 200 }); },
+    mood(i) { if (!ready()) return; const f = [N(24), N(21), N(19), N(16), N(12)][i] || N(19);
+      tone({ f0: f * .5, f1: f * 1.02, d: .06, v: .2 }); tone({ t: .05, f0: f, f1: f * 1.5, d: .07, v: .12, w: .5, vib: 18 }); },
+    // typing splat (throttled so fast typing stays musical)
+    splat(n = 1) { if (!ready() || !gap("splat", 55)) return; inkHit(.9 + Math.random() * .4, Math.min(1, .55 + n * .12)); },
+    glug() { if (!ready()) return; [0, .07, .15, .22].forEach((t, i) => tone({ t, f0: 160 + i * 40 + Math.random() * 40, f1: 420 + i * 90, d: .05, v: .18, w: .4 })); },
+    // special gauge filled: sparkle arpeggio + shimmer
+    special() { if (!ready()) return; [0, 4, 7, 12, 16, 19, 24].forEach((s, i) => tone({ type: "square", f0: N(12 + s), t: i * .045, d: .12, v: .07, lp: 3200, w: .5 }));
+      noise({ t: .1, a: .05, d: .6, v: .07, type: "highpass", f0: 6500, w: .6 }); },
+    // match-end style double beep + spray
+    finish() { if (!ready()) return; tone({ type: "square", f0: N(19), d: .1, v: .1, lp: 2500 }); tone({ type: "square", f0: N(31), t: .14, d: .35, v: .1, lp: 2500, w: .5 }); },
+    paint() { if (!ready() || !gap("paint", 70)) return; inkHit(.8 + Math.random() * .6, .55); },
+    // judge: rising sweep + snare roll that crescendos
+    judge(dur = 1.3) { if (!ready()) return; tone({ type: "sawtooth", f0: 110, f1: 440, a: .05, d: dur, v: .06, lp: 1400, w: .2 });
+      for (let t = 0, i = 0; t < dur; t += .05, i++) noise({ t, d: .04, v: .04 + .14 * t / dur, f0: 2200, q: .6, w: .15 }); },
+    stamp() { if (!ready()) return; tone({ f0: 140, f1: 38, d: .3, v: .35, w: .1 }); noise({ d: .22, v: .25, type: "lowpass", f0: 1800, f1: 90, w: .3 }); inkHit(.7, 1); inkHit(1.3, .7, .03); },
+    // original funky win hook (lead + bass + crash)
+    win() { if (!ready()) return;
+      const lead = [[0, 19, .07], [.1, 24, .07], [.2, 28, .07], [.3, 31, .14], [.5, 33, .07], [.6, 31, .07], [.7, 28, .07], [.8, 31, .42]];
+      lead.forEach(([t, s, d]) => { tone({ type: "square", f0: N(s), t: t + .12, d, v: .09, lp: 2600, w: .45 }); tone({ type: "sawtooth", f0: N(s) * 1.005, t: t + .12, d, v: .04, lp: 1800, w: .3 }); });
+      [[0, -12], [.3, -5], [.5, -12], [.8, -17], [.95, -12]].forEach(([t, s]) => tone({ type: "triangle", f0: N(s), t: t + .12, d: .16, v: .22, w: 0 }));
+      noise({ t: .12, a: .005, d: 1.1, v: .1, type: "highpass", f0: 5000, w: .5 }); [0, .3, .5, .8].forEach(t => noise({ t: t + .12, d: .05, v: .18, type: "lowpass", f0: 200, f1: 60 })); },
+    lose() { if (!ready()) return; [[0, 19], [.2, 18], [.4, 17], [.6, 16]].forEach(([t, s], i) => tone({ type: "sawtooth", f0: N(s), f1: N(s) * (i === 3 ? .94 : 1), t: t + .1, d: i === 3 ? .6 : .16, v: .07, lp: 1100, w: .5, vib: i === 3 ? 6 : 0 })); },
+    xp() { if (!ready()) return; for (let i = 0; i < 10; i++) tone({ t: i * .06, f0: 700 + i * 70, d: .03, v: .07, w: .2 }); },
+    rankUp() { if (!ready()) return; [0, 7, 12, 16, 19, 24].forEach((s, i) => tone({ type: "triangle", f0: N(19 + s), t: i * .07, d: .2, v: .14, w: .6 }));
+      tone({ type: "square", f0: N(43), t: .45, d: .5, v: .05, lp: 4000, w: .7, vib: 7 }); },
+    award(i = 0) { if (!ready()) return; noise({ d: .05, v: .16, f0: 3200, q: 1.4 }); tone({ type: "triangle", f0: N(24 + i * 3), t: .02, d: .3, v: .14, w: .6 }); tone({ f0: N(36 + i * 3), t: .02, d: .18, v: .06, w: .6 }); }
+  };
+  return api;
+})();
 
 let data = load(), mode = 0, hpage = 0, hcur = 0, calSel = ymd(new Date()), selected = null, mood = null, busy = false, lastLen = 0, clkT;
 
@@ -441,13 +528,13 @@ function render(swap = false) {
   drawTank();
 }
 function act() {
-  const id = MODES[mode].id, today = ymd(new Date());
+  SE.ok(); const id = MODES[mode].id, today = ymd(new Date());
   if (id === "write") return openEd(today);
   if (id === "hist") return openHist();
   if (id === "cal") { calSel = today; return openCal(); }
   if (id === "yday") { const d = new Date(); d.setDate(d.getDate() - 1); return openEd(ymd(d)); }
 }
-const swapMode = d => { mode = (mode + d + MODES.length) % MODES.length; render(true); };
+const swapMode = d => { mode = (mode + d + MODES.length) % MODES.length; SE.swap(mode); render(true); };
 
 // ---------- history ----------
 const hDay = i => { const d = new Date(); d.setDate(d.getDate() - (hpage * 8 + i)); return ymd(d); };
@@ -484,7 +571,7 @@ function openCal() {
 function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
 function updPts() {
   const len = $("body").value.trim().length; $("ePts").innerHTML = `${pad(len, 4)}<small>p</small>`;
-  const sp = $("eSp"); sp.style.setProperty("--v", `${Math.min(len / GOAL, 1) * 100}%`); sp.classList.toggle("full", len >= GOAL);
+  const sp = $("eSp"); sp.style.setProperty("--v", `${Math.min(len / GOAL, 1) * 100}%`); if (len >= GOAL && !sp.classList.contains("full") && $("ed").classList.contains("show")) SE.special(); sp.classList.toggle("full", len >= GOAL);
 }
 function openEd(k) {
   if (busy || k > ymd(new Date())) return;
@@ -499,6 +586,7 @@ function openEd(k) {
 }
 $("body").addEventListener("input", () => {
   const len = $("body").value.trim().length, delta = len - lastLen; lastLen = len; updPts();
+  if (delta > 0) SE.splat(delta);
   if (delta <= 0 || reduced) return;
   const cv = $("paint"), c = cv.getContext("2d"), R = Math.random, win = document.querySelector(".ewin").getBoundingClientRect();
   for (let i = 0; i < Math.min(delta, 4); i++) {
@@ -508,14 +596,14 @@ $("body").addEventListener("input", () => {
   }
   const p = document.createElement("span"); p.className = "plus"; p.textContent = `+${delta}`; p.style.left = `${win.left + 20 + Math.random() * (win.width - 60)}px`; p.style.top = `${win.top - 14 - Math.random() * 30}px`; $("ed").appendChild(p); setTimeout(() => p.remove(), 850);
 });
-const closeEd = () => { $("ed").classList.remove("show"); clearInterval(clkT); };
+const closeEd = (snd = true) => { if (snd) SE.back(); $("ed").classList.remove("show"); clearInterval(clkT); };
 
 // ---------- results ----------
 async function save() {
   const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
   if (busy) return; busy = true;
   const k = selected, isNew = !data[k], xp0 = totalXp(), r0 = rank(), best0 = bestStreak(), long0 = Object.values(data).reduce((m, x) => Math.max(m, x.text.length), 0);
-  data[k] = { mood, text }; store(data); closeEd();
+  data[k] = { mood, text }; store(data); closeEd(false); SE.finish();
   const res = $("res"); res.classList.add("show"); $("stamp").classList.remove("on"); $("rk").classList.remove("on"); $("rNext").classList.remove("on"); $("awards").innerHTML = "";
   const jb = $("jbar"); jb.style.setProperty("--m", "0%"); jb.style.setProperty("--e", "0%");
   // paint the week map
@@ -531,7 +619,7 @@ async function save() {
   for (let i = jobs.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [jobs[i], jobs[j]] = [jobs[j], jobs[i]]; }
   c.save(); blocks.forEach(b => { c.rect(b.x, b.y, b.w, b.h); }); c.clip();
   const t0 = performance.now(), dur = reduced ? 1 : 1500;
-  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); while (idx < target) { const j = jobs[idx++]; splat(c, j.x, j.y, j.r, j.col, R, false); } if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); if (idx < target) SE.paint(); while (idx < target) { const j = jobs[idx++]; splat(c, j.x, j.y, j.r, j.col, R, false); } if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
   c.restore();
   c.font = "28px 'Lilita One', sans-serif"; c.fillStyle = "#fff"; c.textAlign = "center"; c.strokeStyle = "#111"; c.lineWidth = 6;
   blocks.forEach(b => { const lab = `${DOW[new Date(b.d + "T00:00:00").getDay()]}`; c.strokeText(lab, b.x + b.w / 2, b.y - 16); c.fillText(lab, b.x + b.w / 2, b.y - 16); });
@@ -539,16 +627,16 @@ async function save() {
   const elapsed = wk.filter(d => d <= today).length, wrote = wk.filter(d => data[d]).length, miss = elapsed - wrote;
   const mp = wrote / 7 * 92, ep = miss / 7 * 92, mpts = wk.reduce((s, d) => s + (data[d] ? data[d].text.length : 0), 0);
   await sleep(300);
-  jb.style.setProperty("--m", `${Math.max(mp, 14)}%`); jb.style.setProperty("--e", `${Math.max(ep, miss ? 10 : 0)}%`);
+  SE.judge(); jb.style.setProperty("--m", `${Math.max(mp, 14)}%`); jb.style.setProperty("--e", `${Math.max(ep, miss ? 10 : 0)}%`);
   const cnt = (el, to, suf) => { const s = performance.now(); const f = t => { const q = Math.min((t - s) / 1300, 1); el.textContent = (to * q).toFixed(1) + suf; if (q < 1 && !reduced) requestAnimationFrame(f); else el.textContent = to.toFixed(1) + suf; }; requestAnimationFrame(f); };
   jb.querySelector(".e").classList.toggle("zero", !miss); cnt($("jM"), mp, "%"); cnt($("jE"), ep, "%"); $("jMp").textContent = `${mpts}p`; $("jEp").textContent = `${miss}日`;
   await sleep(1500);
-  const st = $("stamp"); st.textContent = mp >= ep ? "WIN!" : "おしい！"; st.classList.add("on");
+  const st = $("stamp"); st.textContent = mp >= ep ? "WIN!" : "おしい！"; st.classList.add("on"); SE.stamp(); setTimeout(() => mp >= ep ? SE.win() : SE.lose(), 120);
   await sleep(500);
   // rank + awards
   const xp1 = totalXp(); $("rRank").textContent = rank(); $("rXpB").style.setProperty("--v", `${xp0 % XP_PER_RANK / XP_PER_RANK * 100}%`); $("rXp").textContent = `${xp1 % XP_PER_RANK}/${XP_PER_RANK}`;
   $("rGain").textContent = isNew ? `+${xp1 - xp0} けいけんち ／ ${streakCount()}日 れんぞく` : "ぬりなおした！（けいけんちは そのまま）";
-  $("rk").classList.add("on"); setTimeout(() => $("rXpB").style.setProperty("--v", `${rank() > r0 ? 100 : xp1 % XP_PER_RANK / XP_PER_RANK * 100}%`), 200);
+  $("rk").classList.add("on"); SE.xp(); if (rank() > r0) setTimeout(() => SE.rankUp(), 600); setTimeout(() => $("rXpB").style.setProperty("--v", `${rank() > r0 ? 100 : xp1 % XP_PER_RANK / XP_PER_RANK * 100}%`), 200);
   $("rUp").classList.toggle("on", rank() > r0); $("rUp").textContent = `ランクアップ！ ${rank()}`;
   const aw = [];
   if (text.length > long0 && isNew) aw.push("ぬりポイント 自己ベスト");
@@ -557,35 +645,37 @@ async function save() {
   if (wrote >= 5) aw.push("こんしゅう 5日 たっせい");
   aw.push(`${text.length}p ぬった`);
   $("awards").innerHTML = aw.slice(0, 3).map(t => `<div class="aw"><i></i>${t}</div>`).join("");
-  for (const el of $("awards").children) { await sleep(260); el.classList.add("on"); }
+  let ai = 0; for (const el of $("awards").children) { await sleep(rank() > r0 && !ai ? 900 : 260); el.classList.add("on"); SE.award(ai++); }
   await sleep(300); $("rNext").classList.add("on"); $("rOk").focus();
 }
-function closeRes() { $("res").classList.remove("show"); busy = false; render(); }
+function closeRes() { SE.ok(); $("res").classList.remove("show"); busy = false; render(); }
 
 // ---------- input ----------
-function closeAll() { ["hist", "cal"].forEach(id => $(id).classList.remove("show")); if (document.activeElement && document.activeElement.closest(".ov")) document.activeElement.blur(); }
+function closeAll(snd) { if (snd) SE.back(); ["hist", "cal"].forEach(id => $(id).classList.remove("show")); if (document.activeElement && document.activeElement.closest(".ov")) document.activeElement.blur(); }
 document.addEventListener("click", e => {
   if ($("res").classList.contains("show")) { if (e.target.closest("#rOk") && $("rNext").classList.contains("on")) closeRes(); return; }
   if (busy) return;
-  const tb = e.target.closest(".tab"); if (tb) { mode = +tb.dataset.m; return render(true); }
+  if (e.target.closest("#bSe")) return toggleSe();
+  const tb = e.target.closest(".tab"); if (tb) { mode = +tb.dataset.m; SE.swap(mode); return render(true); }
   if (e.target.closest("#card") || e.target.closest("#bGo")) return act();
   if (e.target.closest("#bSwap")) return swapMode(1);
-  if (e.target.closest("#bBack")) { location.href = "index.html"; return; }
-  if (e.target.closest("#tank")) return openEd(ymd(new Date()));
-  const sg = e.target.closest(".stage"); if (sg) return openEd(sg.dataset.k);
-  const hr = e.target.closest(".hr"); if (hr) { hcur = +hr.dataset.h; return renderHist(); }
-  if (e.target.closest("#hWrite")) return openEd(hDay(hcur));
-  if (e.target.closest("#hOlder")) { hpage++; hcur = 0; return renderHist(); }
-  if (e.target.closest("#hNewer")) { if (hpage) { hpage--; hcur = 0; renderHist(); } return; }
-  const cd = e.target.closest("[data-go]"); if (cd) return openEd(cd.dataset.go);
+  if (e.target.closest("#bBack")) { SE.back(); location.href = "index.html"; return; }
+  if (e.target.closest("#tank")) { SE.glug(); return openEd(ymd(new Date())); }
+  const sg = e.target.closest(".stage"); if (sg) { SE.ok(); return openEd(sg.dataset.k); }
+  const hr = e.target.closest(".hr"); if (hr) { hcur = +hr.dataset.h; SE.move(); return renderHist(); }
+  if (e.target.closest("#hWrite")) { SE.ok(); return openEd(hDay(hcur)); }
+  if (e.target.closest("#hOlder")) { hpage++; hcur = 0; SE.page(); return renderHist(); }
+  if (e.target.closest("#hNewer")) { if (hpage) { hpage--; hcur = 0; SE.page(); renderHist(); } return; }
+  const cd = e.target.closest("[data-go]"); if (cd) { SE.ok(); return openEd(cd.dataset.go); }
+  if (e.target.closest("#cPrev") || e.target.closest("#cNext")) SE.page();
   if (e.target.closest("#cPrev")) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() - 1); calSel = ymd(d); return openCal(); }
   if (e.target.closest("#cNext")) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() + 1); calSel = ymd(d) > ymd(new Date()) ? ymd(new Date()) : ymd(d); return openCal(); }
-  const mb = e.target.closest("#moods button"); if (mb) return setMood(mood === mb.dataset.m ? null : mb.dataset.m);
+  const mb = e.target.closest("#moods button"); if (mb) { if (mood !== mb.dataset.m) SE.mood(MOODS.indexOf(mb.dataset.m)); else SE.back(); return setMood(mood === mb.dataset.m ? null : mb.dataset.m); }
   if (e.target.closest("#save")) return save();
   if (e.target.closest("#cl")) return closeEd();
-  if (e.target.closest("[data-close]")) return closeAll();
+  if (e.target.closest("[data-close]")) return closeAll(true);
 });
-document.addEventListener("dblclick", e => { const hr = e.target.closest(".hr"); if (hr) openEd(hDay(+hr.dataset.h)); });
+document.addEventListener("dblclick", e => { const hr = e.target.closest(".hr"); if (hr) { SE.ok(); openEd(hDay(+hr.dataset.h)); } });
 document.addEventListener("keydown", e => {
   const k = e.key, K = k.toLowerCase(), edOpen = $("ed").classList.contains("show"), hOpen = $("hist").classList.contains("show"), cOpen = $("cal").classList.contains("show");
   if ($("res").classList.contains("show")) { if ((k === "Enter" || k === " " || K === "a" || k === "Escape") && $("rNext").classList.contains("on")) { e.preventDefault(); closeRes(); } return; }
@@ -594,30 +684,37 @@ document.addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && k === "Enter") { e.preventDefault(); return save(); }
     if (k === "Escape") return closeEd();
     if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
-      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : 4) : (i + dir + 5) % 5]); document.querySelector(`#moods button[data-m="${mood}"]`).focus(); }
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : 4) : (i + dir + 5) % 5]); SE.mood(MOODS.indexOf(mood)); document.querySelector(`#moods button[data-m="${mood}"]`).focus(); }
     return;
   }
   const enter = (k === "Enter" || k === " " || K === "a") && e.target.tagName !== "BUTTON";
   if (hOpen) {
-    if (k === "Escape" || K === "b") return closeAll();
-    if (k === "ArrowUp" && hcur > 0) { e.preventDefault(); hcur--; return renderHist(); }
-    if (k === "ArrowDown") { e.preventDefault(); if (hcur < 7) hcur++; else { hpage++; hcur = 0; } return renderHist(); }
-    if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); hpage++; hcur = 0; return renderHist(); }
-    if ((k === "ArrowLeft" || K === "l" || K === "q") && hpage) { e.preventDefault(); hpage--; hcur = 0; return renderHist(); }
-    if (enter) { e.preventDefault(); return openEd(hDay(hcur)); }
+    if (k === "Escape" || K === "b") return closeAll(true);
+    if (k === "ArrowUp" && hcur > 0) { e.preventDefault(); hcur--; SE.move(); return renderHist(); }
+    if (k === "ArrowDown") { e.preventDefault(); if (hcur < 7) { hcur++; SE.move(); } else { hpage++; hcur = 0; SE.page(); } return renderHist(); }
+    if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); hpage++; hcur = 0; SE.page(); return renderHist(); }
+    if ((k === "ArrowLeft" || K === "l" || K === "q") && hpage) { e.preventDefault(); hpage--; hcur = 0; SE.page(); return renderHist(); }
+    if (enter) { e.preventDefault(); SE.ok(); return openEd(hDay(hcur)); }
     return;
   }
   if (cOpen) {
-    if (k === "Escape" || K === "b") return closeAll();
+    if (k === "Escape" || K === "b") return closeAll(true);
     const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[k];
-    if (mv) { e.preventDefault(); const d = new Date(calSel + "T00:00:00"); d.setDate(d.getDate() + mv); if (ymd(d) <= ymd(new Date())) { calSel = ymd(d); openCal(); document.querySelector(`[data-go="${calSel}"]`)?.focus(); } return; }
+    if (mv) { e.preventDefault(); const d = new Date(calSel + "T00:00:00"); d.setDate(d.getDate() + mv); if (ymd(d) <= ymd(new Date())) { calSel = ymd(d); SE.move(); openCal(); document.querySelector(`[data-go="${calSel}"]`)?.focus(); } return; }
     return;
   }
   if (k === "ArrowLeft" || K === "l" || K === "q") { e.preventDefault(); return swapMode(-1); }
   if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); return swapMode(1); }
-  if (K === "y") { const el = $("ruleD"); el.style.color = "#fff"; setTimeout(() => el.style.color = "", 800); return; }
+  if (K === "m") return toggleSe();
+  if (K === "y") { SE.move(); const el = $("ruleD"); el.style.color = "#fff"; setTimeout(() => el.style.color = "", 800); return; }
   if (enter) { e.preventDefault(); return act(); }
 });
+
+function toggleSe() { const v = SE.toggle(); $("bSe").classList.toggle("off", !v); $("bSe").setAttribute("aria-pressed", v); $("seL").textContent = v ? "SE ON" : "SE OFF"; }
+// cursor blip when the pointer moves onto a new selectable thing
+let hovEl = null;
+document.addEventListener("mouseover", e => { const el = e.target.closest(".tab, .card, .stage, .hr, .cd:not(.fut), #moods button, .hintL button, .ofoot button, .go, .cl, #tank"); if (el && el !== hovEl) SE.hover(); hovEl = el; });
+$("bSe").classList.toggle("off", !SE.on); $("bSe").setAttribute("aria-pressed", SE.on); $("seL").textContent = SE.on ? "SE ON" : "SE OFF";
 
 buildWall();
 render();
