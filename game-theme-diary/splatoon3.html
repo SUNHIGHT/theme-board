@@ -185,6 +185,24 @@
   .hint { font:700 12px var(--fb); color:#999; }
   .plus { position:absolute; z-index:3; pointer-events:none; font:400 22px var(--fl); color:#fff; text-shadow:0 2px 0 #000; animation:plus .8s ease-out forwards; }
 
+  /* team HUD + live turf meter */
+  .ehud .tm { display:flex; gap:5px; }
+  .ehud .tm i { position:relative; display:grid; place-items:center; width:min(5vh,36px); aspect-ratio:1; border-radius:10px; background:var(--tc); box-shadow:0 0 0 2px #111, 0 0 0 4px rgba(255,255,255,.75); transition:background .25s, transform .25s; }
+  .ehud .tm i svg { width:52%; }
+  .ehud .tm i.x { background:#3a3a44; transform:scale(.9); }
+  .ehud .tm i.x::after { content:""; position:absolute; inset:14%; background:linear-gradient(45deg,transparent 42%,#fff 42% 58%,transparent 58%), linear-gradient(-45deg,transparent 42%,#fff 42% 58%,transparent 58%); }
+  .emeter { margin-top:1.2vh; }
+  .ebar { position:relative; height:16px; border-radius:999px; overflow:hidden; background:#2a2a32; box-shadow:0 0 0 2px #111; }
+  .ebar i { position:absolute; top:0; bottom:0; transition:width .35s cubic-bezier(.2,.9,.3,1); } .ebar .m { left:0; background:var(--tm); } .ebar .e { right:0; background:var(--te); }
+  .einfo { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:4px; font:400 18px var(--fl); }
+  .einfo b:first-child { color:var(--tm); } .einfo b:last-child { color:var(--te); } .einfo b { font-weight:400; text-shadow:0 2px 0 #000; }
+  .einfo span { font:900 12px var(--fb); color:#ccc; text-align:center; } .einfo span.lead { color:#111; background:var(--tm); padding:1px 10px; border-radius:999px; animation:spGlow .6s ease-in-out infinite alternate; }
+  .tbar { background:#2a2a32; } .tbar .e { flex:0 0 auto; margin-left:auto; }
+  .hr .vs { font:400 min(2vh,1.1vw) var(--fl); color:#bbb; } .hr .vs em { font-style:normal; color:#fff; }
+  .hempty { padding:2vh 1vw; text-align:center; font:900 min(2vh,14px) var(--fb); color:#aaa; }
+  .cd .wl { position:absolute; right:6%; bottom:5%; font:400 min(1.6vh,11px) var(--fl); font-style:normal; padding:0 4px; border-radius:4px; background:#111; color:#fff; } .cd .wl.w { background:#fff; color:#111; }
+  .stage b em { font-style:normal; margin-left:.5vw; padding:0 .5vw; border-radius:4px; font:400 min(1.6vh,.9vw) var(--fl); background:#4a4a54; color:#ddd; } .stage b em.w { background:var(--c); color:#111; }
+
   /* results */
   #res .map { position:absolute; left:50%; top:44%; translate:-50% -50%; width:min(92vw,140vh); aspect-ratio:16/9; border-radius:14px; overflow:hidden; box-shadow:0 0 0 3px #111, 0 20px 50px rgba(0,0,0,.7); }
   #res .map canvas { width:100%; height:100%; display:block; }
@@ -196,6 +214,7 @@
   .jbar .e { right:0; width:var(--e,0%); background:var(--enemy); text-align:right; align-items:flex-end; padding-right:2vw; }
   .jbar .e.zero b, .jbar .e.zero small { display:none; } .jbar small { white-space:nowrap; } .jbar b { font:400 min(5.4vh,42px)/1 var(--fl); text-shadow:0 2px 0 rgba(0,0,0,.25); } .jbar small { font:400 min(2vh,15px) var(--fl); }
   .stamp { position:absolute; left:50%; top:16vh; translate:-50% 0; font:400 min(14vh,110px)/1 var(--fl); color:var(--c); -webkit-text-stroke:8px #111; paint-order:stroke fill; text-shadow:0 8px 0 #111; rotate:-6deg; opacity:0; pointer-events:none; }
+  .stamp.lose { color:#c8c8d0; rotate:4deg; font-size:min(11vh,86px); }
   .stamp.on { animation:stamp .5s cubic-bezier(.3,1.7,.5,1) forwards; }
   .awards { position:absolute; right:4vw; top:12vh; display:flex; flex-direction:column; gap:1.4vh; }
   .aw { display:flex; align-items:center; gap:1vw; padding:1vh 2.4vw 1vh 1vw; background:#fff; color:#111; font:900 min(2.4vh,18px) var(--fb); clip-path:polygon(0 8%,100% 0,97% 100%,2% 92%); box-shadow:0 6px 0 rgba(0,0,0,.4); opacity:0; }
@@ -243,10 +262,10 @@
     .hr { grid-template-columns:72px 1fr auto; gap:8px; } .hr .res { font-size:15px; } .hr b { font-size:12px; } .hr span { font-size:14px; } .hr .mi { width:18px; }
     .hd2 .img .t span { font-size:10px; } .hd2 .img .t b { font-size:15px; } .tbar { height:26px; font-size:13px; } .team .th { font-size:15px; } .team .tr { font-size:12px; } .team .tr span:last-child { font-size:14px; } .htext { font-size:13px; }
     .ofoot { left:10px; bottom:12px; font-size:12px; } .ofoot i { width:20px; font-size:11px; }
-    .ehud .clk { font-size:18px; } .ehud .dy { font-size:11px; } .pts { right:10px; top:62px; } .pts b { font-size:28px; } .sp { width:46px; } .sp span { font-size:11px; } .ehud { top:12px; }
+    .ehud .clk { font-size:16px; padding:2px 8px; } .ehud .dy { display:none; } .ehud { justify-content:flex-start; left:10px; gap:6px; } .ehud .tm { gap:2px; } .ehud .tm i { width:20px; border-radius:6px; box-shadow:0 0 0 2px #111, 0 0 0 3px rgba(255,255,255,.75); } .hr .vs { font-size:12px; } .ewin h3 { flex-wrap:wrap; gap:2px 8px; } .ewin h3 small { margin-left:0; width:100%; } .einfo { font-size:15px; } .einfo span { font-size:10px; } .pts { right:10px; top:62px; } .pts b { font-size:28px; } .sp { width:46px; } .sp span { font-size:11px; } .ehud { top:12px; }
     .ewin { top:56%; padding:14px 14px 14px; } .moods { gap:5px; } .moods button { font-size:11px; } .moods button i { width:22px; height:28px; clip-path:path("M11 0C11 0 22 13 22 19a11 11 0 0 1-22 0C0 13 11 0 11 0Z"); }
     .awards { right:10px; left:10px; top:auto; bottom:calc(5vh + 90px); align-items:stretch; gap:6px; } .aw { font-size:13px; padding:6px 14px 6px 8px; }
-    .rk { left:10px; right:10px; top:70px; width:auto; } .stamp { top:226px; z-index:2; font-size:64px; -webkit-text-stroke:5px #111; }
+    .rk { left:10px; right:10px; top:70px; width:auto; } .stamp { top:226px; z-index:2; font-size:64px; -webkit-text-stroke:5px #111; } .stamp.lose { font-size:52px; }
     #res .map { top:46%; } .jbar { height:58px; } .jbar b { font-size:24px; } .jbar small { font-size:11px; } .judge .lbl { font-size:12px; }
   }
 </style>
@@ -268,8 +287,9 @@
 <div class="pills">
   <div class="prow"><span class="pill"><span class="ic ink"><svg viewBox="0 0 20 20" width="70%"><path d="M10 2s6 7 6 10a6 6 0 0 1-12 0c0-3 6-10 6-10z" fill="#fff"/></svg></span><span id="pDays">000</span></span>
     <span class="pill"><span class="ic coin">¢</span><span id="pCoin">0000000</span></span></div>
+  <div class="prow"><span class="pill" id="pRec">0勝 0敗</span></div>
   <div class="rank">ランク<b id="pRank">1</b><span class="xp"><i id="pXpB"></i><span id="pXp">0/300</span></span></div>
-  <div class="chal"><h4>こんしゅう 5日 ぬろう</h4><div class="row"><svg viewBox="0 0 24 24"><path d="M3 21l3-8 9-9 5 5-9 9z" fill="#ddd"/><path d="M13 6l5 5" stroke="#111" stroke-width="2"/></svg><span class="bar"><i id="chB"></i><span id="chT">0 / 5</span></span></div></div>
+  <div class="chal"><h4>こんしゅう 5勝 しよう</h4><div class="row"><svg viewBox="0 0 24 24"><path d="M3 21l3-8 9-9 5 5-9 9z" fill="#ddd"/><path d="M13 6l5 5" stroke="#111" stroke-width="2"/></svg><span class="bar"><i id="chB"></i><span id="chT">0 / 5</span></span></div></div>
 </div>
 
 <div class="rule" id="rule"></div>
@@ -277,7 +297,7 @@
 <!-- history -->
 <div class="ov" id="hist" role="dialog" aria-modal="true" aria-label="ふりかえり"><div class="bg"></div>
   <div class="hist">
-    <div class="hl"><div class="hsum"><span>さいきん 30日</span><span class="w"><small>WIN</small><b id="hW">0</b></span><span><small>LOSE</small><b id="hL">0</b></span></div><ul class="hlist" id="hList"></ul></div>
+    <div class="hl"><div class="hsum"><span id="hTitle">せんせき</span><span class="w"><small>WIN</small><b id="hW">0</b></span><span><small>LOSE</small><b id="hL">0</b></span></div><ul class="hlist" id="hList"></ul></div>
     <div class="hd2" id="hDet"></div>
   </div>
   <div class="ofoot"><button data-close><i>B</i>もどる</button><button id="hWrite"><i>A</i>この日をかく</button><button id="hOlder"><i>R</i>もっと前</button><button id="hNewer"><i>L</i>あたらしい</button></div>
@@ -289,11 +309,12 @@
 </div>
 <!-- editor -->
 <div class="ov" id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="bg"></div><canvas class="paint" id="paint"></canvas>
-  <div class="ehud"><span class="dy" id="eDay"></span><span class="clk" id="eClk">0:00</span></div>
+  <div class="ehud"><span class="dy" id="eDay"></span><span class="tm" id="tMe"></span><span class="clk" id="eClk">0:00</span><span class="tm" id="tEn"></span></div>
   <div class="pts"><b id="ePts">0000<small>p</small></b><span class="sp" id="eSp"><span>SP</span></span></div>
   <div class="ewin"><h3><span id="eT"></span><small id="eS"></small></h3>
+    <div class="emeter"><div class="ebar"><i class="m" id="emM"></i><i class="e" id="emE"></i></div><div class="einfo"><b id="emMe">0.0%</b><span id="emHint"></span><b id="emEn">0.0%</b></div></div>
     <div class="lb2">ちょうし</div><ul class="moods" id="moods"></ul>
-    <div class="lb2">きろく（書いた文字がそのまま塗りポイントになる）</div><textarea id="body" placeholder="きょうは どんな 一日だった？"></textarea>
+    <div class="lb2">きろく（書いた文字が塗りポイント。いつもより多く書けば 塗り勝てる）</div><textarea id="body" placeholder="きょうは どんな 一日だった？"></textarea>
     <div class="acts"><button class="go" id="save"><i>A</i>ぬりおわる</button><button class="cl" id="cl"><i>B</i>もどる</button><span class="hint">Ctrl+Enter で記録 ／ Esc でもどる</span></div>
   </div>
 </div>
@@ -301,9 +322,9 @@
 <div class="ov" id="res" role="dialog" aria-modal="true" aria-label="けっか"><div class="bg" style="background:rgba(30,20,12,.9)"></div>
   <div class="map"><canvas id="map" width="1280" height="720"></canvas></div>
   <div class="stamp" id="stamp">WIN!</div>
-  <div class="rk" id="rk"><h4>ランク<b id="rRank">1</b></h4><span class="xp"><i id="rXpB"></i><span id="rXp"></span></span><p id="rGain"></p><div class="up" id="rUp">ランクアップ！</div></div>
+  <div class="rk" id="rk"><h4>ランク<b id="rRank">1</b></h4><span class="xp"><i id="rXpB"></i><span id="rXp"></span></span><p id="rGain"></p><p id="rRec"></p><div class="up" id="rUp">ランクアップ！</div></div>
   <div class="awards" id="awards"></div>
-  <div class="judge"><div class="lbl"><span>きろくした日</span><span>まだの日</span></div><div class="jbar" id="jbar"><div class="m"><b id="jM">0.0%</b><small id="jMp"></small></div><div class="e"><b id="jE">0.0%</b><small id="jEp"></small></div></div></div>
+  <div class="judge"><div class="lbl"><span>あなたのチーム</span><span id="jEnL">あいてチーム</span></div><div class="jbar" id="jbar"><div class="m"><b id="jM">0.0%</b><small id="jMp"></small></div><div class="e"><b id="jE">0.0%</b><small id="jEp"></small></div></div></div>
   <div class="ofoot rnext" id="rNext"><button id="rOk"><i>A</i>つぎへ</button></div>
 </div>
 
@@ -329,10 +350,10 @@ const EMB = {
   yday:  '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M36 60a24 24 0 1 0 8-18" fill="none" stroke="var(--c)" stroke-width="9" stroke-linecap="round"/><path d="M32 30v16h16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 const MODES = [
-  { id:"write", nm:"ナワバリ<br>日記", ds:"きょうの一日を ぬりつぶそう", sub:"レギュラー", c:"#c6f000", cd:"#2a3a00", enemy:"#7a2bff", rule:"ナワバリきろく", rd:"書いた文字数がそのまま塗りポイント。200文字でスペシャル！" },
-  { id:"hist", nm:"ふりかえり<br>マッチ", ds:"これまでの きろくを チェック", sub:"バンカラ", c:"#ff6a1a", cd:"#3a1200", enemy:"#1a8aff", rule:"きろくアーカイブ", rd:"書いた日は WIN!、まだの日は LOSE...。選んで読み返したり書き直したり。" },
-  { id:"cal", nm:"ナワバリ<br>カレンダー", ds:"月の ぬりぐあいを チェック", sub:"プライベート", c:"#b05aff", cd:"#2a0a4a", enemy:"#ff9a1a", rule:"マンスリー", rd:"書いた日は調子の色のインクで塗られる。日付を選んで書ける。" },
-  { id:"yday", nm:"きのうの<br>きろく", ds:"書きわすれた きのうを ぬろう", sub:"イベント", c:"#19d7ff", cd:"#002a3a", enemy:"#ff2f8e", rule:"リベンジ", rd:"きのうの分をあとから記録。連続記録をつなごう。" }
+  { id:"write", nm:"ナワバリ<br>日記", ds:"きょうの一日を ぬりつぶそう", sub:"レギュラー", c:"#c6f000", cd:"#2a3a00", enemy:"#7a2bff", rule:"ナワバリバトル", rd:"1日1試合。相手は いつもの あなたの記録に合わせてマッチング。いつもより たくさん書いて 塗り勝とう！" },
+  { id:"hist", nm:"ふりかえり<br>マッチ", ds:"これまでの きろくを チェック", sub:"バンカラ", c:"#ff6a1a", cd:"#3a1200", enemy:"#1a8aff", rule:"きろくアーカイブ", rd:"これまでの試合の WIN!/LOSE...。選んで読み返したり、書き足してリベンジしたり。" },
+  { id:"cal", nm:"ナワバリ<br>カレンダー", ds:"月の ぬりぐあいを チェック", sub:"プライベート", c:"#b05aff", cd:"#2a0a4a", enemy:"#ff9a1a", rule:"マンスリー", rd:"勝った日は自分のインク、負けた日は相手のインクで塗られる。日付を選んで書ける。" },
+  { id:"yday", nm:"きのうの<br>きろく", ds:"書きわすれた きのうを ぬろう", sub:"イベント", c:"#19d7ff", cd:"#002a3a", enemy:"#ff2f8e", rule:"リベンジ", rd:"きのうの試合をあとから。連続記録をつなごう。" }
 ];
 const $ = id => document.getElementById(id);
 const load = () => {
@@ -430,6 +451,8 @@ const SE = (() => {
       [[0, -12], [.3, -5], [.5, -12], [.8, -17], [.95, -12]].forEach(([t, s]) => tone({ type: "triangle", f0: N(s), t: t + .12, d: .16, v: .22, w: 0 }));
       noise({ t: .12, a: .005, d: 1.1, v: .1, type: "highpass", f0: 5000, w: .5 }); [0, .3, .5, .8].forEach(t => noise({ t: t + .12, d: .05, v: .18, type: "lowpass", f0: 200, f1: 60 })); },
     lose() { if (!ready()) return; [[0, 19], [.2, 18], [.4, 17], [.6, 16]].forEach(([t, s], i) => tone({ type: "sawtooth", f0: N(s), f1: N(s) * (i === 3 ? .94 : 1), t: t + .1, d: i === 3 ? .6 : .16, v: .07, lp: 1100, w: .5, vib: i === 3 ? 6 : 0 })); },
+    // took the lead while typing
+    lead() { if (!ready()) return; [0, 4, 7, 12].forEach((s, i) => tone({ type: "square", f0: N(24 + s), t: i * .055, d: .1, v: .08, lp: 3000, w: .5 })); noise({ d: .16, v: .06, type: "highpass", f0: 5000, w: .5 }); },
     xp() { if (!ready()) return; for (let i = 0; i < 10; i++) tone({ t: i * .06, f0: 700 + i * 70, d: .03, v: .07, w: .2 }); },
     rankUp() { if (!ready()) return; [0, 7, 12, 16, 19, 24].forEach((s, i) => tone({ type: "triangle", f0: N(19 + s), t: i * .07, d: .2, v: .14, w: .6 }));
       tone({ type: "square", f0: N(43), t: .45, d: .5, v: .05, lp: 4000, w: .7, vib: 7 }); },
@@ -438,7 +461,7 @@ const SE = (() => {
   return api;
 })();
 
-let data = load(), mode = 0, hpage = 0, hcur = 0, calSel = ymd(new Date()), selected = null, mood = null, busy = false, lastLen = 0, clkT;
+let wasLead = false, data = load(), mode = 0, hpage = 0, hcur = 0, calSel = ymd(new Date()), selected = null, mood = null, busy = false, lastLen = 0, clkT;
 
 function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
 function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
@@ -456,6 +479,31 @@ const rank = () => Math.floor(totalXp() / XP_PER_RANK) + 1;
 const totalChars = () => Object.values(data).reduce((s, x) => s + x.text.length, 0);
 const weekKeys = () => { const now = new Date(), mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return ymd(d); }); };
 const bestStreak = () => { let b = 0, r = 0, p = null; for (const k of Object.keys(data).sort()) { const c = new Date(k + "T00:00:00"); r = p && (c - p) / 864e5 === 1 ? r + 1 : 1; b = Math.max(b, r); p = c; } return b; };
+// ---------- turf war: each diary entry is one match ----------
+// Matchmaking: the opponent is tuned to your recent form (average length of up to 7 earlier entries) with a
+// per-date swing, so beating your usual wins. ~84-93% of the map gets inked and the two teams split it,
+// so gaining turf takes it from them and results stay close like real matches.
+const RIVAL = { 最高:"#7a2bff", 良い:"#ff6a1a", 普通:"#1a5aff", 微妙:"#e6dc1e", 最悪:"#19c99a" };
+const teamCols = m => m && MC[m] ? [MC[m], RIVAL[m]] : ["#c6f000", "#7a2bff"];
+function formBefore(k) {
+  const ks = Object.keys(data).filter(x => x < k).sort().slice(-7);
+  return ks.length ? Math.min(300, Math.max(40, ks.reduce((n, x) => n + data[x].text.length, 0) / ks.length)) : 80;
+}
+function foeOf(k) { const R = rnd(seedOf(k) * 3 + 11), df = .8 + R() * .45, T = 84 + R() * 9, luck = (R() - .5) * .24, base = formBefore(k); return { F: base * df, T, luck, base, df }; }
+function score(k, len, f = foeOf(k)) {
+  const d = Math.log((len + 20) / (f.F + 20)) + f.luck, s = (.5 + .24 * Math.tanh(1.2 * d)) * Math.min(1, (len + 2) / 22);
+  const meR = f.T * s, enR = f.T * (.5 - .24 * Math.tanh(1.2 * d)), win = meR > enR;
+  let me = Math.round(meR * 10) / 10, en = Math.round(enR * 10) / 10;
+  if (me === en) win ? me += .1 : en += .1;
+  return { me, en, win, len, base: f.base, tier: f.df < .92 ? "よわめ" : f.df < 1.1 ? "ふつう" : "つよい" };
+}
+const match = k => data[k] ? score(k, data[k].text.length) : null;
+const needFor = k => { const f = foeOf(k); for (let n = 1; n < 3000; n++) if (score(k, n, f).win) return n; return 3000; };
+function record() {
+  let w = 0, l = 0, cur = 0, best = 0;
+  for (const k of Object.keys(data).sort()) { if (match(k).win) { w++; cur++; best = Math.max(best, cur); } else { l++; cur = 0; } }
+  return { w, l, cur, best };
+}
 const inkOf = k => data[k] && data[k].mood ? MC[data[k].mood] : MODES[mode].c;
 
 // ---------- ink splats (canvas) ----------
@@ -467,14 +515,55 @@ function splat(c, x, y, r, col, R, drip = true) {
   if (drip && R() > .4) { const dx = x + (R() - .5) * r, len = r * (.8 + R() * 1.4), w = r * .22; c.fillRect(dx - w / 2, y, w, len); c.beginPath(); c.arc(dx, y + len, w * .75, 0, 7); c.fill(); }
   c.fillStyle = "rgba(255,255,255,.28)"; c.beginPath(); c.ellipse(x - r * .3, y - r * .35, r * .35, r * .18, -.5, 0, 7); c.fill();
 }
-// a little top-down "stage" painted with a day's ink
+// top-down turf arena: my base on the left, theirs on the right
+function drawArena(c, W, H, R) {
+  c.fillStyle = "#2c2a30"; c.fillRect(0, 0, W, H);
+  const P = [[.05, .5], [.2, .08], [.8, .08], [.95, .5], [.8, .92], [.2, .92]];
+  c.beginPath(); P.forEach(([x, y], i) => c[i ? "lineTo" : "moveTo"](x * W, y * H)); c.closePath();
+  c.fillStyle = "#9a9aa4"; c.fill(); c.lineWidth = Math.max(2, W / 160); c.strokeStyle = "#111"; c.stroke();
+  const floor = new Path2D(); P.forEach(([x, y], i) => floor[i ? "lineTo" : "moveTo"](x * W, y * H)); floor.closePath();
+  c.save(); c.clip(floor);
+  c.strokeStyle = "rgba(0,0,0,.08)"; c.lineWidth = 1; for (let x = 0; x < W; x += W / 24) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); } for (let y = 0; y < H; y += W / 24) { c.beginPath(); c.moveTo(0, y); c.lineTo(W, y); c.stroke(); }
+  // mirrored blocks so it reads like a competitive map
+  for (let i = 0; i < 5; i++) { const w = W * (.04 + R() * .07), h = H * (.08 + R() * .16), x = W * (.16 + R() * .26), y = H * (.12 + R() * .7);
+    for (const xx of [x, W - x - w]) { c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(xx + W * .006, y + W * .008, w, h); c.fillStyle = "#c4c4cc"; c.fillRect(xx, y, w, h); } }
+  c.restore();
+  return floor;
+}
+// Paint cells so the inked area matches the percentages: each team grows outward from its base along a
+// wavy front; whatever neither team reaches stays bare. Returns jobs ordered by spread time.
+function turfJobs(k, m, W, H, cols, n) {
+  const R = rnd(seedOf(k) + 21), cs = W / n, rows = Math.ceil(H / cs), cells = [], asp = H / W;
+  const ph = Array.from({ length: 12 }, () => R() * 6.28), fq = Array.from({ length: 12 }, () => 3 + R() * 5);
+  const wav = (u, v, o) => Math.sin(u * fq[o] + ph[o]) * Math.sin(v * fq[o + 1] + ph[o + 1]) + .6 * Math.sin(u * fq[o + 2] - v * fq[o + 3] + ph[o + 2]);
+  for (let j = 0; j < rows; j++) for (let i = 0; i < n; i++) {
+    const u = (i + .5) / n, v = (j + .5) * cs / H, e = .15 * Math.abs(v - .5) / .42;
+    if (v > .08 && v < .92 && u > .05 + e && u < .95 - e) cells.push({ u, v, x: (i + .5) * cs, y: (j + .5) * cs });
+  }
+  const dist = (c, bu) => Math.hypot(c.u - bu, (c.v - .5) * asp);
+  cells.forEach(c => { c.pm = dist(c, .09) + .15 * wav(c.u, c.v, 0) + .05 * R(); c.pe = dist(c, .91) + .15 * wav(c.u, c.v, 4) + .05 * R(); c.tone = .5 + .3 * wav(c.u * 2.2, c.v * 2.2, 8); });
+  const nm = Math.round(cells.length * m.me / 100), ne = Math.round(cells.length * m.en / 100), jobs = [];
+  const mine = [...cells].sort((a, b) => a.pm - b.pm).slice(0, nm); mine.forEach((c, i) => { c.t = 1; jobs.push({ ...c, col: cols[0], o: i / Math.max(1, nm) }); });
+  [...cells].filter(c => !c.t).sort((a, b) => a.pe - b.pe).slice(0, ne).forEach((c, i) => jobs.push({ ...c, col: cols[1], o: i / Math.max(1, ne) }));
+  jobs.forEach(j => { j.r = cs * (.66 + R() * .22); j.dx = (R() - .5) * cs * .35; j.dy = (R() - .5) * cs * .35; j.hi = R() < .12; j.cs = cs; j.fill = shade(j.col, .16 * Math.max(0, Math.min(1, j.tone))); j.rim = shade(j.col, .5); });
+  return jobs.sort((a, b) => a.o - b.o);
+}
+const shade = (hex, f) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - f)).toString(16).padStart(2, "0")).join("");
+// final look: all dark rims first, then the fills, so each team's ink gets an outline but no inner seams
+function paintTurf(c, jobs) {
+  for (const j of jobs) { c.fillStyle = j.rim; c.beginPath(); c.arc(j.x + j.dx, j.y + j.dy, j.r + j.cs * .14, 0, 7); c.fill(); }
+  for (const j of jobs) paintCell(c, j);
+}
+function paintCell(c, j) {
+  c.fillStyle = j.fill; c.beginPath(); c.arc(j.x + j.dx, j.y + j.dy, j.r, 0, 7); c.fill();
+  if (j.hi) { c.fillStyle = "rgba(255,255,255,.3)"; c.beginPath(); c.ellipse(j.x + j.dx - j.r * .3, j.y + j.dy - j.r * .35, j.r * .4, j.r * .2, -.5, 0, 7); c.fill(); }
+}
+function drawBases(c, W, H, cols) { [[.09, cols[0]], [.91, cols[1]]].forEach(([x, col]) => { c.beginPath(); c.arc(x * W, H / 2, W * .03, 0, 7); c.fillStyle = col; c.fill(); c.lineWidth = Math.max(2, W / 200); c.strokeStyle = "#fff"; c.stroke(); }); }
 function stageThumb(cv, k) {
-  const c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(k) + 7), e = data[k];
-  c.fillStyle = "#6a6a72"; c.fillRect(0, 0, W, H);
-  for (let i = 0; i < 9; i++) { c.fillStyle = ["#8a8a92", "#55555c", "#9a9aa4"][i % 3]; c.fillRect(R() * W, R() * H, 20 + R() * W * .3, 10 + R() * H * .3); }
-  c.fillStyle = "rgba(0,0,0,.25)"; for (let i = 0; i < 5; i++) c.fillRect(R() * W, R() * H, 4 + R() * 30, 3);
-  if (e) { const n = 3 + Math.min(14, Math.floor(e.text.length / 18)); for (let i = 0; i < n; i++) splat(c, R() * W, R() * H, 6 + R() * H * .16, MC[e.mood] || "#c6f000", R); }
-  else { c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(0, 0, W, H); }
+  const c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(k) + 7), m = match(k);
+  const floor = drawArena(c, W, H, R);
+  if (m) { const cols = teamCols(data[k].mood); c.save(); c.clip(floor); paintTurf(c, turfJobs(k, m, W, H, cols, W > 300 ? 64 : 36)); c.restore(); drawBases(c, W, H, cols); }
+  else { c.fillStyle = "rgba(0,0,0,.4)"; c.fillRect(0, 0, W, H); }
 }
 
 // ---------- LED wall ----------
@@ -492,7 +581,8 @@ function buildWall() {
 function drawTank() {
   const today = ymd(new Date()), e = data[today], len = e ? e.text.length : 0, lvl = Math.min(1, len / GOAL), col = e && e.mood ? MC[e.mood] : MODES[mode].c;
   const top = 250 - 170 * lvl, d = new Date();
-  $("tDate").innerHTML = `${d.getMonth() + 1}/${d.getDate()}<small>${e ? `${len}p ぬった` : "まだ まっさら"}</small>`;
+  const tm = match(today);
+  $("tDate").innerHTML = `${d.getMonth() + 1}/${d.getDate()}<small>${tm ? `${len}p ・ ${tm.win ? "WIN!" : "LOSE..."}` : "きょうの試合 まだ"}</small>`;
   $("tankSvg").innerHTML = `<defs><linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".25" stop-color="#fff" stop-opacity=".05"/><stop offset=".8" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>
     <linearGradient id="mt" x1="0" x2="1"><stop offset="0" stop-color="#5a5a64"/><stop offset=".4" stop-color="#d8d8e0"/><stop offset=".7" stop-color="#8a8a94"/><stop offset="1" stop-color="#3a3a44"/></linearGradient>
     <clipPath id="tc"><rect x="44" y="70" width="112" height="190" rx="40"/></clipPath></defs>
@@ -520,10 +610,11 @@ function render(swap = false) {
   if (swap) { const c = $("card"); c.classList.remove("swap"); void c.offsetWidth; c.classList.add("swap"); }
   $("pDays").textContent = pad(all.length, 3); $("pCoin").textContent = pad(totalChars(), 7);
   $("pRank").textContent = rank(); $("pXp").textContent = `${xp % XP_PER_RANK}/${XP_PER_RANK}`; $("pXpB").style.setProperty("--v", `${xp % XP_PER_RANK / XP_PER_RANK * 100}%`);
-  const wk = weekKeys().filter(k => data[k]).length; $("chB").style.setProperty("--v", `${Math.min(wk / 5, 1) * 100}%`); $("chT").textContent = `${Math.min(wk, 5)} / 5`;
+  const rec = record(); $("pRec").textContent = `${rec.w}勝 ${rec.l}敗${rec.cur >= 2 ? ` ・ ${rec.cur}連勝中` : ""}`;
+  const wk = weekKeys().filter(k => data[k] && match(k).win).length; $("chB").style.setProperty("--v", `${Math.min(wk / 5, 1) * 100}%`); $("chT").textContent = `${Math.min(wk, 5)} / 5`;
   const recent = all.sort().reverse().slice(0, 2);
   $("rule").innerHTML = `<div class="hd"><span>ルール</span><span>Y ルール確認</span></div><div class="rn">${m.rule}</div><div class="lb" id="ruleD">${m.rd}</div><div class="lb">さいきんの ステージ</div>` +
-    (recent.length ? recent.map(k => `<button class="stage" data-k="${k}"><canvas width="160" height="90" data-thumb="${k}"></canvas><span><b>${k === today ? "きょう" : md(k)}</b><small>${esc(data[k].text.replace(/\s+/g, " "))}</small></span></button>`).join("") : `<div class="lb">まだ ステージがない。最初の一日をぬろう！</div>`);
+    (recent.length ? recent.map(k => `<button class="stage" data-k="${k}"><canvas width="160" height="90" data-thumb="${k}"></canvas><span><b>${k === today ? "きょう" : md(k)}<em class="${match(k).win ? "w" : ""}">${match(k).win ? "WIN!" : "LOSE..."}</em></b><small>${esc(data[k].text.replace(/\s+/g, " "))}</small></span></button>`).join("") : `<div class="lb">まだ 試合がない。最初の一日をぬろう！</div>`);
   document.querySelectorAll("[data-thumb]").forEach(cv => stageThumb(cv, cv.dataset.thumb));
   drawTank();
 }
@@ -536,21 +627,31 @@ function act() {
 }
 const swapMode = d => { mode = (mode + d + MODES.length) % MODES.length; SE.swap(mode); render(true); };
 
-// ---------- history ----------
-const hDay = i => { const d = new Date(); d.setDate(d.getDate() - (hpage * 8 + i)); return ymd(d); };
+// ---------- history (one row per match) ----------
+const hKeys = () => Object.keys(data).sort().reverse();
+const hPages = () => Math.max(1, Math.ceil(hKeys().length / 8));
+const hKey = i => hKeys()[hpage * 8 + i] || ymd(new Date());
+const hCount = () => Math.min(8, hKeys().length - hpage * 8);
 function openHist() { hpage = 0; hcur = 0; renderHist(); $("hist").classList.add("show"); }
 function renderHist() {
-  const today = ymd(new Date()); let w = 0, l = 0;
-  for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); data[ymd(d)] ? w++ : l++; }
-  $("hW").textContent = w; $("hL").textContent = l;
-  $("hList").innerHTML = Array.from({ length: 8 }, (_, i) => { const k = hDay(i), e = data[k];
-    return `<li><button class="hr ${e ? "win" : ""} ${i === hcur ? "cur" : ""}" data-h="${i}"><span class="res">${e ? "WIN!" : "LOSE..."}</span><span><b>${k === today ? "きょう" : md(k)}</b><span>${e ? e.text.length : 0} p</span></span><span class="mi" style="--mc:${e && e.mood ? MC[e.mood] : "#444"}"></span></button></li>`; }).join("");
-  const k = hDay(hcur), e = data[k], len = e ? e.text.length : 0, pct = Math.min(100, len / GOAL * 100);
-  $("hDet").innerHTML = `<div class="img"><canvas width="640" height="200" id="hImg"></canvas><div class="t"><span>${k.replace(/-/g, "/")}</span><b>${e ? "ナワバリ日記" : "まだ ぬっていない"}</b></div></div>
-    <div class="in"><div class="tbar"><i class="m" style="width:${Math.max(pct, 12)}%">${pct.toFixed(1)}%</i><i class="e">${(100 - pct).toFixed(1)}%</i></div>
-      <div class="team"><div class="th"><span>${e ? "WIN!" : "LOSE..."}</span><span>${len} p</span></div>
-        <div class="tr"><span>ちょうし</span><span>${e && e.mood ? e.mood : "─"}</span></div><div class="tr"><span>その日までの れんぞく</span><span>${e ? streakAt(k) : 0} 日</span></div><div class="tr"><span>スペシャル（200文字）</span><span>${len >= GOAL ? "はつどう！" : `あと ${GOAL - len}`}</span></div></div>
-      <div class="htext">${e ? esc(e.text) : (k > today ? "まだ来ていない日。" : "この日は まだ まっさら。A で ぬろう。")}</div></div>`;
+  const today = ymd(new Date()), keys = hKeys(), rec = record(), page = keys.slice(hpage * 8, hpage * 8 + 8);
+  $("hW").textContent = rec.w; $("hL").textContent = rec.l; $("hTitle").textContent = rec.cur >= 2 ? `${rec.cur}連勝中！` : `せんせき ${hpage + 1}/${hPages()}`;
+  $("hList").innerHTML = page.length ? page.map((k, i) => { const m = match(k), cols = teamCols(data[k].mood);
+    return `<li><button class="hr ${m.win ? "win" : ""} ${i === hcur ? "cur" : ""}" data-h="${i}"><span class="res">${m.win ? "WIN!" : "LOSE..."}</span><span><b>${k === today ? "きょう" : md(k)}</b><span class="vs"><em>${m.me.toFixed(1)}%</em> - ${m.en.toFixed(1)}%</span></span><span class="mi" style="--mc:${cols[0]}"></span></button></li>`; }).join("")
+    : `<li class="hempty">まだ 試合がない。A で きょうの試合へ！</li>`;
+  const k = page[hcur], hd = $("hDet");
+  if (!k) { hd.innerHTML = `<div class="img"><canvas width="640" height="200" id="hImg"></canvas><div class="t"><span>NO DATA</span><b>まだ 試合がない</b></div></div><div class="in"><div class="htext">1日1試合。書いた文字数が塗りポイントになって、その日の相手チームと ナワバリを取りあう。</div></div>`; stageThumb($("hImg"), today); return; }
+  const m = match(k), e = data[k], cols = teamCols(e.mood), need = needFor(k);
+  hd.style.setProperty("--c", cols[0]); hd.style.setProperty("--enemy", cols[1]);
+  hd.innerHTML = `<div class="img"><canvas width="640" height="200" id="hImg"></canvas><div class="t"><span>${k.replace(/-/g, "/")}</span><b>ナワバリバトル</b></div></div>
+    <div class="in"><div class="tbar"><i class="m" style="width:${Math.max(m.me, 14)}%">${m.me.toFixed(1)}%</i><i class="e" style="width:${Math.max(m.en, 14)}%">${m.en.toFixed(1)}%</i></div>
+      <div class="team"><div class="th"><span>${m.win ? "WIN!" : "LOSE..."}</span><span>${m.len} p</span></div>
+        <div class="tr"><span>あいてチーム（${m.tier}）</span><span>${m.en.toFixed(1)}%</span></div>
+        <div class="tr"><span>マッチング（それまでの平均）</span><span>${Math.round(m.base)} p</span></div>
+        <div class="tr"><span>${m.win ? "WIN に必要だった ぬりポイント" : "WIN まで あと"}</span><span>${m.win ? `${need} p` : `${need - m.len} p`}</span></div>
+        <div class="tr"><span>ちょうし</span><span>${e.mood || "─"}</span></div>
+        <div class="tr"><span>その日までの れんぞく</span><span>${streakAt(k)} 日</span></div></div>
+      <div class="htext">${esc(e.text)}</div></div>`;
   stageThumb($("hImg"), k);
 }
 
@@ -561,25 +662,39 @@ function openCal() {
   $("cMon").textContent = `${y}年 ${m + 1}月`;
   let h = DOW.map(d => `<span>${d}</span>`).join("");
   for (let i = 0; i < weeks * 7; i++) { const d = new Date(start); d.setDate(start.getDate() + i); const k = ymd(d), fut = k > today;
-    h += `<button class="cd ${d.getMonth() !== m ? "out" : ""} ${fut ? "fut" : ""} ${k === today ? "today" : ""}" ${fut ? "disabled" : `data-go="${k}"`} aria-label="${md(k)}${data[k] ? " 記録あり" : ""}">${data[k] ? `<canvas width="80" height="80" data-cell="${k}"></canvas>` : ""}<b>${d.getDate()}</b></button>`; }
+    h += `<button class="cd ${d.getMonth() !== m ? "out" : ""} ${fut ? "fut" : ""} ${k === today ? "today" : ""}" ${fut ? "disabled" : `data-go="${k}"`} aria-label="${md(k)}${data[k] ? (match(k).win ? " WIN" : " LOSE") : ""}">${data[k] ? `<canvas width="80" height="80" data-cell="${k}"></canvas><i class="wl ${match(k).win ? "w" : ""}">${match(k).win ? "WIN" : "LOSE"}</i>` : ""}<b>${d.getDate()}</b></button>`; }
   $("cg").innerHTML = h;
-  document.querySelectorAll("[data-cell]").forEach(cv => { const c = cv.getContext("2d"), R = rnd(seedOf(cv.dataset.cell)); splat(c, 40 + (R() - .5) * 10, 42, 18 + Math.min(10, data[cv.dataset.cell].text.length / 20), MC[data[cv.dataset.cell].mood] || "#c6f000", R); });
+  document.querySelectorAll("[data-cell]").forEach(cv => { const c = cv.getContext("2d"), R = rnd(seedOf(cv.dataset.cell)); const kk = cv.dataset.cell, m = match(kk), cols = teamCols(data[kk].mood); splat(c, 40 + (R() - .5) * 10, 40, 16 + Math.min(10, m.len / 20), cols[m.win ? 0 : 1], R); });
   $("cal").classList.add("show");
 }
 
 // ---------- editor ----------
-function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
+function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); if ($("ed").classList.contains("show")) updPts(); }
 function updPts() {
   const len = $("body").value.trim().length; $("ePts").innerHTML = `${pad(len, 4)}<small>p</small>`;
   const sp = $("eSp"); sp.style.setProperty("--v", `${Math.min(len / GOAL, 1) * 100}%`); if (len >= GOAL && !sp.classList.contains("full") && $("ed").classList.contains("show")) SE.special(); sp.classList.toggle("full", len >= GOAL);
+  // live turf meter vs today's opponent
+  if (!selected) return;
+  const m = score(selected, len), cols = teamCols(mood), ed = $("ed"), need = needFor(selected);
+  ed.style.setProperty("--tm", cols[0]); ed.style.setProperty("--te", cols[1]);
+  $("emM").style.width = `${m.me}%`; $("emE").style.width = `${m.en}%`;
+  $("emMe").textContent = `${m.me.toFixed(1)}%`; $("emEn").textContent = `${m.en.toFixed(1)}%`;
+  const h = $("emHint"), lead = len > 0 && m.win; h.classList.toggle("lead", lead);
+  h.textContent = !len ? `いつもの あなた ≒ ${Math.round(m.base)}p ／ ${need}p で勝てる` : lead ? (len - need < 20 ? "ギリギリ リード！" : "リード中！") : `逆転まで あと ${need - len}p`;
+  if (lead && !wasLead && ed.classList.contains("show")) SE.lead(); wasLead = lead;
+  // team icons: opponents get splatted as you close in
+  const down = len ? (lead ? 4 : Math.min(3, Math.floor(len / need * 4))) : 0, mine = lead ? 0 : Math.max(0, 2 - Math.floor(len / need * 3));
+  const drop = '<svg viewBox="0 0 20 24"><path d="M10 1s8 9 8 14a8 8 0 0 1-16 0C2 10 10 1 10 1z" fill="#111" opacity=".6"/></svg>';
+  $("tMe").innerHTML = [0, 1, 2, 3].map(i => `<i class="${i >= 4 - mine ? "x" : ""}" style="--tc:${cols[0]}">${drop}</i>`).join("");
+  $("tEn").innerHTML = [0, 1, 2, 3].map(i => `<i class="${i < down ? "x" : ""}" style="--tc:${cols[1]}">${drop}</i>`).join("");
 }
 function openEd(k) {
   if (busy || k > ymd(new Date())) return;
   closeAll(); selected = k; const e = data[k]; mood = e ? e.mood : null;
-  $("eT").textContent = k === ymd(new Date()) ? "きょうの ナワバリ" : `${md(k)} の ナワバリ`; $("eS").textContent = e ? "ぬりなおし" : "バトル開始！";
+  $("eT").textContent = k === ymd(new Date()) ? "きょうの ナワバリ" : `${md(k)} の ナワバリ`; $("eS").textContent = `${e ? "リベンジ" : "バトル開始！"} ／ あいて：${score(k, 0).tier}`;
   $("eDay").textContent = md(k);
   $("moods").innerHTML = MOODS.map(m => `<li><button data-m="${m}" class="${m === mood ? "on" : ""}" style="--mc:${MC[m]}"><i></i>${m}</button></li>`).join("");
-  $("body").value = e ? e.text : ""; lastLen = $("body").value.trim().length; updPts();
+  $("body").value = e ? e.text : ""; lastLen = $("body").value.trim().length; wasLead = !!(e && match(k).win); updPts();
   const cv = $("paint"); cv.width = innerWidth; cv.height = innerHeight; cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
   $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
   const tick = () => { const d = new Date(); $("eClk").textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; }; tick(); clearInterval(clkT); clkT = setInterval(tick, 10000);
@@ -602,47 +717,47 @@ const closeEd = (snd = true) => { if (snd) SE.back(); $("ed").classList.remove("
 async function save() {
   const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
   if (busy) return; busy = true;
-  const k = selected, isNew = !data[k], xp0 = totalXp(), r0 = rank(), best0 = bestStreak(), long0 = Object.values(data).reduce((m, x) => Math.max(m, x.text.length), 0);
+  const k = selected, isNew = !data[k], prev = match(k), xp0 = totalXp(), r0 = rank(), best0 = bestStreak(), long0 = Object.values(data).reduce((m, x) => Math.max(m, x.text.length), 0), rec0 = record();
   data[k] = { mood, text }; store(data); closeEd(false); SE.finish();
-  const res = $("res"); res.classList.add("show"); $("stamp").classList.remove("on"); $("rk").classList.remove("on"); $("rNext").classList.remove("on"); $("awards").innerHTML = "";
-  const jb = $("jbar"); jb.style.setProperty("--m", "0%"); jb.style.setProperty("--e", "0%");
-  // paint the week map
-  const today = ymd(new Date()), wk = weekKeys(), cv = $("map"), c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(today));
-  c.fillStyle = "#7a5a3a"; c.fillRect(0, 0, W, H);
-  for (let i = 0; i < 40; i++) { c.fillStyle = `rgba(${60 + R() * 40},${40 + R() * 30},${20 + R() * 20},.5)`; c.beginPath(); c.arc(R() * W, R() * H, 20 + R() * 80, 0, 7); c.fill(); }
-  const colW = (W - 160) / 7, blocks = wk.map((d, i) => ({ d, x: 80 + i * colW, y: 120 + R() * 60, w: colW - 8, h: H - 260 - R() * 60 }));
-  blocks.forEach(b => { c.fillStyle = "#c8c8cc"; c.fillRect(b.x, b.y, b.w, b.h); c.fillStyle = "rgba(0,0,0,.18)"; for (let i = 0; i < 4; i++) c.fillRect(b.x + R() * b.w * .8, b.y + R() * b.h * .8, 10 + R() * 30, 10 + R() * 30); });
-  const my = MODES[mode].c, en = MODES[mode].enemy, jobs = [];
-  blocks.forEach(b => { const e = data[b.d], past = b.d <= today; if (!past) return;
-    const n = e ? 10 + Math.min(16, Math.floor(e.text.length / 12)) : 9;
-    for (let i = 0; i < n; i++) jobs.push({ x: b.x + R() * b.w, y: b.y + R() * b.h, r: 18 + R() * 34, col: e ? (e.mood ? MC[e.mood] : my) : en }); });
-  for (let i = jobs.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [jobs[i], jobs[j]] = [jobs[j], jobs[i]]; }
-  c.save(); blocks.forEach(b => { c.rect(b.x, b.y, b.w, b.h); }); c.clip();
-  const t0 = performance.now(), dur = reduced ? 1 : 1500;
-  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); if (idx < target) SE.paint(); while (idx < target) { const j = jobs[idx++]; splat(c, j.x, j.y, j.r, j.col, R, false); } if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
-  c.restore();
-  c.font = "28px 'Lilita One', sans-serif"; c.fillStyle = "#fff"; c.textAlign = "center"; c.strokeStyle = "#111"; c.lineWidth = 6;
-  blocks.forEach(b => { const lab = `${DOW[new Date(b.d + "T00:00:00").getDay()]}`; c.strokeText(lab, b.x + b.w / 2, b.y - 16); c.fillText(lab, b.x + b.w / 2, b.y - 16); });
-  // judge bar
-  const elapsed = wk.filter(d => d <= today).length, wrote = wk.filter(d => data[d]).length, miss = elapsed - wrote;
-  const mp = wrote / 7 * 92, ep = miss / 7 * 92, mpts = wk.reduce((s, d) => s + (data[d] ? data[d].text.length : 0), 0);
+  const m = match(k), cols = teamCols(mood), rec = record();
+  const res = $("res"); res.style.setProperty("--c", cols[0]); res.style.setProperty("--enemy", cols[1]);
+  res.classList.add("show"); $("stamp").classList.remove("on", "lose"); $("rk").classList.remove("on"); $("rNext").classList.remove("on"); $("awards").innerHTML = "";
+  const jb = $("jbar"); jb.style.setProperty("--m", "0%"); jb.style.setProperty("--e", "0%"); $("jM").textContent = $("jE").textContent = "0.0%"; $("jMp").textContent = $("jEp").textContent = "";
+  $("jEnL").textContent = `あいてチーム（${m.tier}）`;
+  // paint the arena: both teams' ink lands in proportion to the final turf
+  const cv = $("map"), c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(k) + 7);
+  const floor = drawArena(c, W, H, R), jobs = turfJobs(k, m, W, H, cols, 72);
+  drawBases(c, W, H, cols);
+  c.save(); c.clip(floor);
+  const t0 = performance.now(), dur = reduced ? 1 : 1700;
+  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); if (idx < target) SE.paint(); while (idx < target) paintCell(c, jobs[idx++]); if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+  // settle into the outlined final render
+  c.restore(); drawArena(c, W, H, rnd(seedOf(k) + 7)); c.save(); c.clip(floor); paintTurf(c, jobs); c.restore(); drawBases(c, W, H, cols);
+  // judge
   await sleep(300);
-  SE.judge(); jb.style.setProperty("--m", `${Math.max(mp, 14)}%`); jb.style.setProperty("--e", `${Math.max(ep, miss ? 10 : 0)}%`);
+  SE.judge(); jb.style.setProperty("--m", `${Math.max(m.me, 14)}%`); jb.style.setProperty("--e", `${Math.max(m.en, 14)}%`);
   const cnt = (el, to, suf) => { const s = performance.now(); const f = t => { const q = Math.min((t - s) / 1300, 1); el.textContent = (to * q).toFixed(1) + suf; if (q < 1 && !reduced) requestAnimationFrame(f); else el.textContent = to.toFixed(1) + suf; }; requestAnimationFrame(f); };
-  jb.querySelector(".e").classList.toggle("zero", !miss); cnt($("jM"), mp, "%"); cnt($("jE"), ep, "%"); $("jMp").textContent = `${mpts}p`; $("jEp").textContent = `${miss}日`;
+  jb.querySelector(".e").classList.remove("zero"); cnt($("jM"), m.me, "%"); cnt($("jE"), m.en, "%"); $("jMp").textContent = `${m.len}p`; $("jEp").textContent = m.tier;
   await sleep(1500);
-  const st = $("stamp"); st.textContent = mp >= ep ? "WIN!" : "おしい！"; st.classList.add("on"); SE.stamp(); setTimeout(() => mp >= ep ? SE.win() : SE.lose(), 120);
+  const st = $("stamp"); st.textContent = m.win ? "WIN!" : "LOSE..."; st.classList.toggle("lose", !m.win); st.classList.add("on"); SE.stamp(); setTimeout(() => m.win ? SE.win() : SE.lose(), 120);
   await sleep(500);
-  // rank + awards
+  // rank (XP is the shared diary rule: every saved day counts, win or lose) + record
   const xp1 = totalXp(); $("rRank").textContent = rank(); $("rXpB").style.setProperty("--v", `${xp0 % XP_PER_RANK / XP_PER_RANK * 100}%`); $("rXp").textContent = `${xp1 % XP_PER_RANK}/${XP_PER_RANK}`;
-  $("rGain").textContent = isNew ? `+${xp1 - xp0} けいけんち ／ ${streakCount()}日 れんぞく` : "ぬりなおした！（けいけんちは そのまま）";
+  $("rGain").textContent = isNew ? `+${xp1 - xp0} けいけんち ／ ${streakCount()}日 れんぞく` : "書きなおした！（けいけんちは そのまま）";
+  $("rRec").textContent = `せんせき ${rec.w}勝 ${rec.l}敗${rec.cur >= 2 ? ` ／ ${rec.cur}連勝中！` : ""}`;
   $("rk").classList.add("on"); SE.xp(); if (rank() > r0) setTimeout(() => SE.rankUp(), 600); setTimeout(() => $("rXpB").style.setProperty("--v", `${rank() > r0 ? 100 : xp1 % XP_PER_RANK / XP_PER_RANK * 100}%`), 200);
   $("rUp").classList.toggle("on", rank() > r0); $("rUp").textContent = `ランクアップ！ ${rank()}`;
   const aw = [];
-  if (text.length > long0 && isNew) aw.push("ぬりポイント 自己ベスト");
-  if (bestStreak() > best0) aw.push(`れんぞく ${bestStreak()}日 自己ベスト`);
+  if (m.win && prev && !prev.win) aw.push("リベンジ せいこう！");
+  if (m.win && rec.cur >= 2) aw.push(`${rec.cur}連勝！`);
+  if (m.win && m.me - m.en >= 25) aw.push("あっしょう！");
+  if (m.win && m.me - m.en < 3) aw.push("ギリギリの しょうり");
+  if (!m.win && m.en - m.me < 3) aw.push("おしい！ きっこう");
+  if (!m.win) aw.push(`あと ${needFor(k) - m.len}p で WIN だった`);
+  if (rec.best > rec0.best && rec.best >= 2) aw.push(`${rec.best}連勝 自己ベスト`);
+  if (text.length > long0 && long0 && isNew) aw.push("ぬりポイント 自己ベスト");
+  if (bestStreak() > best0 && best0) aw.push(`れんぞく ${bestStreak()}日 自己ベスト`);
   if (text.length >= GOAL) aw.push("スペシャル はつどう！");
-  if (wrote >= 5) aw.push("こんしゅう 5日 たっせい");
   aw.push(`${text.length}p ぬった`);
   $("awards").innerHTML = aw.slice(0, 3).map(t => `<div class="aw"><i></i>${t}</div>`).join("");
   let ai = 0; for (const el of $("awards").children) { await sleep(rank() > r0 && !ai ? 900 : 260); el.classList.add("on"); SE.award(ai++); }
@@ -663,8 +778,8 @@ document.addEventListener("click", e => {
   if (e.target.closest("#tank")) { SE.glug(); return openEd(ymd(new Date())); }
   const sg = e.target.closest(".stage"); if (sg) { SE.ok(); return openEd(sg.dataset.k); }
   const hr = e.target.closest(".hr"); if (hr) { hcur = +hr.dataset.h; SE.move(); return renderHist(); }
-  if (e.target.closest("#hWrite")) { SE.ok(); return openEd(hDay(hcur)); }
-  if (e.target.closest("#hOlder")) { hpage++; hcur = 0; SE.page(); return renderHist(); }
+  if (e.target.closest("#hWrite")) { SE.ok(); return openEd(hKey(hcur)); }
+  if (e.target.closest("#hOlder")) { if (hpage < hPages() - 1) { hpage++; hcur = 0; SE.page(); renderHist(); } return; }
   if (e.target.closest("#hNewer")) { if (hpage) { hpage--; hcur = 0; SE.page(); renderHist(); } return; }
   const cd = e.target.closest("[data-go]"); if (cd) { SE.ok(); return openEd(cd.dataset.go); }
   if (e.target.closest("#cPrev") || e.target.closest("#cNext")) SE.page();
@@ -675,7 +790,7 @@ document.addEventListener("click", e => {
   if (e.target.closest("#cl")) return closeEd();
   if (e.target.closest("[data-close]")) return closeAll(true);
 });
-document.addEventListener("dblclick", e => { const hr = e.target.closest(".hr"); if (hr) { SE.ok(); openEd(hDay(+hr.dataset.h)); } });
+document.addEventListener("dblclick", e => { const hr = e.target.closest(".hr"); if (hr) { SE.ok(); openEd(hKey(+hr.dataset.h)); } });
 document.addEventListener("keydown", e => {
   const k = e.key, K = k.toLowerCase(), edOpen = $("ed").classList.contains("show"), hOpen = $("hist").classList.contains("show"), cOpen = $("cal").classList.contains("show");
   if ($("res").classList.contains("show")) { if ((k === "Enter" || k === " " || K === "a" || k === "Escape") && $("rNext").classList.contains("on")) { e.preventDefault(); closeRes(); } return; }
@@ -691,10 +806,10 @@ document.addEventListener("keydown", e => {
   if (hOpen) {
     if (k === "Escape" || K === "b") return closeAll(true);
     if (k === "ArrowUp" && hcur > 0) { e.preventDefault(); hcur--; SE.move(); return renderHist(); }
-    if (k === "ArrowDown") { e.preventDefault(); if (hcur < 7) { hcur++; SE.move(); } else { hpage++; hcur = 0; SE.page(); } return renderHist(); }
-    if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); hpage++; hcur = 0; SE.page(); return renderHist(); }
+    if (k === "ArrowDown") { e.preventDefault(); if (hcur < hCount() - 1) { hcur++; SE.move(); } else if (hpage < hPages() - 1) { hpage++; hcur = 0; SE.page(); } return renderHist(); }
+    if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); if (hpage < hPages() - 1) { hpage++; hcur = 0; SE.page(); renderHist(); } return; }
     if ((k === "ArrowLeft" || K === "l" || K === "q") && hpage) { e.preventDefault(); hpage--; hcur = 0; SE.page(); return renderHist(); }
-    if (enter) { e.preventDefault(); SE.ok(); return openEd(hDay(hcur)); }
+    if (enter) { e.preventDefault(); SE.ok(); return openEd(hKey(hcur)); }
     return;
   }
   if (cOpen) {
