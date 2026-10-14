@@ -21,174 +21,319 @@
 <!-- seo:end -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=RocknRoll+One&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Lilita+One&family=M+PLUS+Rounded+1c:wght@700;800;900&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#14112c;--fg:#d9d4ff;--hi:#ffffff;--acc:#ff6a00;--acc2:#3b2bff;--line:rgba(255,255,255,.55);--panel:rgba(26,20,60,.88);--sel:rgba(200,255,0,.16);--glow:rgba(255,106,0,.55);--warn:#c8ff00;--fb:'RocknRoll One','Hiragino Maru Gothic ProN',sans-serif;--fh:'Rubik Mono One','RocknRoll One',sans-serif; }
-
+  /* Ink-shooter lobby: LED triangle wall, glitchy neon match card with drips, ink tank on a platform, currency/rank pills,
+     rule + stage panel; battle-HUD editor that splats ink while typing; turf-judging results with awards */
+  :root { --fd:'Dela Gothic One','M PLUS Rounded 1c',sans-serif; --fl:'Lilita One','M PLUS Rounded 1c',sans-serif; --fb:'M PLUS Rounded 1c',sans-serif;
+    --c:#c6f000; --cd:#2a3a00; --wall:#b8e600; --enemy:#7a2bff; --panel:rgba(20,20,26,.92); --line:#3a3a44; }
   * { box-sizing:border-box; margin:0; }
-  body { min-height:100vh; color:var(--fg); overflow-x:hidden; font-family:var(--fb); background:var(--bg); }
-  main { position:relative; z-index:1; max-width:860px; margin:0 auto; padding:26px 16px 70px; }
-  header { position:relative; border-bottom:2px solid var(--line); padding-bottom:12px; margin-bottom:24px; animation:typeIn .8s both; }
-  .op { font-size:12px; letter-spacing:.4em; color:var(--acc); }
-  h1 { font-family:var(--fh); font-weight:700; font-size:clamp(34px,8.5vw,66px); letter-spacing:.05em; line-height:1.05; color:var(--hi); margin:4px 0; }
-  h1 small { display:block; font-size:.4em; letter-spacing:.35em; color:var(--fg); font-family:var(--fb); font-weight:400; }
-  .clock { display:flex; flex-wrap:wrap; gap:22px; font-size:15px; letter-spacing:.15em; margin-top:8px; }
-  .clock b { color:var(--acc); font-weight:400; margin-right:6px; }
-  .blink { animation:blink 1s steps(1) infinite; }
-  .panel { position:relative; background:var(--panel); border:1px solid var(--line); padding:22px 22px 18px; margin-bottom:30px; }
-  .ttl { display:inline-block; font-family:var(--fh); font-size:15px; letter-spacing:.25em; color:var(--bg); background:var(--acc); padding:2px 14px; margin:-36px 0 12px -8px; }
-  .gauge { margin-bottom:12px; }
-  .gauge b { font-weight:400; display:flex; justify-content:space-between; letter-spacing:.2em; font-size:14px; }
-  .gauge b em { font-style:normal; font-family:var(--fh); font-size:20px; color:var(--hi); }
-  .track { height:16px; border:1px solid var(--line); padding:2px; background:rgba(0,0,0,.45); }
-  .track div { height:100%; width:0; transition:width .9s cubic-bezier(.2,.9,.3,1); background:repeating-linear-gradient(90deg,var(--c) 0 8px,transparent 8px 10px); }
-  .life div { --c:var(--acc); } .stam div { --c:var(--acc2); }
-  .row3 { display:flex; gap:26px; flex-wrap:wrap; margin-top:14px; }
-  .row3 div { flex:1 1 130px; border-top:1px solid var(--line); padding-top:6px; }
-  .row3 b { display:block; font-weight:400; font-size:12px; letter-spacing:.25em; color:var(--acc); }
-  .row3 i { font-style:normal; font-family:var(--fh); font-size:38px; color:var(--hi); line-height:1.1; }
-  .moods { list-style:none; padding:0; margin-bottom:18px; }
-  .moods button { width:100%; text-align:left; font:inherit; font-size:17px; cursor:pointer; color:var(--fg); background:transparent; border:0;
-    border-bottom:1px dashed var(--line); padding:8px 8px 8px 30px; position:relative; display:flex; justify-content:space-between; transition:.1s; }
-  .moods button span { font-size:12px; letter-spacing:.2em; opacity:.7; }
-  .moods button:hover { color:var(--acc); }
-  .moods button.on { background:var(--sel); color:var(--hi); animation:fade .25s; }
-  .moods button.on::before { content:"▶"; position:absolute; left:8px; color:var(--acc); animation:blink .8s steps(1) infinite; }
-  textarea { width:100%; min-height:180px; resize:vertical; padding:12px 14px; font:inherit; font-size:16px; line-height:1.9; color:var(--hi);
-    background:rgba(255,255,255,.05); border:1px solid var(--line); outline:none; }
-  textarea:focus { border-color:var(--acc); box-shadow:0 0 12px var(--glow); }
-  textarea::placeholder { color:var(--fg); opacity:.45; }
-  .hint { font-size:12px; color:var(--acc); margin-top:6px; min-height:1.2em; }
-  .save { display:block; margin:14px 0 0 auto; font-family:var(--fh); font-weight:700; font-size:24px; letter-spacing:.3em; cursor:pointer;
-    color:var(--bg); background:var(--acc); border:0; padding:8px 34px; transition:.1s; }
-  .save:hover { background:var(--hi); box-shadow:0 0 18px var(--glow); }
-  .save:active { transform:scale(.95); }
-  .cal { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
-  .cal div { aspect-ratio:1; display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--line); transition:.15s; }
-  .cal .dow { aspect-ratio:auto; border:0; color:var(--acc); font-size:12px; letter-spacing:.2em; }
-  .cal .done { color:var(--bg); font-weight:700; background:var(--acc); }
-  .cal .today { outline:2px solid var(--hi); outline-offset:2px; }
-  .cal .sel { box-shadow:0 0 0 3px var(--acc2); }
-  .cal div[data-d]:hover { background:var(--sel); transform:scale(1.12); }
-  h2 { font-family:var(--fh); font-size:22px; letter-spacing:.3em; color:var(--hi); margin:6px 0 14px; }
-  .entry { background:var(--panel); border:1px solid var(--line); border-left:6px solid var(--acc); padding:12px 18px; margin-bottom:12px; }
-  .entry small { color:var(--acc); letter-spacing:.2em; font-size:12px; }
-  .entry p { white-space:pre-wrap; margin-top:4px; line-height:1.8; color:var(--hi); }
-  #stamp { position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.72); }
-  #stamp.show { display:flex; animation:fade .2s; }
-  #stamp .bars::before, #stamp .bars::after { content:""; position:absolute; left:0; right:0; height:16vh; background:#000; z-index:1; }
-  #stamp .bars::before { top:0; animation:barT .5s ease-out; } #stamp .bars::after { bottom:0; animation:barB .5s ease-out; }
-  @keyframes barT { from { transform:translateY(-100%); } } @keyframes barB { from { transform:translateY(100%); } }
-  #stamp .box { text-align:center; position:relative; z-index:2; padding:0 16px; }
-  #bang { font-family:var(--fh); font-weight:700; font-size:clamp(110px,28vw,230px); line-height:1; color:var(--warn); text-shadow:0 0 30px var(--warn), 5px 5px 0 #000; animation:bang .45s cubic-bezier(.2,2,.4,1); }
-  @keyframes bang { from { transform:scale(.1) rotate(-25deg); opacity:0; } }
-  #stampBig { font-family:var(--fh); font-size:clamp(22px,5.5vw,40px); letter-spacing:.2em; color:var(--hi); min-height:1.4em; }
-  #stampBig::after { content:"█"; animation:blink .6s steps(1) infinite; color:var(--acc); }
-  #stampSub { margin-top:6px; letter-spacing:.3em; font-size:14px; color:var(--acc); }
-  @keyframes blink { 50% { opacity:0; } }
-  @keyframes fade { from { opacity:0; } }
-  @keyframes typeIn { from { opacity:0; transform:translateX(-30px); } }
-  @keyframes panelIn { 0% { opacity:0; transform:translateY(24px); } 40% { opacity:.4; } 55% { opacity:.1; } 70% { opacity:1; } }
-  @keyframes rise { from { opacity:0; transform:scale(.6); } }
-  @keyframes entryIn { from { opacity:0; transform:translateX(-30px); } }
-  main > .panel { animation:panelIn .7s both; }
-  main > .panel:nth-of-type(1) { animation-delay:.25s; } main > .panel:nth-of-type(2) { animation-delay:.45s; } main > .panel:nth-of-type(3) { animation-delay:.65s; }
-  .cal div[data-d] { animation:rise .3s calc(var(--i) * 16ms + .8s) backwards; }
-  .entry { animation:entryIn .45s calc(var(--i) * 70ms) ease-out backwards; }
-  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
+  html, body { height:100%; }
+  body { font-family:var(--fb); color:#fff; background:#07070a; overflow:hidden; }
+  button { font:inherit; color:inherit; }
 
+  /* ---------- LED wall + platform ---------- */
+  .wall { position:fixed; inset:0; overflow:hidden; background:#050506; }
+  .wall svg { position:absolute; left:50%; top:46%; width:max(140vw,1500px); translate:-50% -50%; transform:perspective(900px) rotateX(8deg); }
+  .wall::after { content:""; position:absolute; inset:0; background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.16) 45%,transparent 60%) 0 0/250% 100%; animation:sweep 6s linear infinite; mix-blend-mode:overlay; pointer-events:none; }
+  .wall::before { content:""; position:absolute; inset:0; z-index:1; background:radial-gradient(ellipse 60% 55% at 50% 45%,transparent 30%,rgba(0,0,0,.78) 100%); pointer-events:none; }
+  .floor { position:fixed; left:0; right:0; bottom:0; height:30vh; z-index:1; background:radial-gradient(ellipse 80% 100% at 50% 100%,#1a1a20,#08080a 70%); }
+  .plat { position:fixed; z-index:2; left:50%; bottom:6vh; width:min(46vw,72vh); aspect-ratio:3.2; translate:-50% 0; border-radius:50%;
+    background:radial-gradient(ellipse at 50% 40%,#3a3a44,#1a1a20 60%,#0a0a0e); box-shadow:0 0 0 4px #2a2a32, 0 0 0 10px #121216, 0 0 0 12px rgba(255,255,255,.08), 0 18px 40px rgba(0,0,0,.8); }
+  .plat::before { content:""; position:absolute; inset:14% 18%; border-radius:50%; border:3px solid rgba(255,255,255,.08); box-shadow:inset 0 0 30px color-mix(in srgb,var(--c) 30%,transparent); }
+  .plat::after { content:""; position:absolute; inset:-30% 10% 30%; border-radius:50%; background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 35%,transparent),transparent 65%); filter:blur(10px); animation:pulse 3s ease-in-out infinite; }
 
-  body { background:
-      radial-gradient(circle at 12% 18%, rgba(255,106,0,.45) 0 90px, transparent 92px),
-      radial-gradient(circle at 88% 30%, rgba(59,43,255,.5) 0 130px, transparent 132px),
-      radial-gradient(circle at 70% 92%, rgba(200,255,0,.35) 0 100px, transparent 102px),
-      radial-gradient(circle at 6% 80%, rgba(59,43,255,.4) 0 70px, transparent 72px),
-      #14112c fixed; }
-  h1 { font-size:clamp(34px,9vw,76px); line-height:1.1; letter-spacing:.02em; margin-bottom:26px; transform:rotate(-3deg); background:linear-gradient(90deg,#ff6a00,#ff2d95 50%,#3b2bff); -webkit-background-clip:text; background-clip:text; color:transparent; filter:drop-shadow(3px 3px 0 #000); }
-  h1 small { -webkit-text-fill-color:var(--fg); font-family:var(--fb); letter-spacing:.2em; font-weight:400; }
-  header { border-bottom:0; }
-  .turf { display:flex; height:22px; margin-top:12px; border:3px solid #fff; border-radius:12px; overflow:hidden; transform:rotate(-1deg); background:#000; }
-  .turf i { display:block; height:100%; transition:width 1s cubic-bezier(.2,.9,.3,1); } .turf i:nth-child(1) { background:var(--acc); } .turf i:nth-child(2) { background:var(--acc2); }
-  .turfp { display:flex; justify-content:space-between; font-family:var(--fh); font-size:13px; margin-top:4px; } .turfp .vs { color:var(--warn); letter-spacing:.2em; }
-  #tfa { color:var(--acc); } #tfb { color:#8f86ff; }
-  .panel { border:3px solid #fff; border-radius:22px 8px 26px 10px; box-shadow:6px 6px 0 #000; }
-  main > .panel:nth-of-type(odd) { transform:rotate(-.5deg); } main > .panel:nth-of-type(even) { transform:rotate(.4deg); }
-  .ttl { background:var(--acc); color:#000; border-radius:12px 4px 14px 4px; transform:rotate(-2deg); font-size:13px; font-weight:400; margin-top:-38px; }
-  .track { border:3px solid #fff; border-radius:14px; background:#000; } .track div { background:repeating-linear-gradient(90deg,var(--c) 0 10px,transparent 10px 12px); border-radius:8px; }
-  .life div { --c:#ff6a00; } .stam div { --c:#c8ff00; }
-  .row3 i { font-weight:400; font-size:32px; } .gauge b em { font-weight:400; font-size:22px; }
-  .moods button span { color:var(--r); opacity:1; font-family:var(--fh); text-shadow:0 0 8px var(--r); }
-  .moods button.on { border-radius:14px; border-left:6px solid var(--r); }
-  .save { font-weight:400; font-size:28px; border-radius:18px 6px 20px 6px; background:var(--warn); color:#000; border:3px solid #000; box-shadow:5px 5px 0 #fff; transform:rotate(-2deg); }
-  .save:hover { background:#fff; }
-  .cal div { border-radius:50%; border:2px solid rgba(255,255,255,.3); }
-  .cal .dow { border:0; } .cal div[data-d].done { border-radius:62% 38% 55% 45% / 48% 62% 38% 52%; background:var(--acc); color:#000; border:0; }
-  .cal div[data-d].done:nth-child(3n) { background:var(--acc2); color:#fff; border-radius:44% 56% 40% 60% / 58% 42% 58% 42%; }
-  .cal div[data-d].done:nth-child(3n+1) { background:var(--warn); color:#000; border-radius:50% 50% 36% 64% / 44% 56% 44% 56%; }
-  .entry { border-radius:14px; border-left-width:8px; }
-  #stamp { background:rgba(10,6,30,.9); }
-  #bang { position:relative; font-family:var(--fh); font-size:clamp(70px,20vw,170px); color:#000; text-shadow:none; z-index:1; transform:rotate(-6deg); animation:splat .55s cubic-bezier(.2,2,.4,1); }
-  #bang::before { content:""; position:absolute; inset:-30% -14%; z-index:-1; background:var(--warn); border-radius:58% 42% 52% 48% / 46% 60% 40% 54%; animation:blob .6s cubic-bezier(.2,2,.4,1); }
-  @keyframes splat { from { transform:scale(.1) rotate(-30deg); opacity:0; } }
-  @keyframes blob { from { transform:scale(0); } }
-  #stampSub::before { content:"INK ─ "; }
-  
+  /* ink tank (stands where a character would) */
+  .tank { position:fixed; z-index:3; left:50%; bottom:12vh; width:min(17vw,26vh); translate:-50% 0; animation:bob 3.2s ease-in-out infinite; cursor:pointer; }
+  .tank svg { width:100%; display:block; filter:drop-shadow(0 18px 18px rgba(0,0,0,.6)); overflow:visible; }
+  .tank .tdate { position:absolute; left:0; right:0; top:-26%; text-align:center; font:400 min(5.2vh,3vw)/1 var(--fd); text-shadow:0 3px 0 #000; }
+  .tank .tdate small { display:block; font:800 min(1.8vh,1vw) var(--fb); letter-spacing:.2em; color:#ddd; margin-top:.4vh; }
+
+  /* ---------- top-left: tabs + match card ---------- */
+  .tabs { position:fixed; z-index:6; left:2.2vw; top:3vh; display:flex; align-items:center; gap:.5vw; padding:.6vh .6vw; background:rgba(20,20,26,.9); border-radius:999px; box-shadow:0 0 0 2px #2a2a32; }
+  .tabs .lr { display:grid; place-items:center; width:min(4.2vh,2.4vw); aspect-ratio:1; border-radius:8px; background:#6a5ae8; font:400 min(2.2vh,1.2vw) var(--fl); clip-path:polygon(30% 0,100% 0,100% 100%,30% 100%,0 50%); }
+  .tabs .lr.r { clip-path:polygon(0 0,70% 0,100% 50%,70% 100%,0 100%); }
+  .tab { all:unset; cursor:pointer; display:grid; place-items:center; width:min(4.4vh,2.5vw); aspect-ratio:1; border-radius:50%; background:#2a2a32; transition:.15s; }
+  .tab svg { width:60%; } .tab.on { background:#fff; box-shadow:0 0 0 3px var(--c); } .tab.on svg * { stroke:#111; fill:#111; }
+  .tab:focus-visible { outline:3px solid var(--c); }
+  .sub { position:fixed; z-index:6; left:3vw; top:calc(3vh + min(5.6vh,3.2vw) + 1.2vh); display:flex; align-items:center; gap:.6vw; font:900 min(1.9vh,1.05vw) var(--fb); color:#ddd; }
+  .sub i { width:min(3.4vh,1.9vw); aspect-ratio:1; border-radius:6px; background:var(--c); display:grid; place-items:center; font-style:normal; color:#111; font:400 min(2vh,1.1vw) var(--fl); }
+  .cardWrap { position:fixed; z-index:6; left:2.6vw; top:16vh; width:min(36vw,58vh); }
+  .card { all:unset; box-sizing:border-box; cursor:pointer; position:relative; display:grid; grid-template-columns:auto 1fr; align-items:center; gap:1.4vw; width:100%; aspect-ratio:1.55; padding:2.4vh 2vw 5.6vh 2.2vw; border-radius:min(5vh,2.8vw);
+    background:radial-gradient(circle at 30% 20%,rgba(255,255,255,.35),transparent 50%), var(--c); color:#121212; box-shadow:0 0 0 min(.8vh,.45vw) #fff, 0 0 30px color-mix(in srgb,var(--c) 70%,transparent); transition:transform .2s cubic-bezier(.3,1.6,.5,1); }
+  .card::before, .card::after { content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none; mix-blend-mode:screen; }
+  .card::before { box-shadow:0 0 0 min(.8vh,.45vw) #ff2fa8; translate:-.7vw .5vh; opacity:.85; animation:glitchA 3.4s steps(1) infinite; }
+  .card::after { box-shadow:0 0 0 min(.8vh,.45vw) #19e0ff; translate:.7vw -.4vh; opacity:.85; animation:glitchB 3.4s steps(1) infinite; }
+  .card:hover { transform:scale(1.02) rotate(-.6deg); } .card:focus-visible { outline:none; box-shadow:0 0 0 min(.8vh,.45vw) #fff, 0 0 0 min(1.4vh,.8vw) #111, 0 0 30px var(--c); }
+  .card.swap { animation:cardIn .4s cubic-bezier(.3,1.6,.5,1); }
+  .card .emb { width:min(16vh,9vw); aspect-ratio:1; } .card .emb svg { width:100%; display:block; }
+  .card .nm { font:400 min(5.4vh,3vw)/1.15 var(--fd); letter-spacing:.04em; }
+  .card .ds { position:absolute; left:0; right:0; bottom:3vh; text-align:center; font:900 min(2.1vh,1.15vw) var(--fb); }
+  .card .drip { position:absolute; left:6%; right:6%; top:96%; height:min(10vh,5.6vw); color:var(--c); pointer-events:none; }
+  .card .drip svg { width:100%; height:100%; display:block; overflow:visible; }
+  .modeBadge { position:absolute; left:-1vw; bottom:-12vh; width:min(10vh,5.6vw); aspect-ratio:1; border-radius:50%; background:#d85a2a; display:grid; place-items:center; box-shadow:0 0 0 4px #2a1208, 0 0 0 7px #ffb08a; animation:spin 12s linear infinite; }
+  .modeBadge svg { width:60%; }
+  .hintL { position:fixed; z-index:6; left:2.6vw; bottom:4vh; display:flex; align-items:center; gap:1.2vw; font:900 min(1.9vh,1.05vw) var(--fb); }
+  .hintL button { all:unset; cursor:pointer; display:flex; align-items:center; gap:.5vw; padding:.4vh 1vw .4vh .4vw; border-radius:999px; background:rgba(20,20,26,.9); box-shadow:0 0 0 2px #2a2a32; }
+  .hintL i { font-style:normal; display:grid; place-items:center; width:min(3vh,1.7vw); aspect-ratio:1; border-radius:50%; background:#fff; color:#111; font:400 min(1.8vh,1vw) var(--fl); }
+  .hintL button:hover, .hintL button:focus-visible { box-shadow:0 0 0 2px var(--c); outline:0; }
+
+  /* ---------- top-right: pills ---------- */
+  .pills { position:fixed; z-index:6; right:1.6vw; top:2vh; margin-right:min(130px,11vw); display:flex; flex-direction:column; align-items:flex-end; gap:.8vh; }
+  .prow { display:flex; gap:.6vw; }
+  .pill { display:flex; align-items:center; gap:.5vw; padding:.4vh 1vw .4vh .5vw; border-radius:999px; background:rgba(20,20,26,.92); box-shadow:0 0 0 2px #2a2a32; font:400 min(2.6vh,1.45vw) var(--fl); letter-spacing:.04em; }
+  .pill .ic { width:min(3vh,1.7vw); aspect-ratio:1; border-radius:50%; display:grid; place-items:center; }
+  .pill .ic.ink { background:#6a3cff; } .pill .ic.coin { background:radial-gradient(circle at 35% 30%,#fff3a8,#ffcc00 55%,#b88a00); color:#4a3400; font:400 min(1.8vh,1vw) var(--fl); }
+  .rank { display:flex; align-items:center; gap:.6vw; padding:.4vh .5vw .4vh 1vw; border-radius:999px; background:rgba(20,20,26,.92); box-shadow:0 0 0 2px #2a2a32; font:900 min(1.8vh,1vw) var(--fb); }
+  .rank b { font:400 min(3vh,1.7vw) var(--fl); margin-right:.4vw; }
+  .xp { position:relative; width:min(22vh,12vw); height:min(3.2vh,1.8vw); border-radius:999px; background:#1a2a10; overflow:hidden; display:grid; place-items:center; font:400 min(1.8vh,1vw) var(--fl); }
+  .xp i { position:absolute; inset:0 auto 0 0; width:var(--v); background:linear-gradient(180deg,#9aff5a,#3ad01a); transition:width 1s cubic-bezier(.2,.9,.3,1); }
+  .xp span { position:relative; text-shadow:0 1px 2px #000; }
+  .chal { width:min(30vh,17vw); padding:.8vh .8vw; border-radius:12px; background:rgba(20,20,26,.92); box-shadow:0 0 0 2px #2a2a32; }
+  .chal h4 { display:flex; align-items:center; gap:.5vw; font:900 min(1.7vh,.95vw) var(--fb); padding:.3vh .6vw; border-radius:6px; background:#2a2a32; }
+  .chal h4::before { content:""; width:min(1.6vh,.9vw); aspect-ratio:1; background:var(--c); clip-path:polygon(0 0,100% 50%,0 100%); }
+  .chal .row { display:flex; align-items:center; gap:.6vw; margin-top:.8vh; }
+  .chal .row svg { width:min(3.4vh,1.9vw); }
+  .chal .bar { flex:1; position:relative; height:min(3vh,1.7vw); border-radius:6px; background:#121216; overflow:hidden; display:grid; place-items:center; font:400 min(2vh,1.1vw) var(--fl); }
+  .chal .bar i { position:absolute; inset:0 auto 0 0; width:var(--v); background:repeating-linear-gradient(-45deg,var(--c) 0 8px,color-mix(in srgb,var(--c) 70%,#000) 8px 16px); transition:width 1s; }
+  .chal .bar span { position:relative; text-shadow:0 1px 3px #000; }
+
+  /* ---------- right: rule + stages ---------- */
+  .rule { position:fixed; z-index:6; right:2vw; top:44vh; width:min(30vw,50vh); padding:1.4vh 1vw 1.4vh; border-radius:14px; background:var(--panel); box-shadow:0 0 0 2px #2a2a32, 0 12px 30px rgba(0,0,0,.6); }
+  .rule .hd { display:flex; align-items:center; justify-content:space-between; font:900 min(1.7vh,.95vw) var(--fb); }
+  .rule .hd span:last-child { padding:.2vh .8vw; border-radius:999px; background:#2a2a32; }
+  .rule .rn { margin:.6vh 0 1vh; font:400 min(3.4vh,1.9vw) var(--fd); background:linear-gradient(transparent 62%,color-mix(in srgb,var(--c) 70%,transparent) 62% 90%,transparent 90%); display:inline-block; padding:0 .4vw; }
+  .rule .lb { font:900 min(1.6vh,.9vw) var(--fb); color:#ccc; margin:.4vh 0 .6vh; }
+  .stage { all:unset; box-sizing:border-box; cursor:pointer; display:grid; grid-template-columns:min(13vh,7.4vw) minmax(0,1fr); align-items:center; gap:.8vw; width:100%; padding:.5vh .4vw; border-radius:10px; }
+  .stage + .stage { margin-top:.6vh; } .stage:hover, .stage:focus-visible { background:#24242c; outline:0; }
+  .stage canvas { width:100%; aspect-ratio:16/9; border-radius:6px; display:block; box-shadow:0 0 0 2px #121216; }
+  .stage b { display:block; font:900 min(1.9vh,1.05vw) var(--fb); } .stage small { display:block; font:700 min(1.5vh,.85vw) var(--fb); color:#aaa; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+  /* ---------- overlays ---------- */
+  .ov { position:fixed; inset:0; z-index:20; display:none; }
+  .ov.show { display:block; animation:fadeIn .25s both; }
+  .ov .bg { position:absolute; inset:0; background:rgba(5,5,8,.82); backdrop-filter:blur(6px); }
+
+  /* history (recent battles style) */
+  .hist { position:absolute; inset:64px 3vw 7vh; display:grid; grid-template-columns:minmax(0,.95fr) minmax(0,1.25fr); gap:2vw; }
+  .hl { display:flex; flex-direction:column; gap:1vh; min-height:0; }
+  .hsum { display:flex; align-items:center; justify-content:space-between; padding:1vh 1.6vw; border-radius:12px; background:var(--panel); box-shadow:0 0 0 2px #2a2a32; font:900 min(2vh,1.1vw) var(--fb); }
+  .hsum b { font:400 min(4.4vh,2.4vw)/1 var(--fl); } .hsum .w b { color:var(--c); } .hsum small { display:block; font:400 min(1.4vh,.8vw) var(--fl); color:#aaa; text-align:center; }
+  .hlist { flex:1; min-height:0; overflow:hidden; display:flex; flex-direction:column; gap:.9vh; list-style:none; padding:.4vh .4vw; }
+  .hr { all:unset; box-sizing:border-box; cursor:pointer; width:100%; display:grid; grid-template-columns:min(15vh,8.4vw) 1fr auto; align-items:center; gap:1vw; padding:.6vh 1vw .6vh .6vw; border-radius:12px; background:rgba(40,40,48,.95); transition:transform .12s; }
+  .hr .res { text-align:center; padding:.5vh 0; border-radius:8px; font:400 min(2.6vh,1.45vw) var(--fl); letter-spacing:.04em; background:#4a4a54; color:#ddd; }
+  .hr.win .res { background:var(--c); color:#111; }
+  .hr b { display:block; font:900 min(1.8vh,1vw) var(--fb); color:#ddd; } .hr span { font:400 min(2.2vh,1.2vw) var(--fl); }
+  .hr .mi { width:min(3.4vh,1.9vw); aspect-ratio:1; border-radius:50%; background:var(--mc,#444); box-shadow:0 0 0 2px #111; }
+  .hr.cur { box-shadow:0 0 0 3px #fff, 0 0 0 6px #ff2fa8, 0 0 16px #19e0ff; transform:translateX(.6vw); }
+  .hd2 { display:flex; flex-direction:column; min-height:0; border-radius:14px; overflow:hidden; background:var(--panel); box-shadow:0 0 0 2px #2a2a32; }
+  .hd2 .img { position:relative; height:28%; min-height:90px; } .hd2 .img canvas { width:100%; height:100%; display:block; object-fit:cover; }
+  .hd2 .img .t { position:absolute; left:1vw; top:1vh; display:flex; flex-direction:column; gap:.4vh; }
+  .hd2 .img .t span { align-self:flex-start; padding:.2vh .8vw; background:#111; font:900 min(1.6vh,.9vw) var(--fb); }
+  .hd2 .img .t b { align-self:flex-start; padding:.3vh 1vw; background:#fff; color:#111; font:400 min(2.6vh,1.45vw) var(--fd); }
+  .hd2 .in { flex:1; min-height:0; overflow:auto; padding:1.4vh 1.4vw; display:flex; flex-direction:column; gap:1.2vh; }
+  .tbar { display:flex; height:min(4vh,2.2vw); border-radius:999px; overflow:hidden; box-shadow:0 0 0 2px #111; font:400 min(2vh,1.1vw) var(--fl); }
+  .tbar i { display:flex; align-items:center; padding:0 1vw; font-style:normal; } .tbar .m { background:var(--c); color:#111; } .tbar .e { flex:1; justify-content:flex-end; background:var(--enemy); }
+  .team { border-radius:12px; overflow:hidden; box-shadow:0 0 0 3px var(--c); }
+  .team .th { display:flex; justify-content:space-between; padding:.6vh 1vw; background:var(--c); color:#111; font:400 min(2.4vh,1.35vw) var(--fl); }
+  .team .tr { display:grid; grid-template-columns:1fr auto; padding:.6vh 1vw; font:900 min(1.8vh,1vw) var(--fb); border-top:1px solid #2a2a32; } .team .tr span:last-child { font:400 min(2.2vh,1.2vw) var(--fl); }
+  .htext { padding:1vh 1vw; border-radius:10px; background:#121216; font:700 min(1.9vh,1.05vw)/1.75 var(--fb); white-space:pre-wrap; word-break:break-all; }
+  .ofoot { position:absolute; left:3vw; bottom:1.4vh; display:flex; gap:1vw; font:900 min(1.7vh,.95vw) var(--fb); }
+  .ofoot button { all:unset; cursor:pointer; display:flex; align-items:center; gap:.5vw; padding:.3vh .9vw .3vh .3vw; border-radius:999px; background:rgba(20,20,26,.92); box-shadow:0 0 0 2px #2a2a32; }
+  .ofoot i { font-style:normal; display:grid; place-items:center; width:min(2.8vh,1.6vw); aspect-ratio:1; border-radius:50%; background:#fff; color:#111; font:400 min(1.6vh,.9vw) var(--fl); }
+  .ofoot button:hover, .ofoot button:focus-visible { box-shadow:0 0 0 2px var(--c); outline:0; }
+
+  /* calendar */
+  .calw { position:absolute; left:50%; top:50%; translate:-50% -50%; width:min(92vw,720px); padding:2vh 1.6vw 2.4vh; border-radius:18px; background:var(--panel); box-shadow:0 0 0 2px #2a2a32, 0 0 0 6px var(--c), 0 20px 40px rgba(0,0,0,.6); }
+  .calw h3 { display:flex; align-items:center; justify-content:space-between; font:400 min(4vh,26px) var(--fd); margin-bottom:1.4vh; }
+  .calw h3 button { all:unset; cursor:pointer; width:40px; text-align:center; border-radius:10px; background:#2a2a32; font:400 22px var(--fl); } .calw h3 button:hover, .calw h3 button:focus-visible { background:var(--c); color:#111; outline:0; }
+  .cg { display:grid; grid-template-columns:repeat(7,1fr); gap:6px; }
+  .cg span { text-align:center; font:900 12px var(--fb); color:#999; }
+  .cd { all:unset; box-sizing:border-box; cursor:pointer; position:relative; aspect-ratio:1; border-radius:10px; background:#1c1c22; overflow:hidden; }
+  .cd canvas { position:absolute; inset:0; width:100%; height:100%; }
+  .cd b { position:absolute; left:8%; top:4%; font:400 min(2.4vh,17px) var(--fl); text-shadow:0 1px 3px #000; }
+  .cd.out { opacity:.3; } .cd.fut { opacity:.35; cursor:default; } .cd.today { box-shadow:0 0 0 3px #fff; } .cd:not(.fut):hover { box-shadow:0 0 0 3px var(--c); } .cd:focus-visible { outline:3px solid var(--c); }
+
+  /* editor = battle HUD */
+  #ed .paint { position:absolute; inset:0; width:100%; height:100%; }
+  .ehud { position:absolute; left:0; right:0; top:2vh; display:flex; justify-content:center; align-items:center; gap:1vw; pointer-events:none; }
+  .ehud .clk { padding:.4vh 1.4vw; border-radius:10px; background:#111; box-shadow:0 0 0 2px #fff; font:400 min(3.4vh,24px) var(--fl); letter-spacing:.06em; }
+  .ehud .dy { padding:.4vh 1vw; border-radius:999px; background:var(--c); color:#111; font:900 min(2vh,15px) var(--fb); }
+  .pts { position:absolute; right:3vw; top:68px; display:flex; align-items:center; gap:1vw; pointer-events:none; }
+  .pts b { font:400 min(6vh,44px)/1 var(--fl); font-style:italic; text-shadow:0 3px 0 #000; letter-spacing:.02em; } .pts b small { font-size:.5em; }
+  .sp { position:relative; width:min(9vh,64px); aspect-ratio:1; border-radius:50%; background:conic-gradient(var(--c) var(--v,0%),#2a2a32 0); box-shadow:0 0 0 3px #111, 0 0 0 5px #fff; display:grid; place-items:center; }
+  .sp::after { content:""; position:absolute; inset:18%; border-radius:50%; background:#111; }
+  .sp span { position:relative; z-index:1; font:400 min(2vh,15px) var(--fl); }
+  .sp.full { animation:spGlow .6s ease-in-out infinite alternate; }
+  .ewin { position:absolute; left:50%; top:52%; translate:-50% -50%; width:min(92vw,680px); padding:2vh 1.6vw 2vh; border-radius:20px; background:rgba(14,14,18,.9); box-shadow:0 0 0 2px #2a2a32, 0 0 0 6px var(--c), 0 20px 50px rgba(0,0,0,.6); }
+  .ewin h3 { display:flex; align-items:baseline; gap:1vw; font:400 min(3.4vh,24px) var(--fd); } .ewin h3 small { font:900 13px var(--fb); color:#aaa; margin-left:auto; }
+  .lb2 { margin:1.4vh 0 .6vh; font:900 13px var(--fb); color:#bbb; }
+  .moods { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; list-style:none; padding:0; }
+  .moods button { all:unset; box-sizing:border-box; cursor:pointer; width:100%; text-align:center; padding:8px 0 6px; border-radius:12px; background:#1c1c22; box-shadow:0 0 0 2px #2a2a32; font:900 13px var(--fb); transition:transform .12s cubic-bezier(.3,1.6,.5,1); }
+  .moods button i { display:block; width:30px; height:38px; margin:0 auto 4px; background:var(--mc); clip-path:path("M15 0C15 0 30 18 30 26a15 15 0 0 1-30 0C0 18 15 0 15 0Z"); }
+  .moods button:hover { box-shadow:0 0 0 2px var(--mc); } .moods button.on { background:#fff; color:#111; box-shadow:0 0 0 3px var(--mc); transform:translateY(-4px); }
+  .moods button:focus-visible { outline:3px solid var(--c); }
+  textarea { width:100%; min-height:22vh; resize:vertical; background:rgba(28,28,34,.92); color:#fff; border:0; border-radius:14px; box-shadow:0 0 0 2px #2a2a32; font:700 16px/1.8 var(--fb); padding:10px 14px; outline:0; }
+  textarea:focus { box-shadow:0 0 0 3px var(--c); }
+  .acts { display:flex; gap:10px; align-items:center; margin-top:1.4vh; flex-wrap:wrap; }
+  .go { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; padding:7px 28px 7px 7px; border-radius:999px; background:var(--c); color:#111; font:400 18px var(--fd); box-shadow:0 4px 0 color-mix(in srgb,var(--c) 50%,#000); transition:transform .1s; }
+  .go i, .cl i { font-style:normal; display:grid; place-items:center; width:28px; height:28px; border-radius:50%; background:#111; color:#fff; font:400 15px var(--fl); }
+  .go:hover, .go:focus-visible { filter:brightness(1.08); outline:0; } .go:active { transform:translateY(3px); box-shadow:none; }
+  .cl { all:unset; cursor:pointer; display:flex; align-items:center; gap:8px; padding:5px 18px 5px 5px; border-radius:999px; background:#2a2a32; font:900 14px var(--fb); } .cl i { background:#fff; color:#111; }
+  .cl:hover, .cl:focus-visible { box-shadow:0 0 0 2px var(--c); outline:0; }
+  .hint { font:700 12px var(--fb); color:#999; }
+  .plus { position:absolute; z-index:3; pointer-events:none; font:400 22px var(--fl); color:#fff; text-shadow:0 2px 0 #000; animation:plus .8s ease-out forwards; }
+
+  /* results */
+  #res .map { position:absolute; left:50%; top:44%; translate:-50% -50%; width:min(92vw,140vh); aspect-ratio:16/9; border-radius:14px; overflow:hidden; box-shadow:0 0 0 3px #111, 0 20px 50px rgba(0,0,0,.7); }
+  #res .map canvas { width:100%; height:100%; display:block; }
+  .judge { position:absolute; left:50%; bottom:5vh; translate:-50% 0; width:min(92vw,980px); }
+  .judge .lbl { display:flex; justify-content:space-between; font:900 min(2.2vh,16px) var(--fb); padding:0 1.6vw; text-shadow:0 2px 4px #000; } .judge .lbl span:first-child { color:var(--c); } .judge .lbl span:last-child { color:color-mix(in srgb,var(--enemy) 60%,#fff); }
+  .jbar { position:relative; height:min(11vh,84px); border-radius:999px; overflow:hidden; background:#222; box-shadow:0 0 0 4px #111, 0 0 0 7px #fff; }
+  .jbar .m, .jbar .e { position:absolute; top:0; bottom:0; display:flex; flex-direction:column; justify-content:center; transition:width 1.4s cubic-bezier(.2,.9,.3,1); }
+  .jbar .m { left:0; width:var(--m,0%); background:var(--c); color:#111; padding-left:2vw; -webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='100' preserveAspectRatio='none'%3E%3Cpath d='M0 0h30q10 25 0 50t0 50H0z'/%3E%3C/svg%3E") right/40px 100% no-repeat, linear-gradient(#000,#000) left/calc(100% - 39px) 100% no-repeat; }
+  .jbar .e { right:0; width:var(--e,0%); background:var(--enemy); text-align:right; align-items:flex-end; padding-right:2vw; }
+  .jbar .e.zero b, .jbar .e.zero small { display:none; } .jbar small { white-space:nowrap; } .jbar b { font:400 min(5.4vh,42px)/1 var(--fl); text-shadow:0 2px 0 rgba(0,0,0,.25); } .jbar small { font:400 min(2vh,15px) var(--fl); }
+  .stamp { position:absolute; left:50%; top:16vh; translate:-50% 0; font:400 min(14vh,110px)/1 var(--fl); color:var(--c); -webkit-text-stroke:8px #111; paint-order:stroke fill; text-shadow:0 8px 0 #111; rotate:-6deg; opacity:0; pointer-events:none; }
+  .stamp.on { animation:stamp .5s cubic-bezier(.3,1.7,.5,1) forwards; }
+  .awards { position:absolute; right:4vw; top:12vh; display:flex; flex-direction:column; gap:1.4vh; }
+  .aw { display:flex; align-items:center; gap:1vw; padding:1vh 2.4vw 1vh 1vw; background:#fff; color:#111; font:900 min(2.4vh,18px) var(--fb); clip-path:polygon(0 8%,100% 0,97% 100%,2% 92%); box-shadow:0 6px 0 rgba(0,0,0,.4); opacity:0; }
+  .aw i { width:min(4.6vh,34px); aspect-ratio:1; background:radial-gradient(circle at 35% 30%,#fff3a8,#ffcc00 60%,#b88a00); clip-path:polygon(50% 0,62% 35%,100% 38%,70% 60%,80% 100%,50% 76%,20% 100%,30% 60%,0 38%,38% 35%); }
+  .aw.on { animation:awIn .4s cubic-bezier(.3,1.6,.5,1) forwards; }
+  .rk { position:absolute; left:4vw; top:12vh; width:min(36vw,360px); padding:1.4vh 1.2vw; border-radius:14px; background:var(--panel); box-shadow:0 0 0 2px #2a2a32; opacity:0; }
+  .rk.on { animation:awIn .4s forwards; }
+  .rk h4 { display:flex; justify-content:space-between; font:900 min(2vh,15px) var(--fb); margin-bottom:.8vh; } .rk h4 b { font:400 min(3vh,22px) var(--fl); color:var(--c); }
+  .rk .xp { width:100%; height:min(3.6vh,26px); }
+  .rk p { margin-top:.8vh; font:900 min(1.8vh,13px) var(--fb); color:#ddd; }
+  .rk .up { display:none; margin-top:.8vh; padding:.4vh 0; text-align:center; border-radius:8px; background:var(--c); color:#111; font:400 min(2.8vh,20px) var(--fd); } .rk .up.on { display:block; animation:stamp .5s .3s cubic-bezier(.3,1.7,.5,1) both; }
+  .rnext { position:absolute; right:3vw; bottom:1.4vh; display:none; } .rnext.on { display:flex; }
+
+  @keyframes sweep { to { background-position:-250% 0; } }
+  @keyframes pulse { 50% { opacity:.55; } }
+  @keyframes bob { 50% { translate:-50% -1.2vh; } }
+  @keyframes glitchA { 0%, 86%, 100% { translate:-.7vw .5vh; } 88% { translate:-1.6vw -.3vh; } 92% { translate:.4vw .9vh; } }
+  @keyframes glitchB { 0%, 86%, 100% { translate:.7vw -.4vh; } 89% { translate:1.6vw .5vh; } 93% { translate:-.3vw -1vh; } }
+  @keyframes cardIn { from { transform:scale(.6) rotate(-6deg); opacity:0; } }
+  @keyframes spin { to { rotate:360deg; } }
+  @keyframes fadeIn { from { opacity:0; } }
+  @keyframes spGlow { to { box-shadow:0 0 0 3px #111, 0 0 0 5px #fff, 0 0 24px var(--c); } }
+  @keyframes plus { from { opacity:1; transform:translateY(0) scale(.8); } to { opacity:0; transform:translateY(-36px) scale(1.1); } }
+  @keyframes stamp { from { opacity:0; transform:scale(2.4); } to { opacity:1; transform:none; } }
+  @keyframes awIn { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:none; } }
+  @keyframes wave { to { transform:translateX(-50%); } }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration:.01s !important; animation-delay:0s !important; animation-iteration-count:1 !important; transition:none !important; } }
+
+  /* ---------- phone ---------- */
+  @media (max-width:860px) {
+    .tabs { left:10px; top:12px; gap:4px; padding:4px 6px; } .tabs .lr, .tab { width:28px; } .tabs .lr { font-size:13px; }
+    .sub { left:14px; top:52px; font-size:12px; gap:6px; } .sub i { width:20px; font-size:12px; }
+    .pills { right:10px; left:10px; top:84px; margin:0; gap:5px; flex-direction:row; flex-wrap:wrap; justify-content:flex-end; align-items:center; } .pill { font-size:14px; padding:2px 8px 2px 3px; gap:4px; } .pill .ic { width:18px; } .pill .ic.coin { font-size:10px; }
+    .rank { font-size:10px; padding:2px 4px 2px 8px; } .rank b { font-size:16px; } .xp { width:96px; height:18px; font-size:11px; }
+    .chal { display:none; }
+    .cardWrap { left:14px; right:14px; top:124px; width:auto; } .card { aspect-ratio:2.2; padding:14px 16px 34px; border-radius:24px; gap:14px; } .card .emb { width:78px; } .card .nm { font-size:24px; } .card .ds { font-size:12px; bottom:12px; } .card .drip { height:40px; }
+    .modeBadge { display:none; }
+    .tank { width:100px; bottom:auto; top:calc(124px + (100vw - 28px) / 2.2 + 76px); } .tank .tdate { font-size:22px; } .tank .tdate small { font-size:10px; }
+    .plat { width:62vw; bottom:auto; top:calc(124px + (100vw - 28px) / 2.2 + 76px + 136px); }
+    .rule { left:10px; right:10px; top:auto; bottom:58px; width:auto; padding:10px 12px; } .rule .hd { font-size:11px; } .rule .rn { font-size:18px; } .rule .lb { font-size:11px; }
+    .stage { grid-template-columns:76px minmax(0,1fr); gap:8px; } .stage b { font-size:13px; } .stage small { font-size:11px; }
+    .hintL { left:10px; bottom:12px; font-size:12px; gap:8px; } .hintL i { width:20px; font-size:12px; }
+    .hist { inset:76px 10px 52px; grid-template-columns:1fr; grid-template-rows:auto 1fr; overflow:auto; } .hl { max-height:46vh; }
+    .hsum { font-size:12px; } .hsum b { font-size:24px; } .hsum small { font-size:9px; }
+    .hr { grid-template-columns:72px 1fr auto; gap:8px; } .hr .res { font-size:15px; } .hr b { font-size:12px; } .hr span { font-size:14px; } .hr .mi { width:18px; }
+    .hd2 .img .t span { font-size:10px; } .hd2 .img .t b { font-size:15px; } .tbar { height:26px; font-size:13px; } .team .th { font-size:15px; } .team .tr { font-size:12px; } .team .tr span:last-child { font-size:14px; } .htext { font-size:13px; }
+    .ofoot { left:10px; bottom:12px; font-size:12px; } .ofoot i { width:20px; font-size:11px; }
+    .ehud .clk { font-size:18px; } .ehud .dy { font-size:11px; } .pts { right:10px; top:62px; } .pts b { font-size:28px; } .sp { width:46px; } .sp span { font-size:11px; } .ehud { top:12px; }
+    .ewin { top:56%; padding:14px 14px 14px; } .moods { gap:5px; } .moods button { font-size:11px; } .moods button i { width:22px; height:28px; clip-path:path("M11 0C11 0 22 13 22 19a11 11 0 0 1-22 0C0 13 11 0 11 0Z"); }
+    .awards { right:10px; left:10px; top:auto; bottom:calc(5vh + 90px); align-items:stretch; gap:6px; } .aw { font-size:13px; padding:6px 14px 6px 8px; }
+    .rk { left:10px; right:10px; top:70px; width:auto; } .stamp { top:226px; z-index:2; font-size:64px; -webkit-text-stroke:5px #111; }
+    #res .map { top:46%; } .jbar { height:58px; } .jbar b { font-size:24px; } .jbar small { font-size:11px; } .judge .lbl { font-size:12px; }
+  }
 </style>
 </head>
 <body>
 <!-- seo-noscript:start -->
 <noscript><p style="font:14px/1.7 sans-serif;padding:16px;color:#fff;background:#111">このテーマは JavaScript を使います。<a href="../" style="color:#9fd8ff">Game Theme Diary(テーマ一覧)</a>から、ほかのテーマも選べます。</p></noscript>
 <!-- seo-noscript:end -->
-<main>
-  <header>
-    <div class="op">BANKARA ─ TURF WAR ─ ナワバリバトル</div>
-    <h1>SPLAT DIARY<small>DIARY ─ ナワバリ日誌</small></h1>
-    <div class="clock"><span><b>DATE</b><span id="d"></span></span><span><b>DAY</b><span id="dow"></span></span><span><b>RANK</b><span id="spr">C-</span></span></div>
-    <div class="turf"><i id="tf1"></i><i id="tf2"></i></div><div class="turfp"><span id="tfa">0%</span><span class="vs">TURF WAR</span><span id="tfb">100%</span></div>
-  </header>
+<div class="wall" aria-hidden="true"><svg id="wallSvg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"></svg></div>
+<div class="floor" aria-hidden="true"></div>
+<div class="plat" aria-hidden="true"></div>
+<div class="tank" id="tank" role="button" aria-label="今日を書く"><div class="tdate" id="tDate"></div><svg id="tankSvg" viewBox="0 0 200 300" aria-hidden="true"></svg></div>
 
-  <section class="panel">
-    <span class="ttl">STATUS</span>
-    
-    <div class="gauge life"><b>INK TANK ─ 連続日数 <em id="streakTxt">0</em></b><div class="track"><div id="lifeBar"></div></div></div>
-    <div class="gauge stam"><b>SPECIAL ─ 次のランクまで <em id="xpTxt">0%</em></b><div class="track"><div id="xp"></div></div></div>
-    <div class="row3">
-      <div><b>RANK ランク</b><i id="lv">-</i></div>
-      <div><b>STREAK 連続</b><i id="streak">0</i></div>
-      <div><b>TOTAL 記録</b><i id="total">0</i></div>
-    </div>
-  </section>
+<div class="tabs" id="tabs"><span class="lr">L</span><span id="tabBtns" style="display:flex;gap:.5vw"></span><span class="lr r">R</span></div>
+<div class="sub" id="sub"></div>
+<div class="cardWrap"><button class="card" id="card"></button><div class="modeBadge" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4l4 9 10 1-7 7 2 10-9-5-9 5 2-10-7-7 10-1z" fill="#fff3d8" stroke="#2a1208" stroke-width="2"/></svg></div></div>
+<div class="hintL"><button id="bBack"><i>B</i>テーマ選択へ</button><button id="bSwap"><i>L</i><i>R</i>きりかえ</button><button id="bGo"><i>A</i>けってい</button></div>
 
-  <section class="panel">
-    <span class="ttl">GEAR 今日のコンディション</span>
-    <ul class="moods" id="moods"></ul>
-    <span class="ttl" style="margin-top:6px">BATTLE LOG 記録</span>
-    <textarea id="body" placeholder="今日のバトルを振り返ろう！"></textarea>
-    <div class="hint" id="hint"></div>
-    <button class="save" id="save">GO!</button>
-  </section>
+<div class="pills">
+  <div class="prow"><span class="pill"><span class="ic ink"><svg viewBox="0 0 20 20" width="70%"><path d="M10 2s6 7 6 10a6 6 0 0 1-12 0c0-3 6-10 6-10z" fill="#fff"/></svg></span><span id="pDays">000</span></span>
+    <span class="pill"><span class="ic coin">¢</span><span id="pCoin">0000000</span></span></div>
+  <div class="rank">ランク<b id="pRank">1</b><span class="xp"><i id="pXpB"></i><span id="pXp">0/300</span></span></div>
+  <div class="chal"><h4>こんしゅう 5日 ぬろう</h4><div class="row"><svg viewBox="0 0 24 24"><path d="M3 21l3-8 9-9 5 5-9 9z" fill="#ddd"/><path d="M13 6l5 5" stroke="#111" stroke-width="2"/></svg><span class="bar"><i id="chB"></i><span id="chT">0 / 5</span></span></div></div>
+</div>
 
-  <section class="panel">
-    <span class="ttl">TURF MAP</span>
-    <div class="cal" id="cal"></div>
-  </section>
+<div class="rule" id="rule"></div>
 
-  <h2>SNAPSHOTS ─ 過去の記録</h2>
-  <div id="list"></div>
-</main>
-
-<div id="stamp"><div class="bars"></div><div class="box"><div id="bang">SPLAT!</div><div id="stampBig"></div><div id="stampSub"></div></div></div>
+<!-- history -->
+<div class="ov" id="hist" role="dialog" aria-modal="true" aria-label="ふりかえり"><div class="bg"></div>
+  <div class="hist">
+    <div class="hl"><div class="hsum"><span>さいきん 30日</span><span class="w"><small>WIN</small><b id="hW">0</b></span><span><small>LOSE</small><b id="hL">0</b></span></div><ul class="hlist" id="hList"></ul></div>
+    <div class="hd2" id="hDet"></div>
+  </div>
+  <div class="ofoot"><button data-close><i>B</i>もどる</button><button id="hWrite"><i>A</i>この日をかく</button><button id="hOlder"><i>R</i>もっと前</button><button id="hNewer"><i>L</i>あたらしい</button></div>
+</div>
+<!-- calendar -->
+<div class="ov" id="cal" role="dialog" aria-modal="true" aria-label="カレンダー"><div class="bg"></div>
+  <div class="calw"><h3><button id="cPrev" aria-label="前の月">‹</button><span id="cMon"></span><button id="cNext" aria-label="次の月">›</button></h3><div class="cg" id="cg"></div></div>
+  <div class="ofoot"><button data-close><i>B</i>もどる</button></div>
+</div>
+<!-- editor -->
+<div class="ov" id="ed" role="dialog" aria-modal="true" aria-labelledby="eT"><div class="bg"></div><canvas class="paint" id="paint"></canvas>
+  <div class="ehud"><span class="dy" id="eDay"></span><span class="clk" id="eClk">0:00</span></div>
+  <div class="pts"><b id="ePts">0000<small>p</small></b><span class="sp" id="eSp"><span>SP</span></span></div>
+  <div class="ewin"><h3><span id="eT"></span><small id="eS"></small></h3>
+    <div class="lb2">ちょうし</div><ul class="moods" id="moods"></ul>
+    <div class="lb2">きろく（書いた文字がそのまま塗りポイントになる）</div><textarea id="body" placeholder="きょうは どんな 一日だった？"></textarea>
+    <div class="acts"><button class="go" id="save"><i>A</i>ぬりおわる</button><button class="cl" id="cl"><i>B</i>もどる</button><span class="hint">Ctrl+Enter で記録 ／ Esc でもどる</span></div>
+  </div>
+</div>
+<!-- results -->
+<div class="ov" id="res" role="dialog" aria-modal="true" aria-label="けっか"><div class="bg" style="background:rgba(30,20,12,.9)"></div>
+  <div class="map"><canvas id="map" width="1280" height="720"></canvas></div>
+  <div class="stamp" id="stamp">WIN!</div>
+  <div class="rk" id="rk"><h4>ランク<b id="rRank">1</b></h4><span class="xp"><i id="rXpB"></i><span id="rXp"></span></span><p id="rGain"></p><div class="up" id="rUp">ランクアップ！</div></div>
+  <div class="awards" id="awards"></div>
+  <div class="judge"><div class="lbl"><span>きろくした日</span><span>まだの日</span></div><div class="jbar" id="jbar"><div class="m"><b id="jM">0.0%</b><small id="jMp"></small></div><div class="e"><b id="jE">0.0%</b><small id="jEp"></small></div></div></div>
+  <div class="ofoot rnext" id="rNext"><button id="rOk"><i>A</i>つぎへ</button></div>
+</div>
 
 <script src="theme-switch.js" data-theme="splatoon3"></script>
 <script>
 const KEY = "diary-shared-v1";
 const LEGACY = ["persona-diary-v1", "persona3-diary-v1"];
-const MOODS = [["最高", "SPECIAL!", "#c8ff00"], ["良い", "FRESH", "#ff6a00"], ["普通", "NORMAL", "#8f86ff"], ["微妙", "TIRED", "#3bd3ff"], ["最悪", "SPLATTED", "#ff2d95"]];
-const RANKS = ["C-", "C+", "B", "A", "S", "S+", "X"];
-let MSG_FILED = "NICE! ─ 記録完了", MSG_PROMO = "RANK UP! ─ ランクアップ";
-const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300;
+const MOODS = ["最高", "良い", "普通", "微妙", "最悪"];
+const MC = { 最高:"#c6f000", 良い:"#19d7ff", 普通:"#ff8a00", 微妙:"#8a3cff", 最悪:"#ff2f8e" };
+const DOW = ["日","月","火","水","木","金","土"];
+const XP_PER = 100, XP_BONUS_PER_STREAK = 10, XP_PER_RANK = 300, GOAL = 200;
+// lobby modes (cycled with L / R), each with its own ink colour
+const ICONS = {
+  write: '<path d="M4 20l2-6 10-10 4 4-10 10z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>',
+  hist:  '<circle cx="12" cy="12" r="8" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M12 7v5l3 3" fill="none" stroke="#fff" stroke-width="2.4"/>',
+  cal:   '<rect x="4" y="6" width="16" height="14" rx="2" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M4 11h16M9 3v5M15 3v5" stroke="#fff" stroke-width="2.4"/>',
+  yday:  '<path d="M5 12a7 7 0 1 0 2-5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M4 4v5h5" fill="none" stroke="#fff" stroke-width="2.4"/>'
+};
+const EMB = {
+  write: '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M34 84l8-22 34-34 14 14-34 34z" fill="var(--c)" stroke="#111" stroke-width="4"/><path d="M84 84L62 62l8-8 22 22v8z" fill="#fff" stroke="#111" stroke-width="4"/><circle cx="88" cy="30" r="6" fill="#fff"/>',
+  hist:  '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><circle cx="60" cy="60" r="30" fill="var(--c)" stroke="#fff" stroke-width="5"/><path d="M60 40v20l14 10" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/>',
+  cal:   '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><rect x="30" y="34" width="60" height="52" rx="8" fill="#fff"/><rect x="30" y="34" width="60" height="16" rx="6" fill="var(--c)"/><g fill="#111"><rect x="38" y="58" width="10" height="10" rx="2"/><rect x="55" y="58" width="10" height="10" rx="2"/><rect x="72" y="58" width="10" height="10" rx="2"/><rect x="38" y="72" width="10" height="8" rx="2"/></g>',
+  yday:  '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M36 60a24 24 0 1 0 8-18" fill="none" stroke="var(--c)" stroke-width="9" stroke-linecap="round"/><path d="M32 30v16h16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
+};
+const MODES = [
+  { id:"write", nm:"ナワバリ<br>日記", ds:"きょうの一日を ぬりつぶそう", sub:"レギュラー", c:"#c6f000", cd:"#2a3a00", enemy:"#7a2bff", rule:"ナワバリきろく", rd:"書いた文字数がそのまま塗りポイント。200文字でスペシャル！" },
+  { id:"hist", nm:"ふりかえり<br>マッチ", ds:"これまでの きろくを チェック", sub:"バンカラ", c:"#ff6a1a", cd:"#3a1200", enemy:"#1a8aff", rule:"きろくアーカイブ", rd:"書いた日は WIN!、まだの日は LOSE...。選んで読み返したり書き直したり。" },
+  { id:"cal", nm:"ナワバリ<br>カレンダー", ds:"月の ぬりぐあいを チェック", sub:"プライベート", c:"#b05aff", cd:"#2a0a4a", enemy:"#ff9a1a", rule:"マンスリー", rd:"書いた日は調子の色のインクで塗られる。日付を選んで書ける。" },
+  { id:"yday", nm:"きのうの<br>きろく", ds:"書きわすれた きのうを ぬろう", sub:"イベント", c:"#19d7ff", cd:"#002a3a", enemy:"#ff2f8e", rule:"リベンジ", rd:"きのうの分をあとから記録。連続記録をつなごう。" }
+];
 const $ = id => document.getElementById(id);
-
 const load = () => {
   try {
     let d = JSON.parse(localStorage.getItem(KEY));
@@ -198,107 +343,283 @@ const load = () => {
 };
 const store = d => { try { localStorage.setItem(KEY, JSON.stringify(d)); } catch {} };
 const ymd = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
-const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const md = k => { const d = new Date(k + "T00:00:00"); return `${d.getMonth()+1}/${d.getDate()}（${DOW[d.getDay()]}）`; };
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const sleep = ms => new Promise(r => setTimeout(r, reduced ? 0 : ms));
+const pad = (n, w) => String(Math.max(0, Math.round(n))).padStart(w, "0");
+function rnd(seed) { let s = (seed * 9301 + 49297) % 233280 || 1; return () => (s = (s * 9301 + 49297) % 233280) / 233280; }
+const seedOf = k => +k.replace(/-/g, "") % 99991;
 
-const countUp = (el, to) => {
-  const from = parseInt(el.dataset.v || "0", 10); el.dataset.v = to;
-  if (from === to || matchMedia("(prefers-reduced-motion: reduce)").matches) { el.textContent = to; return; }
-  const t0 = performance.now();
-  const tick = t => { const p = Math.min((t - t0) / 600, 1); el.textContent = Math.round(from + (to - from) * (1 - (1 - p) ** 3)); if (p < 1) requestAnimationFrame(tick); };
-  requestAnimationFrame(tick);
-};
+let data = load(), mode = 0, hpage = 0, hcur = 0, calSel = ymd(new Date()), selected = null, mood = null, busy = false, lastLen = 0, clkT;
 
-let data = load(), selected = ymd(new Date()), mood = null, stampTimer, typeTimer;
-
-function streakCount() {
-  let n = 0, d = new Date();
-  if (!data[ymd(d)]) d.setDate(d.getDate() - 1);
-  while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); }
-  return n;
-}
+function streakAt(k) { let n = 0; const d = new Date(k + "T00:00:00"); while (data[ymd(d)]) { n++; d.setDate(d.getDate() - 1); } return n; }
+function streakCount() { const d = new Date(); if (!data[ymd(d)]) d.setDate(d.getDate() - 1); return streakAt(ymd(d)); }
 function totalXp() {
   let xp = 0, run = 0, prev = null;
   for (const k of Object.keys(data).sort()) {
-    const cur = new Date(k + "T00:00:00");
-    run = prev && (cur - prev) / 864e5 === 1 ? run + 1 : 1;
+    const c = new Date(k + "T00:00:00");
+    run = prev && (c - prev) / 864e5 === 1 ? run + 1 : 1;
     xp += XP_PER + Math.min(run, 30) * XP_BONUS_PER_STREAK;
-    prev = cur;
+    prev = c;
   }
   return xp;
 }
-const rankOf = xp => Math.min(Math.floor(xp / XP_PER_RANK), RANKS.length - 1);
+const rank = () => Math.floor(totalXp() / XP_PER_RANK) + 1;
+const totalChars = () => Object.values(data).reduce((s, x) => s + x.text.length, 0);
+const weekKeys = () => { const now = new Date(), mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return ymd(d); }); };
+const bestStreak = () => { let b = 0, r = 0, p = null; for (const k of Object.keys(data).sort()) { const c = new Date(k + "T00:00:00"); r = p && (c - p) / 864e5 === 1 ? r + 1 : 1; b = Math.max(b, r); p = c; } return b; };
+const inkOf = k => data[k] && data[k].mood ? MC[data[k].mood] : MODES[mode].c;
 
-function typewrite(text) {
-  clearInterval(typeTimer); let i = 0;
-  const el = $("stampBig"); el.textContent = "";
-  typeTimer = setInterval(() => { el.textContent = text.slice(0, ++i); if (i >= text.length) clearInterval(typeTimer); }, 55);
+// ---------- ink splats (canvas) ----------
+function splat(c, x, y, r, col, R, drip = true) {
+  c.fillStyle = col; c.beginPath(); c.arc(x, y, r, 0, 7); c.fill();
+  const n = 6 + Math.floor(R() * 6);
+  for (let i = 0; i < n; i++) { const a = R() * 7, d = r * (.7 + R() * .7), rr = r * (.2 + R() * .35); c.beginPath(); c.arc(x + Math.cos(a) * d, y + Math.sin(a) * d * .8, rr, 0, 7); c.fill();
+    if (R() > .5) { c.beginPath(); c.arc(x + Math.cos(a) * d * 1.7, y + Math.sin(a) * d * 1.4, rr * .4, 0, 7); c.fill(); } }
+  if (drip && R() > .4) { const dx = x + (R() - .5) * r, len = r * (.8 + R() * 1.4), w = r * .22; c.fillRect(dx - w / 2, y, w, len); c.beginPath(); c.arc(dx, y + len, w * .75, 0, 7); c.fill(); }
+  c.fillStyle = "rgba(255,255,255,.28)"; c.beginPath(); c.ellipse(x - r * .3, y - r * .35, r * .35, r * .18, -.5, 0, 7); c.fill();
+}
+// a little top-down "stage" painted with a day's ink
+function stageThumb(cv, k) {
+  const c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(k) + 7), e = data[k];
+  c.fillStyle = "#6a6a72"; c.fillRect(0, 0, W, H);
+  for (let i = 0; i < 9; i++) { c.fillStyle = ["#8a8a92", "#55555c", "#9a9aa4"][i % 3]; c.fillRect(R() * W, R() * H, 20 + R() * W * .3, 10 + R() * H * .3); }
+  c.fillStyle = "rgba(0,0,0,.25)"; for (let i = 0; i < 5; i++) c.fillRect(R() * W, R() * H, 4 + R() * 30, 3);
+  if (e) { const n = 3 + Math.min(14, Math.floor(e.text.length / 18)); for (let i = 0; i < n; i++) splat(c, R() * W, R() * H, 6 + R() * H * .16, MC[e.mood] || "#c6f000", R); }
+  else { c.fillStyle = "rgba(0,0,0,.35)"; c.fillRect(0, 0, W, H); }
 }
 
-function render() {
-  const sd = new Date(selected + "T00:00:00");
-  $("d").textContent = selected.replace(/-/g, ".");
-  $("dow").textContent = ["SUN","MON","TUE","WED","THU","FRI","SAT"][sd.getDay()];
-
-  const xp = totalXp(), rk = rankOf(xp), st = streakCount();
-  const pct = rk >= RANKS.length - 1 ? 100 : Math.round((xp % XP_PER_RANK) / XP_PER_RANK * 100);
-  $("lv").textContent = RANKS[rk];
-  $("xp").style.width = pct + "%"; $("xpTxt").textContent = pct + "%";
-  $("lifeBar").style.width = Math.min(st / 30, 1) * 100 + "%"; $("streakTxt").textContent = st;
-  countUp($("streak"), st);
-  countUp($("total"), Object.keys(data).length);
-  const _n = new Date(), _pre = ymd(_n).slice(0, 7), _dim = new Date(_n.getFullYear(), _n.getMonth() + 1, 0).getDate();
-  const _done = Object.keys(data).filter(k => k.startsWith(_pre)).length, _p = Math.round(_done / _dim * 100);
-  $("tf1").style.width = _p + "%"; $("tf2").style.width = (100 - _p) + "%"; $("tfa").textContent = _p + "%"; $("tfb").textContent = (100 - _p) + "%"; $("spr").textContent = RANKS[rk];
-
-  const e = data[selected];
-  $("body").value = e ? e.text : "";
-  mood = e ? e.mood : null;
-  $("moods").innerHTML = MOODS.map(([m, tag, c]) => `<li><button data-m="${m}" style="--r:${c||""}" class="${m===mood?"on":""}">${m}<span>${tag}</span></button></li>`).join("");
-  $("hint").textContent = selected === ymd(new Date()) ? "" : "過去の日付を編集中（カレンダーで日付を選べます）";
-
-  const now = new Date(), y = now.getFullYear(), mo = now.getMonth();
-  const first = new Date(y, mo, 1).getDay(), last = new Date(y, mo + 1, 0).getDate();
-  let h = "SMTWTFS".split("").map(c => `<div class="dow">${c}</div>`).join("");
-  h += "<div style='visibility:hidden'></div>".repeat(first);
-  for (let d = 1; d <= last; d++) {
-    const k = ymd(new Date(y, mo, d));
-    h += `<div data-d="${k}" style="cursor:pointer;--i:${d}" class="${data[k]?"done":""} ${k===ymd(now)?"today":""} ${k===selected?"sel":""}">${d}</div>`;
+// ---------- LED wall ----------
+function buildWall() {
+  const s = 96, h = s * .866, R = rnd(3); let t = "";
+  for (let row = -1; row < 900 / h + 1; row++) for (let col = -1; col < 1600 / (s / 2) + 1; col++) {
+    const x = col * s / 2, y = row * h, up = (row + col) % 2 === 0, o = .25 + R() * .75;
+    const p = up ? `M${x} ${y + h}L${x + s / 2} ${y}L${x + s} ${y + h}Z` : `M${x} ${y}L${x + s} ${y}L${x + s / 2} ${y + h}Z`;
+    t += `<path d="${p}" fill="url(#dots)" opacity="${o.toFixed(2)}"/>`;
   }
-  $("cal").innerHTML = h;
-
-  const keys = Object.keys(data).sort().reverse();
-  $("list").innerHTML = keys.length ? keys.map((k, i) =>
-    `<div class="entry" style="--i:${Math.min(i, 12)}"><small>${k} ／ ${esc(data[k].mood||"-")}</small><p>${esc(data[k].text)}</p></div>`).join("")
-    : `<div class="entry" style="--i:1"><p>まだ誰も塗っていない。最初のインクを撃とう！</p></div>`;
+  $("wallSvg").innerHTML = `<defs><pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#0a0c04"/><circle cx="3.5" cy="3.5" r="2.4" fill="var(--wall)"/></pattern></defs><g stroke="#050506" stroke-width="7">${t}</g>`;
 }
 
-$("moods").onclick = e => {
-  const b = e.target.closest("button"); if (!b) return;
-  mood = b.dataset.m;
-  
-  document.querySelectorAll("#moods button").forEach(x => x.classList.toggle("on", x === b));
-};
-$("cal").onclick = e => {
-  const c = e.target.closest("[data-d]"); if (!c) return;
-  selected = c.dataset.d; render();
-};
-$("save").onclick = () => {
-  const text = $("body").value.trim();
-  if (!text) { $("body").focus(); return; }
-  const before = rankOf(totalXp()), isNew = !data[selected];
-  data[selected] = { mood, text };
-  store(data);
-  const up = rankOf(totalXp()) > before;
-  document.documentElement.style.setProperty("--warn", (MOODS.find(x => x[0] === mood) || [])[2] || "#c8ff00");
-  $("stamp").classList.remove("show"); void $("stamp").offsetWidth; $("stamp").classList.add("show");
-  $("bang").style.animation = "none"; void $("bang").offsetWidth; $("bang").style.animation = "";
-  setTimeout(() => typewrite(up ? MSG_PROMO : MSG_FILED), 450);
-  $("stampSub").textContent = isNew ? `${streakCount()} DAYS` : "UPDATED";
-  clearTimeout(stampTimer); stampTimer = setTimeout(() => $("stamp").classList.remove("show"), 2800);
-  render();
-};
-$("stamp").onclick = () => $("stamp").classList.remove("show");
+// ---------- ink tank ----------
+function drawTank() {
+  const today = ymd(new Date()), e = data[today], len = e ? e.text.length : 0, lvl = Math.min(1, len / GOAL), col = e && e.mood ? MC[e.mood] : MODES[mode].c;
+  const top = 250 - 170 * lvl, d = new Date();
+  $("tDate").innerHTML = `${d.getMonth() + 1}/${d.getDate()}<small>${e ? `${len}p ぬった` : "まだ まっさら"}</small>`;
+  $("tankSvg").innerHTML = `<defs><linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".25" stop-color="#fff" stop-opacity=".05"/><stop offset=".8" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>
+    <linearGradient id="mt" x1="0" x2="1"><stop offset="0" stop-color="#5a5a64"/><stop offset=".4" stop-color="#d8d8e0"/><stop offset=".7" stop-color="#8a8a94"/><stop offset="1" stop-color="#3a3a44"/></linearGradient>
+    <clipPath id="tc"><rect x="44" y="70" width="112" height="190" rx="40"/></clipPath></defs>
+    <ellipse cx="100" cy="286" rx="70" ry="12" fill="rgba(0,0,0,.5)"/>
+    <rect x="58" y="22" width="84" height="40" rx="10" fill="url(#mt)" stroke="#111" stroke-width="4"/><rect x="80" y="8" width="40" height="18" rx="5" fill="url(#mt)" stroke="#111" stroke-width="4"/>
+    <rect x="44" y="70" width="112" height="190" rx="40" fill="rgba(10,10,14,.75)" stroke="#111" stroke-width="5"/>
+    <g clip-path="url(#tc)"><g style="transform:translateY(${top}px)"><g style="animation:wave 2.4s linear infinite"><path d="M0 0q20 -10 40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0v300H0z" fill="${col}"/></g>
+      <path d="M0 12q20 -10 40 0t40 0t40 0t40 0t40 0t40 0v300H0z" fill="rgba(0,0,0,.18)"/></g>
+      ${lvl > 0 ? [0, 1, 2, 3, 4].map(i => `<circle cx="${62 + i * 19}" cy="${250 - (i * 37) % (170 * lvl)}" r="${3 + i % 3}" fill="rgba(255,255,255,.45)"><animate attributeName="cy" from="255" to="${top + 6}" dur="${2 + i * .4}s" repeatCount="indefinite"/></circle>`).join("") : ""}</g>
+    <rect x="44" y="70" width="112" height="190" rx="40" fill="url(#gl)"/>
+    <rect x="54" y="84" width="10" height="150" rx="5" fill="rgba(255,255,255,.35)"/>
+    <rect x="40" y="252" width="120" height="22" rx="8" fill="url(#mt)" stroke="#111" stroke-width="4"/>
+    <g font-family="Lilita One,sans-serif" font-size="13" fill="#fff" opacity=".8">${[50, 100, 150, 200].map((v, i) => `<path d="M150 ${250 - 170 * v / GOAL}h8" stroke="#fff" stroke-width="2"/>`).join("")}</g>`;
+}
 
+// ---------- lobby ----------
+function render(swap = false) {
+  const m = MODES[mode], today = ymd(new Date()), xp = totalXp(), all = Object.keys(data);
+  const root = document.documentElement.style; root.setProperty("--c", m.c); root.setProperty("--cd", m.cd); root.setProperty("--wall", m.c); root.setProperty("--enemy", m.enemy);
+  $("tabBtns").innerHTML = MODES.map((x, i) => `<button class="tab ${i === mode ? "on" : ""}" data-m="${i}" aria-label="${x.nm.replace("<br>", "")}"><svg viewBox="0 0 24 24">${ICONS[x.id]}</svg></button>`).join("");
+  $("sub").innerHTML = `<i>${mode + 1}</i>${m.sub}`;
+  const drip = `<svg viewBox="0 0 300 60" preserveAspectRatio="none"><path d="M0 0h300v6c-14 0-14 30-26 30s-8-26-22-26-10 46-24 46-12-40-26-40-6 18-20 18-10-22-24-22-12 34-26 34-8-28-22-28-12 14-24 14S70 8 56 8 44 40 30 40 16 6 0 6z" fill="currentColor"/></svg>`;
+  $("card").innerHTML = `<span class="emb"><svg viewBox="0 0 120 120" aria-hidden="true">${EMB[m.id]}</svg></span><span class="nm">${m.nm}</span><span class="ds">${m.ds}</span><span class="drip">${drip}</span>`;
+  $("card").setAttribute("aria-label", `${m.nm.replace("<br>", "")}：${m.ds}`);
+  if (swap) { const c = $("card"); c.classList.remove("swap"); void c.offsetWidth; c.classList.add("swap"); }
+  $("pDays").textContent = pad(all.length, 3); $("pCoin").textContent = pad(totalChars(), 7);
+  $("pRank").textContent = rank(); $("pXp").textContent = `${xp % XP_PER_RANK}/${XP_PER_RANK}`; $("pXpB").style.setProperty("--v", `${xp % XP_PER_RANK / XP_PER_RANK * 100}%`);
+  const wk = weekKeys().filter(k => data[k]).length; $("chB").style.setProperty("--v", `${Math.min(wk / 5, 1) * 100}%`); $("chT").textContent = `${Math.min(wk, 5)} / 5`;
+  const recent = all.sort().reverse().slice(0, 2);
+  $("rule").innerHTML = `<div class="hd"><span>ルール</span><span>Y ルール確認</span></div><div class="rn">${m.rule}</div><div class="lb" id="ruleD">${m.rd}</div><div class="lb">さいきんの ステージ</div>` +
+    (recent.length ? recent.map(k => `<button class="stage" data-k="${k}"><canvas width="160" height="90" data-thumb="${k}"></canvas><span><b>${k === today ? "きょう" : md(k)}</b><small>${esc(data[k].text.replace(/\s+/g, " "))}</small></span></button>`).join("") : `<div class="lb">まだ ステージがない。最初の一日をぬろう！</div>`);
+  document.querySelectorAll("[data-thumb]").forEach(cv => stageThumb(cv, cv.dataset.thumb));
+  drawTank();
+}
+function act() {
+  const id = MODES[mode].id, today = ymd(new Date());
+  if (id === "write") return openEd(today);
+  if (id === "hist") return openHist();
+  if (id === "cal") { calSel = today; return openCal(); }
+  if (id === "yday") { const d = new Date(); d.setDate(d.getDate() - 1); return openEd(ymd(d)); }
+}
+const swapMode = d => { mode = (mode + d + MODES.length) % MODES.length; render(true); };
+
+// ---------- history ----------
+const hDay = i => { const d = new Date(); d.setDate(d.getDate() - (hpage * 8 + i)); return ymd(d); };
+function openHist() { hpage = 0; hcur = 0; renderHist(); $("hist").classList.add("show"); }
+function renderHist() {
+  const today = ymd(new Date()); let w = 0, l = 0;
+  for (let i = 0; i < 30; i++) { const d = new Date(); d.setDate(d.getDate() - i); data[ymd(d)] ? w++ : l++; }
+  $("hW").textContent = w; $("hL").textContent = l;
+  $("hList").innerHTML = Array.from({ length: 8 }, (_, i) => { const k = hDay(i), e = data[k];
+    return `<li><button class="hr ${e ? "win" : ""} ${i === hcur ? "cur" : ""}" data-h="${i}"><span class="res">${e ? "WIN!" : "LOSE..."}</span><span><b>${k === today ? "きょう" : md(k)}</b><span>${e ? e.text.length : 0} p</span></span><span class="mi" style="--mc:${e && e.mood ? MC[e.mood] : "#444"}"></span></button></li>`; }).join("");
+  const k = hDay(hcur), e = data[k], len = e ? e.text.length : 0, pct = Math.min(100, len / GOAL * 100);
+  $("hDet").innerHTML = `<div class="img"><canvas width="640" height="200" id="hImg"></canvas><div class="t"><span>${k.replace(/-/g, "/")}</span><b>${e ? "ナワバリ日記" : "まだ ぬっていない"}</b></div></div>
+    <div class="in"><div class="tbar"><i class="m" style="width:${Math.max(pct, 12)}%">${pct.toFixed(1)}%</i><i class="e">${(100 - pct).toFixed(1)}%</i></div>
+      <div class="team"><div class="th"><span>${e ? "WIN!" : "LOSE..."}</span><span>${len} p</span></div>
+        <div class="tr"><span>ちょうし</span><span>${e && e.mood ? e.mood : "─"}</span></div><div class="tr"><span>その日までの れんぞく</span><span>${e ? streakAt(k) : 0} 日</span></div><div class="tr"><span>スペシャル（200文字）</span><span>${len >= GOAL ? "はつどう！" : `あと ${GOAL - len}`}</span></div></div>
+      <div class="htext">${e ? esc(e.text) : (k > today ? "まだ来ていない日。" : "この日は まだ まっさら。A で ぬろう。")}</div></div>`;
+  stageThumb($("hImg"), k);
+}
+
+// ---------- calendar ----------
+function openCal() {
+  const sd = new Date(calSel + "T00:00:00"), y = sd.getFullYear(), m = sd.getMonth(), first = new Date(y, m, 1), start = new Date(first); start.setDate(1 - first.getDay());
+  const weeks = Math.ceil((first.getDay() + new Date(y, m + 1, 0).getDate()) / 7), today = ymd(new Date());
+  $("cMon").textContent = `${y}年 ${m + 1}月`;
+  let h = DOW.map(d => `<span>${d}</span>`).join("");
+  for (let i = 0; i < weeks * 7; i++) { const d = new Date(start); d.setDate(start.getDate() + i); const k = ymd(d), fut = k > today;
+    h += `<button class="cd ${d.getMonth() !== m ? "out" : ""} ${fut ? "fut" : ""} ${k === today ? "today" : ""}" ${fut ? "disabled" : `data-go="${k}"`} aria-label="${md(k)}${data[k] ? " 記録あり" : ""}">${data[k] ? `<canvas width="80" height="80" data-cell="${k}"></canvas>` : ""}<b>${d.getDate()}</b></button>`; }
+  $("cg").innerHTML = h;
+  document.querySelectorAll("[data-cell]").forEach(cv => { const c = cv.getContext("2d"), R = rnd(seedOf(cv.dataset.cell)); splat(c, 40 + (R() - .5) * 10, 42, 18 + Math.min(10, data[cv.dataset.cell].text.length / 20), MC[data[cv.dataset.cell].mood] || "#c6f000", R); });
+  $("cal").classList.add("show");
+}
+
+// ---------- editor ----------
+function setMood(m) { mood = m; document.querySelectorAll("#moods button").forEach(b => b.classList.toggle("on", b.dataset.m === mood)); }
+function updPts() {
+  const len = $("body").value.trim().length; $("ePts").innerHTML = `${pad(len, 4)}<small>p</small>`;
+  const sp = $("eSp"); sp.style.setProperty("--v", `${Math.min(len / GOAL, 1) * 100}%`); sp.classList.toggle("full", len >= GOAL);
+}
+function openEd(k) {
+  if (busy || k > ymd(new Date())) return;
+  closeAll(); selected = k; const e = data[k]; mood = e ? e.mood : null;
+  $("eT").textContent = k === ymd(new Date()) ? "きょうの ナワバリ" : `${md(k)} の ナワバリ`; $("eS").textContent = e ? "ぬりなおし" : "バトル開始！";
+  $("eDay").textContent = md(k);
+  $("moods").innerHTML = MOODS.map(m => `<li><button data-m="${m}" class="${m === mood ? "on" : ""}" style="--mc:${MC[m]}"><i></i>${m}</button></li>`).join("");
+  $("body").value = e ? e.text : ""; lastLen = $("body").value.trim().length; updPts();
+  const cv = $("paint"); cv.width = innerWidth; cv.height = innerHeight; cv.getContext("2d").clearRect(0, 0, cv.width, cv.height);
+  $("ed").classList.add("show"); setTimeout(() => $("body").focus(), 30);
+  const tick = () => { const d = new Date(); $("eClk").textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; }; tick(); clearInterval(clkT); clkT = setInterval(tick, 10000);
+}
+$("body").addEventListener("input", () => {
+  const len = $("body").value.trim().length, delta = len - lastLen; lastLen = len; updPts();
+  if (delta <= 0 || reduced) return;
+  const cv = $("paint"), c = cv.getContext("2d"), R = Math.random, win = document.querySelector(".ewin").getBoundingClientRect();
+  for (let i = 0; i < Math.min(delta, 4); i++) {
+    // splat somewhere around the editor window, mostly outside it
+    const side = Math.floor(R() * 4), x = side === 0 ? win.left - R() * 160 : side === 1 ? win.right + R() * 160 : win.left + R() * win.width, y = side === 2 ? win.top - R() * 100 : side === 3 ? win.bottom + R() * 100 : win.top + R() * win.height;
+    splat(c, x, y, 10 + R() * 26, mood ? MC[mood] : MODES[mode].c, R);
+  }
+  const p = document.createElement("span"); p.className = "plus"; p.textContent = `+${delta}`; p.style.left = `${win.left + 20 + Math.random() * (win.width - 60)}px`; p.style.top = `${win.top - 14 - Math.random() * 30}px`; $("ed").appendChild(p); setTimeout(() => p.remove(), 850);
+});
+const closeEd = () => { $("ed").classList.remove("show"); clearInterval(clkT); };
+
+// ---------- results ----------
+async function save() {
+  const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
+  if (busy) return; busy = true;
+  const k = selected, isNew = !data[k], xp0 = totalXp(), r0 = rank(), best0 = bestStreak(), long0 = Object.values(data).reduce((m, x) => Math.max(m, x.text.length), 0);
+  data[k] = { mood, text }; store(data); closeEd();
+  const res = $("res"); res.classList.add("show"); $("stamp").classList.remove("on"); $("rk").classList.remove("on"); $("rNext").classList.remove("on"); $("awards").innerHTML = "";
+  const jb = $("jbar"); jb.style.setProperty("--m", "0%"); jb.style.setProperty("--e", "0%");
+  // paint the week map
+  const today = ymd(new Date()), wk = weekKeys(), cv = $("map"), c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(today));
+  c.fillStyle = "#7a5a3a"; c.fillRect(0, 0, W, H);
+  for (let i = 0; i < 40; i++) { c.fillStyle = `rgba(${60 + R() * 40},${40 + R() * 30},${20 + R() * 20},.5)`; c.beginPath(); c.arc(R() * W, R() * H, 20 + R() * 80, 0, 7); c.fill(); }
+  const colW = (W - 160) / 7, blocks = wk.map((d, i) => ({ d, x: 80 + i * colW, y: 120 + R() * 60, w: colW - 8, h: H - 260 - R() * 60 }));
+  blocks.forEach(b => { c.fillStyle = "#c8c8cc"; c.fillRect(b.x, b.y, b.w, b.h); c.fillStyle = "rgba(0,0,0,.18)"; for (let i = 0; i < 4; i++) c.fillRect(b.x + R() * b.w * .8, b.y + R() * b.h * .8, 10 + R() * 30, 10 + R() * 30); });
+  const my = MODES[mode].c, en = MODES[mode].enemy, jobs = [];
+  blocks.forEach(b => { const e = data[b.d], past = b.d <= today; if (!past) return;
+    const n = e ? 10 + Math.min(16, Math.floor(e.text.length / 12)) : 9;
+    for (let i = 0; i < n; i++) jobs.push({ x: b.x + R() * b.w, y: b.y + R() * b.h, r: 18 + R() * 34, col: e ? (e.mood ? MC[e.mood] : my) : en }); });
+  for (let i = jobs.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [jobs[i], jobs[j]] = [jobs[j], jobs[i]]; }
+  c.save(); blocks.forEach(b => { c.rect(b.x, b.y, b.w, b.h); }); c.clip();
+  const t0 = performance.now(), dur = reduced ? 1 : 1500;
+  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); while (idx < target) { const j = jobs[idx++]; splat(c, j.x, j.y, j.r, j.col, R, false); } if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+  c.restore();
+  c.font = "28px 'Lilita One', sans-serif"; c.fillStyle = "#fff"; c.textAlign = "center"; c.strokeStyle = "#111"; c.lineWidth = 6;
+  blocks.forEach(b => { const lab = `${DOW[new Date(b.d + "T00:00:00").getDay()]}`; c.strokeText(lab, b.x + b.w / 2, b.y - 16); c.fillText(lab, b.x + b.w / 2, b.y - 16); });
+  // judge bar
+  const elapsed = wk.filter(d => d <= today).length, wrote = wk.filter(d => data[d]).length, miss = elapsed - wrote;
+  const mp = wrote / 7 * 92, ep = miss / 7 * 92, mpts = wk.reduce((s, d) => s + (data[d] ? data[d].text.length : 0), 0);
+  await sleep(300);
+  jb.style.setProperty("--m", `${Math.max(mp, 14)}%`); jb.style.setProperty("--e", `${Math.max(ep, miss ? 10 : 0)}%`);
+  const cnt = (el, to, suf) => { const s = performance.now(); const f = t => { const q = Math.min((t - s) / 1300, 1); el.textContent = (to * q).toFixed(1) + suf; if (q < 1 && !reduced) requestAnimationFrame(f); else el.textContent = to.toFixed(1) + suf; }; requestAnimationFrame(f); };
+  jb.querySelector(".e").classList.toggle("zero", !miss); cnt($("jM"), mp, "%"); cnt($("jE"), ep, "%"); $("jMp").textContent = `${mpts}p`; $("jEp").textContent = `${miss}日`;
+  await sleep(1500);
+  const st = $("stamp"); st.textContent = mp >= ep ? "WIN!" : "おしい！"; st.classList.add("on");
+  await sleep(500);
+  // rank + awards
+  const xp1 = totalXp(); $("rRank").textContent = rank(); $("rXpB").style.setProperty("--v", `${xp0 % XP_PER_RANK / XP_PER_RANK * 100}%`); $("rXp").textContent = `${xp1 % XP_PER_RANK}/${XP_PER_RANK}`;
+  $("rGain").textContent = isNew ? `+${xp1 - xp0} けいけんち ／ ${streakCount()}日 れんぞく` : "ぬりなおした！（けいけんちは そのまま）";
+  $("rk").classList.add("on"); setTimeout(() => $("rXpB").style.setProperty("--v", `${rank() > r0 ? 100 : xp1 % XP_PER_RANK / XP_PER_RANK * 100}%`), 200);
+  $("rUp").classList.toggle("on", rank() > r0); $("rUp").textContent = `ランクアップ！ ${rank()}`;
+  const aw = [];
+  if (text.length > long0 && isNew) aw.push("ぬりポイント 自己ベスト");
+  if (bestStreak() > best0) aw.push(`れんぞく ${bestStreak()}日 自己ベスト`);
+  if (text.length >= GOAL) aw.push("スペシャル はつどう！");
+  if (wrote >= 5) aw.push("こんしゅう 5日 たっせい");
+  aw.push(`${text.length}p ぬった`);
+  $("awards").innerHTML = aw.slice(0, 3).map(t => `<div class="aw"><i></i>${t}</div>`).join("");
+  for (const el of $("awards").children) { await sleep(260); el.classList.add("on"); }
+  await sleep(300); $("rNext").classList.add("on"); $("rOk").focus();
+}
+function closeRes() { $("res").classList.remove("show"); busy = false; render(); }
+
+// ---------- input ----------
+function closeAll() { ["hist", "cal"].forEach(id => $(id).classList.remove("show")); if (document.activeElement && document.activeElement.closest(".ov")) document.activeElement.blur(); }
+document.addEventListener("click", e => {
+  if ($("res").classList.contains("show")) { if (e.target.closest("#rOk") && $("rNext").classList.contains("on")) closeRes(); return; }
+  if (busy) return;
+  const tb = e.target.closest(".tab"); if (tb) { mode = +tb.dataset.m; return render(true); }
+  if (e.target.closest("#card") || e.target.closest("#bGo")) return act();
+  if (e.target.closest("#bSwap")) return swapMode(1);
+  if (e.target.closest("#bBack")) { location.href = "index.html"; return; }
+  if (e.target.closest("#tank")) return openEd(ymd(new Date()));
+  const sg = e.target.closest(".stage"); if (sg) return openEd(sg.dataset.k);
+  const hr = e.target.closest(".hr"); if (hr) { hcur = +hr.dataset.h; return renderHist(); }
+  if (e.target.closest("#hWrite")) return openEd(hDay(hcur));
+  if (e.target.closest("#hOlder")) { hpage++; hcur = 0; return renderHist(); }
+  if (e.target.closest("#hNewer")) { if (hpage) { hpage--; hcur = 0; renderHist(); } return; }
+  const cd = e.target.closest("[data-go]"); if (cd) return openEd(cd.dataset.go);
+  if (e.target.closest("#cPrev")) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() - 1); calSel = ymd(d); return openCal(); }
+  if (e.target.closest("#cNext")) { const d = new Date(calSel + "T00:00:00"); d.setDate(1); d.setMonth(d.getMonth() + 1); calSel = ymd(d) > ymd(new Date()) ? ymd(new Date()) : ymd(d); return openCal(); }
+  const mb = e.target.closest("#moods button"); if (mb) return setMood(mood === mb.dataset.m ? null : mb.dataset.m);
+  if (e.target.closest("#save")) return save();
+  if (e.target.closest("#cl")) return closeEd();
+  if (e.target.closest("[data-close]")) return closeAll();
+});
+document.addEventListener("dblclick", e => { const hr = e.target.closest(".hr"); if (hr) openEd(hDay(+hr.dataset.h)); });
+document.addEventListener("keydown", e => {
+  const k = e.key, K = k.toLowerCase(), edOpen = $("ed").classList.contains("show"), hOpen = $("hist").classList.contains("show"), cOpen = $("cal").classList.contains("show");
+  if ($("res").classList.contains("show")) { if ((k === "Enter" || k === " " || K === "a" || k === "Escape") && $("rNext").classList.contains("on")) { e.preventDefault(); closeRes(); } return; }
+  if (busy) return;
+  if (edOpen) {
+    if ((e.ctrlKey || e.metaKey) && k === "Enter") { e.preventDefault(); return save(); }
+    if (k === "Escape") return closeEd();
+    if (e.target.tagName !== "TEXTAREA" && (k === "ArrowLeft" || k === "ArrowRight")) { e.preventDefault(); const dir = k === "ArrowRight" ? 1 : -1, i = MOODS.indexOf(mood);
+      setMood(MOODS[i < 0 ? (dir > 0 ? 0 : 4) : (i + dir + 5) % 5]); document.querySelector(`#moods button[data-m="${mood}"]`).focus(); }
+    return;
+  }
+  const enter = (k === "Enter" || k === " " || K === "a") && e.target.tagName !== "BUTTON";
+  if (hOpen) {
+    if (k === "Escape" || K === "b") return closeAll();
+    if (k === "ArrowUp" && hcur > 0) { e.preventDefault(); hcur--; return renderHist(); }
+    if (k === "ArrowDown") { e.preventDefault(); if (hcur < 7) hcur++; else { hpage++; hcur = 0; } return renderHist(); }
+    if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); hpage++; hcur = 0; return renderHist(); }
+    if ((k === "ArrowLeft" || K === "l" || K === "q") && hpage) { e.preventDefault(); hpage--; hcur = 0; return renderHist(); }
+    if (enter) { e.preventDefault(); return openEd(hDay(hcur)); }
+    return;
+  }
+  if (cOpen) {
+    if (k === "Escape" || K === "b") return closeAll();
+    const mv = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }[k];
+    if (mv) { e.preventDefault(); const d = new Date(calSel + "T00:00:00"); d.setDate(d.getDate() + mv); if (ymd(d) <= ymd(new Date())) { calSel = ymd(d); openCal(); document.querySelector(`[data-go="${calSel}"]`)?.focus(); } return; }
+    return;
+  }
+  if (k === "ArrowLeft" || K === "l" || K === "q") { e.preventDefault(); return swapMode(-1); }
+  if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); return swapMode(1); }
+  if (K === "y") { const el = $("ruleD"); el.style.color = "#fff"; setTimeout(() => el.style.color = "", 800); return; }
+  if (enter) { e.preventDefault(); return act(); }
+});
+
+buildWall();
 render();
 </script>
 </body>
