@@ -314,7 +314,7 @@
   <div class="ewin"><h3><span id="eT"></span><small id="eS"></small></h3>
     <div class="emeter"><div class="ebar"><i class="m" id="emM"></i><i class="e" id="emE"></i></div><div class="einfo"><b id="emMe">0.0%</b><span id="emHint"></span><b id="emEn">0.0%</b></div></div>
     <div class="lb2">ちょうし</div><ul class="moods" id="moods"></ul>
-    <div class="lb2">きろく（書いた文字が塗りポイント。相手チームより多く塗れば WIN!）</div><textarea id="body" placeholder="きょうは どんな 一日だった？"></textarea>
+    <div class="lb2">きろく（書いた文字が塗りポイント。いつもより多く書けば 塗り勝てる）</div><textarea id="body" placeholder="きょうは どんな 一日だった？"></textarea>
     <div class="acts"><button class="go" id="save"><i>A</i>ぬりおわる</button><button class="cl" id="cl"><i>B</i>もどる</button><span class="hint">Ctrl+Enter で記録 ／ Esc でもどる</span></div>
   </div>
 </div>
@@ -350,7 +350,7 @@ const EMB = {
   yday:  '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M36 60a24 24 0 1 0 8-18" fill="none" stroke="var(--c)" stroke-width="9" stroke-linecap="round"/><path d="M32 30v16h16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 const MODES = [
-  { id:"write", nm:"ナワバリ<br>日記", ds:"きょうの一日を ぬりつぶそう", sub:"レギュラー", c:"#c6f000", cd:"#2a3a00", enemy:"#7a2bff", rule:"ナワバリバトル", rd:"1日1試合。書いた文字数が塗りポイントになり、その日の相手チームより多く塗れば WIN!" },
+  { id:"write", nm:"ナワバリ<br>日記", ds:"きょうの一日を ぬりつぶそう", sub:"レギュラー", c:"#c6f000", cd:"#2a3a00", enemy:"#7a2bff", rule:"ナワバリバトル", rd:"1日1試合。相手は いつもの あなたの記録に合わせてマッチング。いつもより たくさん書いて 塗り勝とう！" },
   { id:"hist", nm:"ふりかえり<br>マッチ", ds:"これまでの きろくを チェック", sub:"バンカラ", c:"#ff6a1a", cd:"#3a1200", enemy:"#1a8aff", rule:"きろくアーカイブ", rd:"これまでの試合の WIN!/LOSE...。選んで読み返したり、書き足してリベンジしたり。" },
   { id:"cal", nm:"ナワバリ<br>カレンダー", ds:"月の ぬりぐあいを チェック", sub:"プライベート", c:"#b05aff", cd:"#2a0a4a", enemy:"#ff9a1a", rule:"マンスリー", rd:"勝った日は自分のインク、負けた日は相手のインクで塗られる。日付を選んで書ける。" },
   { id:"yday", nm:"きのうの<br>きろく", ds:"書きわすれた きのうを ぬろう", sub:"イベント", c:"#19d7ff", cd:"#002a3a", enemy:"#ff2f8e", rule:"リベンジ", rd:"きのうの試合をあとから。連続記録をつなごう。" }
@@ -479,20 +479,26 @@ const rank = () => Math.floor(totalXp() / XP_PER_RANK) + 1;
 const totalChars = () => Object.values(data).reduce((s, x) => s + x.text.length, 0);
 const weekKeys = () => { const now = new Date(), mon = new Date(now); mon.setDate(now.getDate() - ((now.getDay() + 6) % 7)); return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return ymd(d); }); };
 const bestStreak = () => { let b = 0, r = 0, p = null; for (const k of Object.keys(data).sort()) { const c = new Date(k + "T00:00:00"); r = p && (c - p) / 864e5 === 1 ? r + 1 : 1; b = Math.max(b, r); p = c; } return b; };
-// ---------- turf war: each diary entry is one match against that day's opponent team ----------
-// Team ink = the mood's colour, the rival gets a contrasting one. The opponent's strength is fixed per date,
-// your turf comes from paint points (characters), so writing more is how you win.
+// ---------- turf war: each diary entry is one match ----------
+// Matchmaking: the opponent is tuned to your recent form (average length of up to 7 earlier entries) with a
+// per-date swing, so beating your usual wins. ~84-93% of the map gets inked and the two teams split it,
+// so gaining turf takes it from them and results stay close like real matches.
 const RIVAL = { 最高:"#7a2bff", 良い:"#ff6a1a", 普通:"#1a5aff", 微妙:"#e6dc1e", 最悪:"#19c99a" };
 const teamCols = m => m && MC[m] ? [MC[m], RIVAL[m]] : ["#c6f000", "#7a2bff"];
-function score(k, len) {
-  const R = rnd(seedOf(k) * 3 + 11), foe = 30 + R() * 22, luck = (R() - .5) * 6;
-  let me = Math.max(5, 14 + 64 * (1 - Math.exp(-len / 110)) + luck), en = foe;
-  const sum = me + en; if (sum > 96) { me *= 96 / sum; en *= 96 / sum; }
-  me = Math.round(me * 10) / 10; en = Math.round(en * 10) / 10;
-  return { me, en, win: me > en, len, foe, tier: foe < 37 ? "よわめ" : foe < 45 ? "ふつう" : "つよい" };
+function formBefore(k) {
+  const ks = Object.keys(data).filter(x => x < k).sort().slice(-7);
+  return ks.length ? Math.min(300, Math.max(40, ks.reduce((n, x) => n + data[x].text.length, 0) / ks.length)) : 80;
+}
+function foeOf(k) { const R = rnd(seedOf(k) * 3 + 11), df = .8 + R() * .45, T = 84 + R() * 9, luck = (R() - .5) * .24, base = formBefore(k); return { F: base * df, T, luck, base, df }; }
+function score(k, len, f = foeOf(k)) {
+  const d = Math.log((len + 20) / (f.F + 20)) + f.luck, s = (.5 + .24 * Math.tanh(1.2 * d)) * Math.min(1, (len + 2) / 22);
+  const meR = f.T * s, enR = f.T * (.5 - .24 * Math.tanh(1.2 * d)), win = meR > enR;
+  let me = Math.round(meR * 10) / 10, en = Math.round(enR * 10) / 10;
+  if (me === en) win ? me += .1 : en += .1;
+  return { me, en, win, len, base: f.base, tier: f.df < .92 ? "よわめ" : f.df < 1.1 ? "ふつう" : "つよい" };
 }
 const match = k => data[k] ? score(k, data[k].text.length) : null;
-const needFor = k => { for (let n = 1; n < 1000; n++) if (score(k, n).win) return n; return 999; };
+const needFor = k => { const f = foeOf(k); for (let n = 1; n < 3000; n++) if (score(k, n, f).win) return n; return 3000; };
 function record() {
   let w = 0, l = 0, cur = 0, best = 0;
   for (const k of Object.keys(data).sort()) { if (match(k).win) { w++; cur++; best = Math.max(best, cur); } else { l++; cur = 0; } }
@@ -524,19 +530,39 @@ function drawArena(c, W, H, R) {
   c.restore();
   return floor;
 }
-function arenaJobs(m, W, H, R, total, cols) {
-  const jobs = [], rr = () => W * (.022 + R() * .032);
-  const nm = Math.round(total * m.me / 100 * 1.25), ne = Math.round(total * m.en / 100 * 1.25);
-  for (let i = 0; i < nm; i++) jobs.push({ x: W * (.05 + Math.pow(R(), .85) * .9 * Math.min(1, m.me / 100 * 1.45)), y: H * (.08 + R() * .84), r: rr(), col: cols[0] });
-  for (let i = 0; i < ne; i++) jobs.push({ x: W * (.95 - Math.pow(R(), .85) * .9 * Math.min(1, m.en / 100 * 1.45)), y: H * (.08 + R() * .84), r: rr(), col: cols[1] });
-  for (let i = jobs.length - 1; i > 0; i--) { const j = Math.floor(R() * (i + 1)); [jobs[i], jobs[j]] = [jobs[j], jobs[i]]; }
-  return jobs;
+// Paint cells so the inked area matches the percentages: each team grows outward from its base along a
+// wavy front; whatever neither team reaches stays bare. Returns jobs ordered by spread time.
+function turfJobs(k, m, W, H, cols, n) {
+  const R = rnd(seedOf(k) + 21), cs = W / n, rows = Math.ceil(H / cs), cells = [], asp = H / W;
+  const ph = Array.from({ length: 12 }, () => R() * 6.28), fq = Array.from({ length: 12 }, () => 3 + R() * 5);
+  const wav = (u, v, o) => Math.sin(u * fq[o] + ph[o]) * Math.sin(v * fq[o + 1] + ph[o + 1]) + .6 * Math.sin(u * fq[o + 2] - v * fq[o + 3] + ph[o + 2]);
+  for (let j = 0; j < rows; j++) for (let i = 0; i < n; i++) {
+    const u = (i + .5) / n, v = (j + .5) * cs / H, e = .15 * Math.abs(v - .5) / .42;
+    if (v > .08 && v < .92 && u > .05 + e && u < .95 - e) cells.push({ u, v, x: (i + .5) * cs, y: (j + .5) * cs });
+  }
+  const dist = (c, bu) => Math.hypot(c.u - bu, (c.v - .5) * asp);
+  cells.forEach(c => { c.pm = dist(c, .09) + .15 * wav(c.u, c.v, 0) + .05 * R(); c.pe = dist(c, .91) + .15 * wav(c.u, c.v, 4) + .05 * R(); c.tone = .5 + .3 * wav(c.u * 2.2, c.v * 2.2, 8); });
+  const nm = Math.round(cells.length * m.me / 100), ne = Math.round(cells.length * m.en / 100), jobs = [];
+  const mine = [...cells].sort((a, b) => a.pm - b.pm).slice(0, nm); mine.forEach((c, i) => { c.t = 1; jobs.push({ ...c, col: cols[0], o: i / Math.max(1, nm) }); });
+  [...cells].filter(c => !c.t).sort((a, b) => a.pe - b.pe).slice(0, ne).forEach((c, i) => jobs.push({ ...c, col: cols[1], o: i / Math.max(1, ne) }));
+  jobs.forEach(j => { j.r = cs * (.66 + R() * .22); j.dx = (R() - .5) * cs * .35; j.dy = (R() - .5) * cs * .35; j.hi = R() < .12; j.cs = cs; j.fill = shade(j.col, .16 * Math.max(0, Math.min(1, j.tone))); j.rim = shade(j.col, .5); });
+  return jobs.sort((a, b) => a.o - b.o);
+}
+const shade = (hex, f) => "#" + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - f)).toString(16).padStart(2, "0")).join("");
+// final look: all dark rims first, then the fills, so each team's ink gets an outline but no inner seams
+function paintTurf(c, jobs) {
+  for (const j of jobs) { c.fillStyle = j.rim; c.beginPath(); c.arc(j.x + j.dx, j.y + j.dy, j.r + j.cs * .14, 0, 7); c.fill(); }
+  for (const j of jobs) paintCell(c, j);
+}
+function paintCell(c, j) {
+  c.fillStyle = j.fill; c.beginPath(); c.arc(j.x + j.dx, j.y + j.dy, j.r, 0, 7); c.fill();
+  if (j.hi) { c.fillStyle = "rgba(255,255,255,.3)"; c.beginPath(); c.ellipse(j.x + j.dx - j.r * .3, j.y + j.dy - j.r * .35, j.r * .4, j.r * .2, -.5, 0, 7); c.fill(); }
 }
 function drawBases(c, W, H, cols) { [[.09, cols[0]], [.91, cols[1]]].forEach(([x, col]) => { c.beginPath(); c.arc(x * W, H / 2, W * .03, 0, 7); c.fillStyle = col; c.fill(); c.lineWidth = Math.max(2, W / 200); c.strokeStyle = "#fff"; c.stroke(); }); }
 function stageThumb(cv, k) {
   const c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(k) + 7), m = match(k);
   const floor = drawArena(c, W, H, R);
-  if (m) { const cols = teamCols(data[k].mood); c.save(); c.clip(floor); arenaJobs(m, W, H, R, 26, cols).forEach(j => splat(c, j.x, j.y, j.r, j.col, R, false)); c.restore(); drawBases(c, W, H, cols); }
+  if (m) { const cols = teamCols(data[k].mood); c.save(); c.clip(floor); paintTurf(c, turfJobs(k, m, W, H, cols, W > 300 ? 64 : 36)); c.restore(); drawBases(c, W, H, cols); }
   else { c.fillStyle = "rgba(0,0,0,.4)"; c.fillRect(0, 0, W, H); }
 }
 
@@ -621,6 +647,7 @@ function renderHist() {
     <div class="in"><div class="tbar"><i class="m" style="width:${Math.max(m.me, 14)}%">${m.me.toFixed(1)}%</i><i class="e" style="width:${Math.max(m.en, 14)}%">${m.en.toFixed(1)}%</i></div>
       <div class="team"><div class="th"><span>${m.win ? "WIN!" : "LOSE..."}</span><span>${m.len} p</span></div>
         <div class="tr"><span>あいてチーム（${m.tier}）</span><span>${m.en.toFixed(1)}%</span></div>
+        <div class="tr"><span>マッチング（それまでの平均）</span><span>${Math.round(m.base)} p</span></div>
         <div class="tr"><span>${m.win ? "WIN に必要だった ぬりポイント" : "WIN まで あと"}</span><span>${m.win ? `${need} p` : `${need - m.len} p`}</span></div>
         <div class="tr"><span>ちょうし</span><span>${e.mood || "─"}</span></div>
         <div class="tr"><span>その日までの れんぞく</span><span>${streakAt(k)} 日</span></div></div>
@@ -650,10 +677,10 @@ function updPts() {
   if (!selected) return;
   const m = score(selected, len), cols = teamCols(mood), ed = $("ed"), need = needFor(selected);
   ed.style.setProperty("--tm", cols[0]); ed.style.setProperty("--te", cols[1]);
-  $("emM").style.width = `${len ? m.me : 0}%`; $("emE").style.width = `${m.en}%`;
-  $("emMe").textContent = `${(len ? m.me : 0).toFixed(1)}%`; $("emEn").textContent = `${m.en.toFixed(1)}%`;
+  $("emM").style.width = `${m.me}%`; $("emE").style.width = `${m.en}%`;
+  $("emMe").textContent = `${m.me.toFixed(1)}%`; $("emEn").textContent = `${m.en.toFixed(1)}%`;
   const h = $("emHint"), lead = len > 0 && m.win; h.classList.toggle("lead", lead);
-  h.textContent = !len ? `あいて（${m.tier}）に ${need}p で勝てる` : lead ? (len - need < 20 ? "ギリギリ リード！" : "リード中！") : `逆転まで あと ${need - len}p`;
+  h.textContent = !len ? `いつもの あなた ≒ ${Math.round(m.base)}p ／ ${need}p で勝てる` : lead ? (len - need < 20 ? "ギリギリ リード！" : "リード中！") : `逆転まで あと ${need - len}p`;
   if (lead && !wasLead && ed.classList.contains("show")) SE.lead(); wasLead = lead;
   // team icons: opponents get splatted as you close in
   const down = len ? (lead ? 4 : Math.min(3, Math.floor(len / need * 4))) : 0, mine = lead ? 0 : Math.max(0, 2 - Math.floor(len / need * 3));
@@ -699,12 +726,13 @@ async function save() {
   $("jEnL").textContent = `あいてチーム（${m.tier}）`;
   // paint the arena: both teams' ink lands in proportion to the final turf
   const cv = $("map"), c = cv.getContext("2d"), W = cv.width, H = cv.height, R = rnd(seedOf(k) + 7);
-  const floor = drawArena(c, W, H, R), jobs = arenaJobs(m, W, H, R, 120, cols);
+  const floor = drawArena(c, W, H, R), jobs = turfJobs(k, m, W, H, cols, 72);
   drawBases(c, W, H, cols);
   c.save(); c.clip(floor);
   const t0 = performance.now(), dur = reduced ? 1 : 1700;
-  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); if (idx < target) SE.paint(); while (idx < target) { const j = jobs[idx++]; splat(c, j.x, j.y, j.r, j.col, R, false); } if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
-  c.restore(); drawBases(c, W, H, cols);
+  await new Promise(done => { let idx = 0; const step = t => { const target = Math.floor(Math.min((t - t0) / dur, 1) * jobs.length); if (idx < target) SE.paint(); while (idx < target) paintCell(c, jobs[idx++]); if (idx < jobs.length) requestAnimationFrame(step); else done(); }; requestAnimationFrame(step); });
+  // settle into the outlined final render
+  c.restore(); drawArena(c, W, H, rnd(seedOf(k) + 7)); c.save(); c.clip(floor); paintTurf(c, jobs); c.restore(); drawBases(c, W, H, cols);
   // judge
   await sleep(300);
   SE.judge(); jb.style.setProperty("--m", `${Math.max(m.me, 14)}%`); jb.style.setProperty("--e", `${Math.max(m.en, 14)}%`);
@@ -722,8 +750,9 @@ async function save() {
   const aw = [];
   if (m.win && prev && !prev.win) aw.push("リベンジ せいこう！");
   if (m.win && rec.cur >= 2) aw.push(`${rec.cur}連勝！`);
-  if (m.win && m.me - m.en >= 20) aw.push("あっしょう！");
+  if (m.win && m.me - m.en >= 25) aw.push("あっしょう！");
   if (m.win && m.me - m.en < 3) aw.push("ギリギリの しょうり");
+  if (!m.win && m.en - m.me < 3) aw.push("おしい！ きっこう");
   if (!m.win) aw.push(`あと ${needFor(k) - m.len}p で WIN だった`);
   if (rec.best > rec0.best && rec.best >= 2) aw.push(`${rec.best}連勝 自己ベスト`);
   if (text.length > long0 && long0 && isNew) aw.push("ぬりポイント 自己ベスト");
