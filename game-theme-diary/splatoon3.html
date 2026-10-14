@@ -44,9 +44,10 @@
   .plat::after { content:""; position:absolute; inset:-30% 10% 30%; border-radius:50%; background:radial-gradient(ellipse,color-mix(in srgb,var(--c) 35%,transparent),transparent 65%); filter:blur(10px); animation:pulse 3s ease-in-out infinite; }
 
   /* ink tank (stands where a character would) */
-  .tank { position:fixed; z-index:3; left:50%; bottom:12vh; width:min(17vw,26vh); translate:-50% 0; animation:bob 3.2s ease-in-out infinite; cursor:pointer; }
+  .tank { position:fixed; z-index:3; left:50%; bottom:13vh; width:min(22vw,36vh); translate:-50% 0; animation:bob 3.2s ease-in-out infinite; cursor:pointer; }
   .tank svg { width:100%; display:block; filter:drop-shadow(0 18px 18px rgba(0,0,0,.6)); overflow:visible; }
-  .tank .tdate { position:absolute; left:0; right:0; top:-26%; text-align:center; font:400 min(5.2vh,3vw)/1 var(--fd); text-shadow:0 3px 0 #000; }
+  .tank .tdate { position:absolute; left:-40%; right:-40%; bottom:100%; padding-bottom:.6vh; text-align:center; font:400 min(5.2vh,3vw)/1 var(--fd); text-shadow:0 3px 0 #000; }
+  .tank .np { display:inline-block; margin-top:.8vh; padding:.3vh 1vw; border-radius:6px; background:rgba(0,0,0,.6); box-shadow:0 0 0 2px rgba(255,255,255,.25); font:900 min(1.7vh,.95vw) var(--fb); letter-spacing:.06em; white-space:nowrap; }
   .tank .tdate small { display:block; font:800 min(1.8vh,1vw) var(--fb); letter-spacing:.2em; color:#ddd; margin-top:.4vh; }
 
   /* ---------- top-left: tabs + match card ---------- */
@@ -155,6 +156,23 @@
   .cd b { position:absolute; left:8%; top:4%; font:400 min(2.4vh,17px) var(--fl); text-shadow:0 1px 3px #000; }
   .cd.out { opacity:.3; } .cd.fut { opacity:.35; cursor:default; } .cd.today { box-shadow:0 0 0 3px #fff; } .cd:not(.fut):hover { box-shadow:0 0 0 3px var(--c); } .cd:focus-visible { outline:3px solid var(--c); }
 
+  /* あいぼう profile */
+  .prof { position:absolute; inset:64px 3vw 7vh; display:grid; grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr); gap:2vw; }
+  .pl { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1vh; min-height:0; border-radius:16px; background:radial-gradient(ellipse at 50% 70%,#2a2a32,#121216 70%); box-shadow:0 0 0 2px #2a2a32; padding:2vh 1vw; }
+  .pl svg { width:min(100%,48vh); flex:1; min-height:0; overflow:visible; animation:bobS 3.2s ease-in-out infinite; }
+  @keyframes bobS { 50% { transform:translateY(-1vh); } }
+  .plate { align-self:stretch; position:relative; padding:1vh 1.4vw; border-radius:10px; overflow:hidden; color:#111; background:repeating-linear-gradient(-45deg,var(--pc) 0 14px,color-mix(in srgb,var(--pc) 80%,#fff) 14px 28px); box-shadow:0 0 0 3px #111; }
+  .plate small { display:block; font:900 min(1.9vh,14px) var(--fb); } .plate b { display:block; font:400 min(4.4vh,32px)/1.1 var(--fd); } .plate span { font:400 min(1.9vh,14px) var(--fl); }
+  .pr { min-height:0; overflow:auto; display:flex; flex-direction:column; gap:1.2vh; padding-right:4px; }
+  .pbox { padding:1.2vh 1.2vw; border-radius:12px; background:var(--panel); box-shadow:0 0 0 2px #2a2a32; }
+  .pbox h4 { font:900 min(1.9vh,14px) var(--fb); color:#fff; margin-bottom:.6vh; } .pbox p { font:700 min(1.9vh,14px)/1.7 var(--fb); color:#ddd; } .pbox .pnext { color:var(--c); margin-top:.4vh; }
+  .prow2 { display:flex; align-items:center; gap:1.2vw; } .prow2 svg { width:min(9vh,64px); flex:none; }
+  .gr { display:grid; grid-template-columns:auto auto 1fr; align-items:baseline; gap:.8vw; padding:.5vh 0; border-top:1px solid #2a2a32; font:900 min(1.9vh,14px) var(--fb); } .gr:first-of-type { border-top:0; }
+  .gr i { font-style:normal; padding:0 .6vw; border-radius:4px; background:#2a2a32; color:#bbb; font-size:.85em; } .gr small { color:#999; font-weight:700; text-align:right; }
+  .tr2 { display:grid; grid-template-columns:minmax(0,9em) 1fr; align-items:center; gap:1vw; padding:.4vh 0; font:900 min(1.9vh,14px) var(--fb); } .tr2 small { display:block; font:700 .75em var(--fb); color:#999; }
+  .tb { height:12px; border-radius:999px; background:#121216; overflow:hidden; box-shadow:0 0 0 2px #2a2a32; } .tb i { display:block; height:100%; border-radius:999px; }
+  .chips { display:flex; flex-wrap:wrap; gap:6px; } .chips span { padding:2px 10px; border-radius:999px; background:#2a2a32; font:900 min(1.7vh,13px) var(--fb); } .chips b { margin-left:6px; font:400 1em var(--fl); color:var(--c); }
+
   /* editor = battle HUD */
   #ed .paint { position:absolute; inset:0; width:100%; height:100%; }
   .ehud { position:absolute; left:0; right:0; top:2vh; display:flex; justify-content:center; align-items:center; gap:1vw; pointer-events:none; }
@@ -252,16 +270,16 @@
     .chal { display:none; }
     .cardWrap { left:14px; right:14px; top:124px; width:auto; } .card { aspect-ratio:2.2; padding:14px 16px 34px; border-radius:24px; gap:14px; } .card .emb { width:78px; } .card .nm { font-size:24px; } .card .ds { font-size:12px; bottom:12px; } .card .drip { height:40px; }
     .modeBadge { display:none; }
-    .tank { width:100px; bottom:auto; top:calc(124px + (100vw - 28px) / 2.2 + 76px); } .tank .tdate { font-size:22px; } .tank .tdate small { font-size:10px; }
+    .tank { width:150px; bottom:auto; top:calc(124px + (100vw - 28px) / 2.2 + 96px); } .tank .tdate { font-size:22px; } .tank .tdate small { font-size:10px; }
     .plat { width:62vw; bottom:auto; top:calc(124px + (100vw - 28px) / 2.2 + 76px + 136px); }
     .rule { left:10px; right:10px; top:auto; bottom:58px; width:auto; padding:10px 12px; } .rule .hd { font-size:11px; } .rule .rn { font-size:18px; } .rule .lb { font-size:11px; }
-    .stage { grid-template-columns:76px minmax(0,1fr); gap:8px; } .stage b { font-size:13px; } .stage small { font-size:11px; }
+    .stage { grid-template-columns:76px minmax(0,1fr); gap:8px; } .stage b em { font-size:10px; padding:0 4px; margin-left:4px; } .stage b { font-size:13px; } .stage small { font-size:11px; }
     .hintL { left:10px; bottom:12px; font-size:12px; gap:8px; } .hintL i { width:20px; font-size:12px; }
     .hist { inset:76px 10px 52px; grid-template-columns:1fr; grid-template-rows:auto 1fr; overflow:auto; } .hl { max-height:46vh; }
     .hsum { font-size:12px; } .hsum b { font-size:24px; } .hsum small { font-size:9px; }
     .hr { grid-template-columns:72px 1fr auto; gap:8px; } .hr .res { font-size:15px; } .hr b { font-size:12px; } .hr span { font-size:14px; } .hr .mi { width:18px; }
     .hd2 .img .t span { font-size:10px; } .hd2 .img .t b { font-size:15px; } .tbar { height:26px; font-size:13px; } .team .th { font-size:15px; } .team .tr { font-size:12px; } .team .tr span:last-child { font-size:14px; } .htext { font-size:13px; }
-    .ofoot { left:10px; bottom:12px; font-size:12px; } .ofoot i { width:20px; font-size:11px; }
+    .ofoot { left:10px; bottom:12px; font-size:12px; } .prof { inset:76px 10px 52px; grid-template-columns:1fr; grid-template-rows:auto auto; overflow:auto; } .pl svg { width:180px; flex:none; } .pr { overflow:visible; } .tank .np { font-size:10px; } .ofoot i { width:20px; font-size:11px; }
     .ehud .clk { font-size:16px; padding:2px 8px; } .ehud .dy { display:none; } .ehud { justify-content:flex-start; left:10px; gap:6px; } .ehud .tm { gap:2px; } .ehud .tm i { width:20px; border-radius:6px; box-shadow:0 0 0 2px #111, 0 0 0 3px rgba(255,255,255,.75); } .hr .vs { font-size:12px; } .ewin h3 { flex-wrap:wrap; gap:2px 8px; } .ewin h3 small { margin-left:0; width:100%; } .einfo { font-size:15px; } .einfo span { font-size:10px; } .pts { right:10px; top:62px; } .pts b { font-size:28px; } .sp { width:46px; } .sp span { font-size:11px; } .ehud { top:12px; }
     .ewin { top:56%; padding:14px 14px 14px; } .moods { gap:5px; } .moods button { font-size:11px; } .moods button i { width:22px; height:28px; clip-path:path("M11 0C11 0 22 13 22 19a11 11 0 0 1-22 0C0 13 11 0 11 0Z"); }
     .awards { right:10px; left:10px; top:auto; bottom:calc(5vh + 90px); align-items:stretch; gap:6px; } .aw { font-size:13px; padding:6px 14px 6px 8px; }
@@ -277,7 +295,7 @@
 <div class="wall" aria-hidden="true"><svg id="wallSvg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice"></svg></div>
 <div class="floor" aria-hidden="true"></div>
 <div class="plat" aria-hidden="true"></div>
-<div class="tank" id="tank" role="button" aria-label="今日を書く"><div class="tdate" id="tDate"></div><svg id="tankSvg" viewBox="0 0 200 300" aria-hidden="true"></svg></div>
+<div class="tank" id="tank" role="button" aria-label="あいぼう（プロフィール）"><div class="tdate" id="tDate"></div><svg id="tankSvg" viewBox="0 70 200 200" aria-hidden="true"></svg></div>
 
 <div class="tabs" id="tabs"><span class="lr">L</span><span id="tabBtns" style="display:flex;gap:.5vw"></span><span class="lr r">R</span></div>
 <div class="sub" id="sub"></div>
@@ -301,6 +319,11 @@
     <div class="hd2" id="hDet"></div>
   </div>
   <div class="ofoot"><button data-close><i>B</i>もどる</button><button id="hWrite"><i>A</i>この日をかく</button><button id="hOlder"><i>R</i>もっと前</button><button id="hNewer"><i>L</i>あたらしい</button></div>
+</div>
+<!-- あいぼう -->
+<div class="ov" id="prof" role="dialog" aria-modal="true" aria-label="あいぼう"><div class="bg"></div>
+  <div class="prof"><div class="pl"><div class="plate" id="pfPlate"></div><svg id="pfBuddy" viewBox="0 70 200 200" aria-hidden="true"></svg></div><div class="pr" id="pfInfo"></div></div>
+  <div class="ofoot"><button data-close><i>B</i>もどる</button><button id="pWrite"><i>A</i>きょうを書く</button></div>
 </div>
 <!-- calendar -->
 <div class="ov" id="cal" role="dialog" aria-modal="true" aria-label="カレンダー"><div class="bg"></div>
@@ -341,18 +364,21 @@ const ICONS = {
   write: '<path d="M4 20l2-6 10-10 4 4-10 10z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>',
   hist:  '<circle cx="12" cy="12" r="8" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M12 7v5l3 3" fill="none" stroke="#fff" stroke-width="2.4"/>',
   cal:   '<rect x="4" y="6" width="16" height="14" rx="2" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M4 11h16M9 3v5M15 3v5" stroke="#fff" stroke-width="2.4"/>',
+  me:    '<path d="M5 15c0-6 3-10 7-10s7 4 7 10c0 3-3 5-7 5s-7-2-7-5z" fill="none" stroke="#fff" stroke-width="2.4"/><circle cx="9.5" cy="13" r="1.4" fill="#fff"/><circle cx="14.5" cy="13" r="1.4" fill="#fff"/>',
   yday:  '<path d="M5 12a7 7 0 1 0 2-5" fill="none" stroke="#fff" stroke-width="2.4"/><path d="M4 4v5h5" fill="none" stroke="#fff" stroke-width="2.4"/>'
 };
 const EMB = {
   write: '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M34 84l8-22 34-34 14 14-34 34z" fill="var(--c)" stroke="#111" stroke-width="4"/><path d="M84 84L62 62l8-8 22 22v8z" fill="#fff" stroke="#111" stroke-width="4"/><circle cx="88" cy="30" r="6" fill="#fff"/>',
   hist:  '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><circle cx="60" cy="60" r="30" fill="var(--c)" stroke="#fff" stroke-width="5"/><path d="M60 40v20l14 10" fill="none" stroke="#111" stroke-width="7" stroke-linecap="round"/>',
   cal:   '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><rect x="30" y="34" width="60" height="52" rx="8" fill="#fff"/><rect x="30" y="34" width="60" height="16" rx="6" fill="var(--c)"/><g fill="#111"><rect x="38" y="58" width="10" height="10" rx="2"/><rect x="55" y="58" width="10" height="10" rx="2"/><rect x="72" y="58" width="10" height="10" rx="2"/><rect x="38" y="72" width="10" height="8" rx="2"/></g>',
+  me:    '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M32 74c0-22 12-38 28-38s28 16 28 38c0 10-12 16-28 16s-28-6-28-16z" fill="var(--c)" stroke="#fff" stroke-width="4"/><ellipse cx="50" cy="66" rx="5" ry="7" fill="#111"/><ellipse cx="70" cy="66" rx="5" ry="7" fill="#111"/><path d="M53 78q7 6 14 0" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round"/>',
   yday:  '<path d="M60 6c18 0 22 14 34 14s20 10 18 26-12 18-10 30-6 28-24 30-22-8-34-6-30-2-32-20 8-22 6-34S40 6 60 6z" fill="#111"/><path d="M36 60a24 24 0 1 0 8-18" fill="none" stroke="var(--c)" stroke-width="9" stroke-linecap="round"/><path d="M32 30v16h16" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>'
 };
 const MODES = [
   { id:"write", nm:"ナワバリ<br>日記", ds:"きょうの一日を ぬりつぶそう", sub:"レギュラー", c:"#c6f000", cd:"#2a3a00", enemy:"#7a2bff", rule:"ナワバリバトル", rd:"1日1試合。相手は いつもの あなたの記録に合わせてマッチング。いつもより たくさん書いて 塗り勝とう！" },
   { id:"hist", nm:"ふりかえり<br>マッチ", ds:"これまでの きろくを チェック", sub:"バンカラ", c:"#ff6a1a", cd:"#3a1200", enemy:"#1a8aff", rule:"きろくアーカイブ", rd:"これまでの試合の WIN!/LOSE...。選んで読み返したり、書き足してリベンジしたり。" },
   { id:"cal", nm:"ナワバリ<br>カレンダー", ds:"月の ぬりぐあいを チェック", sub:"プライベート", c:"#b05aff", cd:"#2a0a4a", enemy:"#ff9a1a", rule:"マンスリー", rd:"勝った日は自分のインク、負けた日は相手のインクで塗られる。日付を選んで書ける。" },
+  { id:"me", nm:"マイ<br>あいぼう", ds:"日記から そだつ あいぼうを 見る", sub:"ロッカー", c:"#ff2f8e", cd:"#3a0018", enemy:"#19d7ff", rule:"あいぼう", rd:"書いた日記から あなたの人柄を読みとって、あいぼうの見た目・ギア・ブキ・二つ名が変わっていく。" },
   { id:"yday", nm:"きのうの<br>きろく", ds:"書きわすれた きのうを ぬろう", sub:"イベント", c:"#19d7ff", cd:"#002a3a", enemy:"#ff2f8e", rule:"リベンジ", rd:"きのうの試合をあとから。連続記録をつなごう。" }
 ];
 const $ = id => document.getElementById(id);
@@ -611,25 +637,140 @@ function buildWall() {
   $("wallSvg").innerHTML = `<defs><pattern id="dots" width="7" height="7" patternUnits="userSpaceOnUse"><rect width="7" height="7" fill="#0a0c04"/><circle cx="3.5" cy="3.5" r="2.4" fill="var(--wall)"/></pattern></defs><g stroke="#050506" stroke-width="7">${t}</g>`;
 }
 
-// ---------- ink tank ----------
+// ---------- あいぼう: an original ink creature (not a squid, not a person) that grows into your personality ----------
+// Everything is read locally from the last 30 entries: length, how often you write, moods, "！"/"…", topic words.
+const CATS = {
+  active: { re: /運動|走っ|ランニング|ジム|散歩|歩い|外出|出かけ|旅|遊ん|公園|自転車|サッカー|野球|筋トレ|泳い|ヨガ|ダンス|登山/g, topic: "からだを動かした", noun: "ストリートランナー", wpn: "roller" },
+  food:   { re: /食べ|ご飯|ごはん|ランチ|夕飯|晩ご飯|朝ごはん|カフェ|料理|美味|おいし|ラーメン|スイーツ|ケーキ|パン|寿司|カレー|焼肉|お菓子/g, topic: "ごはん", noun: "グルメハンター", wpn: "slosher" },
+  work:   { re: /仕事|会議|勉強|課題|テスト|試験|資格|作業|バイト|締め切り|レポート|授業|研究|残業|タスク|プログラ|学校|練習/g, topic: "仕事や勉強", noun: "ストイックエース", wpn: "charger" },
+  social: { re: /友達|友人|家族|会っ|話し|飲み会|先輩|後輩|同僚|彼氏|彼女|みんな|一緒|電話|母|父|妹|弟|姉|兄|子ども/g, topic: "人と過ごした", noun: "ムードメーカー", wpn: "shooter" },
+  indoor: { re: /ゲーム|映画|読書|本を|漫画|マンガ|アニメ|音楽|絵を|配信|動画|ドラマ|小説|ライブ|推し/g, topic: "趣味", noun: "インドア職人", wpn: "spinner" },
+  rest:   { re: /寝|眠|休み|休ん|ゆっくり|のんびり|疲れ|だらだら|ゴロゴロ|お風呂|二度寝/g, topic: "ゆっくり休んだ", noun: "おひるね名人", wpn: "brush" }
+};
+const WPN = {
+  shooter: { nm: "シューター", why: "人の話が多い → チームの真ん中で動ける" },
+  roller:  { nm: "ローラー", why: "からだを動かした話が多い → 前へ前へ 塗り進む" },
+  charger: { nm: "チャージャー", why: "仕事や勉強の話が多い → じっくり狙って 決める" },
+  slosher: { nm: "スロッシャー", why: "ごはんの話が多い → バケツで 豪快に" },
+  spinner: { nm: "スピナー", why: "趣味の話が多い → ためて ためて 一気に" },
+  brush:   { nm: "フデ", why: "休んだ話が多い → 気ままに すいすい" }
+};
+const STAGES = ["インクのしずく", "ちびインク", "インクっこ", "ベテランインク"];
+const MOODV = { 最高: 1, 良い: .75, 普通: .5, 微妙: .25, 最悪: 0 };
+function profile(d = data) {
+  const ks = Object.keys(d).sort(), n = ks.length, rec = ks.slice(-30), es = rec.map(k => d[k]);
+  const stage = n < 3 ? 0 : n < 10 ? 1 : n < 30 ? 2 : 3;
+  if (!n) return { n, stage, col: "#c6f000", t: { word: .3, keep: 0, genki: .5, calm: .5, curio: 0 }, cat: null, title: "まだ だれでもない しずく", blurb: "日記を書くと、あいぼうが あなたらしく そだっていく。", hits: [], gear: {}, wpn: null, eyes: "norm", tuft: "none", mouth: "smile" };
+  const avgLen = es.reduce((a, e) => a + e.text.length, 0) / es.length;
+  const since = new Date(); since.setDate(since.getDate() - 29); const recent30 = ks.filter(k => k >= ymd(since)).length;
+  const mv = es.filter(e => e.mood in MOODV).map(e => MOODV[e.mood]), mAvg = mv.length ? mv.reduce((a, b) => a + b, 0) / mv.length : .5;
+  const mSd = mv.length > 1 ? Math.sqrt(mv.reduce((a, b) => a + (b - mAvg) ** 2, 0) / mv.length) : 0;
+  const all = es.map(e => e.text).join("\n"), chars = Math.max(1, all.length);
+  const exc = (all.match(/[!！]/g) || []).length / chars * 100, ell = (all.match(/…|\.\.\.|。。/g) || []).length / chars * 100;
+  const hits = Object.entries(CATS).map(([key, c]) => ({ key, n: es.reduce((a, e) => a + ((e.text.match(c.re) || []).length ? 1 : 0), 0) })).sort((a, b) => b.n - a.n);
+  const t = { word: Math.min(1, avgLen / 220), keep: Math.min(1, recent30 / 24), genki: Math.min(1, Math.max(0, mAvg * .85 + Math.min(exc, 3) / 3 * .25)), calm: Math.max(0, 1 - mSd * 2.6), curio: hits.filter(h => h.n).length / 6 };
+  const cat = hits[0].n ? hits[0].key : null;
+  // colour: the mood you pick most
+  const cnt = {}; es.forEach(e => { if (e.mood) cnt[e.mood] = (cnt[e.mood] || 0) + 1; });
+  const fav = Object.keys(cnt).sort((a, b) => cnt[b] - cnt[a])[0], col = fav ? MC[fav] : "#c6f000";
+  // 二つ名 = strongest trait adjective + topic noun
+  const adj = [[t.word, .62, "ものがたる"], [1 - t.word, .8, "ひとことの"], [t.keep, .7, "ひたむきな"], [t.genki, .72, "ごきげんな"], [1 - t.genki, .72, "おつかれ気味の"],
+    [1 - t.calm, .55, "きまぐれな"], [t.calm, .9, "マイペースな"], [Math.min(1, exc / 2.5), .6, "テンション高めの"], [Math.min(1, ell / 1.2), .5, "しみじみ系の"], [t.curio, .67, "なんでも屋の"]]
+    .map(([v, th, w]) => ({ s: v - th, w })).sort((a, b) => b.s - a.s)[0];
+  const title = `${adj.s > 0 ? adj.w : "ふつうの"} ${cat ? CATS[cat].noun : "ルーキー"}`;
+  const wpn = cat ? CATS[cat].wpn : "shooter";
+  const gear = {
+    head: t.word >= .6 ? ["まるメガネ", "たくさん書く → じっくり型"] : t.genki >= .7 ? ["キャップ", "ごきげんな日が多い"] : t.calm >= .8 ? ["ニットぼう", "気分が安定している"] : t.calm < .45 ? ["ヘッドホン", "気分の波がある → 自分の世界に"] : ["ヘッドバンド", "ほどよく がんばっている"],
+    body: ({ active: ["ジャージ", "からだを動かす話"], food: ["エプロン", "ごはんの話"], work: ["シャツ＆ネクタイ", "仕事や勉強の話"], social: ["パーカー", "人と過ごす話"], indoor: ["ゆるTシャツ", "趣味の話"], rest: ["パジャマ", "休んだ話"] })[cat] || ["Tシャツ", "これから決まる"],
+    shoes: t.keep >= .6 ? ["ランニングシューズ", "毎日コツコツ続けている"] : t.keep >= .3 ? ["スニーカー", "ほどよいペースで書いている"] : ["サンダル", "気が向いたときに書く"]
+  };
+  const eyes = t.genki >= .66 ? "sparkle" : t.genki <= .34 ? "sleepy" : t.calm < .45 ? "wink" : "norm";
+  const tuft = t.curio >= .67 ? "curl" : (t.genki >= .6 || cat === "active") ? "spike" : t.calm >= .75 ? "drip" : "wave";
+  const mouth = t.genki >= .66 ? "open" : t.genki <= .34 ? "flat" : "smile";
+  const blurb = [t.word >= .6 ? "一日を たっぷり言葉にするタイプ。" : t.word <= .25 ? "さくっと短く まとめるタイプ。" : "ほどよい長さで 書きとめるタイプ。",
+    t.keep >= .6 ? "毎日コツコツ 続けている。" : t.keep <= .25 ? "気が向いたときに書く 自由人。" : "",
+    t.genki >= .66 ? "ごきげんな日が多め。" : t.genki <= .34 ? "しんどい日も 正直に書いている。" : t.calm < .45 ? "いろんな気分が 行き来している。" : "気分は わりと安定。",
+    cat ? `さいきんは ${CATS[cat].topic}話が 多い。` : ""].join("");
+  return { n, stage, col, t, cat, title, blurb, hits, gear, wpn, eyes, tuft, mouth, exc, ell };
+}
+const WPN_SVG = {
+  shooter: '<rect x="4" y="12" width="34" height="14" rx="5" fill="#eee" stroke="#111" stroke-width="3"/><rect x="36" y="15" width="16" height="8" rx="3" fill="#888" stroke="#111" stroke-width="3"/><circle cx="16" cy="8" r="7" fill="INK" stroke="#111" stroke-width="3"/><rect x="10" y="24" width="8" height="12" rx="3" fill="#555" stroke="#111" stroke-width="3"/>',
+  roller: '<rect x="2" y="22" width="44" height="18" rx="8" fill="INK" stroke="#111" stroke-width="3"/><path d="M24 22V6h18" fill="none" stroke="#111" stroke-width="5"/><path d="M24 22V6h18" fill="none" stroke="#ddd" stroke-width="2"/>',
+  charger: '<rect x="0" y="16" width="56" height="8" rx="3" fill="#ddd" stroke="#111" stroke-width="3"/><rect x="16" y="6" width="18" height="8" rx="3" fill="#333" stroke="#111" stroke-width="3"/><circle cx="12" cy="28" r="6" fill="INK" stroke="#111" stroke-width="3"/>',
+  slosher: '<path d="M6 10h36l-5 28H11z" fill="INK" stroke="#111" stroke-width="3" stroke-linejoin="round"/><path d="M6 10q18-12 36 0" fill="none" stroke="#111" stroke-width="3"/><path d="M42 12q8 4 6 12" fill="none" stroke="INK" stroke-width="4" stroke-linecap="round"/>',
+  spinner: '<rect x="4" y="10" width="30" height="22" rx="6" fill="#ddd" stroke="#111" stroke-width="3"/><g stroke="#111" stroke-width="3"><path d="M34 14h18M34 21h20M34 28h18"/></g><circle cx="16" cy="21" r="6" fill="INK" stroke="#111" stroke-width="3"/>',
+  brush: '<path d="M4 34L30 10" stroke="#8a5a2a" stroke-width="6" stroke-linecap="round"/><path d="M30 10q10-10 20-4q-2 12-14 14z" fill="INK" stroke="#111" stroke-width="3" stroke-linejoin="round"/>'
+};
+// the creature itself; `id` keeps gradient/clip ids unique per place it is drawn
+function buddySvg(p, id, tank = 0) {
+  const C = p.col, D = shade(C, .5), st = p.stage, sc = [.62, .8, .92, 1][st];
+  const bw = 58 + p.t.word * 14, bh = 52 + p.t.word * 10, cy = 200, top = cy - bh * .94, ex = bw * .36;
+  const body = st === 0 ? `M100 ${cy - 70} C100 ${cy - 70} 142 ${cy - 10} 142 ${cy + 12} A42 42 0 0 1 58 ${cy + 12} C58 ${cy - 10} 100 ${cy - 70} 100 ${cy - 70}Z`
+    : `M${100 - bw} ${cy + 8} C${100 - bw} ${cy - bh * 1.25} ${100 + bw} ${cy - bh * 1.25} ${100 + bw} ${cy + 8} C${100 + bw} ${cy + 44} ${100 - bw} ${cy + 44} ${100 - bw} ${cy + 8}Z`;
+  const eyeY = st === 0 ? cy + 8 : cy - 4, eX = st === 0 ? 16 : ex;
+  const blink = `<animate attributeName="ry" values="RY;RY;1;RY" keyTimes="0;.92;.96;1" dur="${4 + p.n % 3}s" repeatCount="indefinite"/>`;
+  const eye = x => p.eyes === "sleepy" ? `<path d="M${x - 10} ${eyeY}q10 7 20 0" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round"/>`
+    : p.eyes === "wink" && x > 100 ? `<path d="M${x - 10} ${eyeY + 2}l10-6l10 6" fill="none" stroke="#111" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`
+    : p.eyes === "sparkle" ? `<ellipse cx="${x}" cy="${eyeY}" rx="11" ry="14" fill="#111">${blink.replace(/RY/g, 14)}</ellipse><circle cx="${x + 4}" cy="${eyeY - 5}" r="4.5" fill="#fff"/><circle cx="${x - 4}" cy="${eyeY + 5}" r="2" fill="#fff"/>`
+    : `<ellipse cx="${x}" cy="${eyeY}" rx="8" ry="11" fill="#111">${blink.replace(/RY/g, 11)}</ellipse><circle cx="${x + 3}" cy="${eyeY - 4}" r="3" fill="#fff"/>`;
+  const my = eyeY + 20, mouth = p.mouth === "open" ? `<path d="M90 ${my}q10 14 20 0z" fill="#5a1020" stroke="#111" stroke-width="3" stroke-linejoin="round"/>`
+    : p.mouth === "flat" ? `<path d="M93 ${my + 3}h14" stroke="#111" stroke-width="4" stroke-linecap="round"/>` : `<path d="M92 ${my}q8 8 16 0" fill="none" stroke="#111" stroke-width="4" stroke-linecap="round"/>`;
+  const cheeks = st ? `<ellipse cx="${100 - ex - 8}" cy="${eyeY + 16}" rx="8" ry="4" fill="#ff7aa8" opacity=".55"/><ellipse cx="${100 + ex + 8}" cy="${eyeY + 16}" rx="8" ry="4" fill="#ff7aa8" opacity=".55"/>` : "";
+  // ink tufts on top
+  const tf = { spike: [-30, -10, 10, 30].map((o, i) => `<path d="M${100 + o - 10} ${top + 14}L${100 + o + (i - 1.5) * 4} ${top - 22 - (i % 2) * 8}L${100 + o + 10} ${top + 14}Z"/>`).join(""),
+    curl: [-24, 0, 24].map(o => `<path d="M${100 + o - 10} ${top + 14}c-4-22 22-30 22-12c0 10-14 8-10 0"/>`).join(""),
+    drip: [-26, 0, 26].map((o, i) => `<path d="M${100 + o - 11} ${top + 12}q11-${22 + i % 2 * 8} 22 0z"/><circle cx="${100 + o + 14}" cy="${top + 24 + i * 4}" r="4"/>`).join(""),
+    wave: [-24, 0, 24].map((o, i) => `<circle cx="${100 + o}" cy="${top + (i === 1 ? 0 : 6)}" r="${i === 1 ? 14 : 11}"/><circle cx="${100 + o + 9}" cy="${top - (i === 1 ? 14 : 6)}" r="4"/>`).join(""), none: "" }[st === 0 ? "none" : p.tuft];
+  const g = p.gear, ink = `fill="${C}" stroke="${D}" stroke-width="4" stroke-linejoin="round"`;
+  // clothes (clipped to the lower body)
+  const cl = st >= 2 ? ({
+    "ジャージ": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="#2a4aff"/><path d="M${100 - bw} ${cy + 16}H${100 + bw}" stroke="#fff" stroke-width="5"/>`,
+    "エプロン": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="${shade(C, .25)}"/><path d="M76 ${cy + 4}h48v40H76z" fill="#fff" stroke="#111" stroke-width="3"/><rect x="88" y="${cy + 16}" width="24" height="12" rx="3" fill="none" stroke="#111" stroke-width="2"/>`,
+    "シャツ＆ネクタイ": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="#f4f4f8"/><path d="M100 ${cy + 6}l-7 8l7 26l7-26z" fill="#d22" stroke="#111" stroke-width="2"/>`,
+    "パーカー": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="#ff8a3a"/><path d="M90 ${cy + 8}v16M110 ${cy + 8}v16" stroke="#fff" stroke-width="3"/><circle cx="90" cy="${cy + 26}" r="3" fill="#fff"/><circle cx="110" cy="${cy + 26}" r="3" fill="#fff"/>`,
+    "ゆるTシャツ": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="#3a3a44"/><path d="M100 ${cy + 12}l4 8h9l-7 6l3 9l-9-5l-9 5l3-9l-7-6h9z" fill="${C}"/>`,
+    "パジャマ": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="#9ab8ff"/>${[60, 84, 108, 132].map((x, i) => `<circle cx="${x + i % 2 * 6}" cy="${cy + 20 + i % 2 * 12}" r="4" fill="#fff"/>`).join("")}`,
+    "Tシャツ": `<rect x="0" y="${cy + 6}" width="200" height="60" fill="#eee"/>` })[g.body[0]] : "";
+  const hat = st >= 2 ? ({
+    "まるメガネ": `<g fill="rgba(255,255,255,.18)" stroke="#222" stroke-width="4"><circle cx="${100 - ex}" cy="${eyeY}" r="17"/><circle cx="${100 + ex}" cy="${eyeY}" r="17"/></g><path d="M${100 - ex + 17} ${eyeY}h${2 * ex - 34}" stroke="#222" stroke-width="4"/>`,
+    "キャップ": `<path d="M${100 - bw * .78} ${top + 22}Q100 ${top - 22} ${100 + bw * .78} ${top + 22}Z" fill="#e33" stroke="#111" stroke-width="4"/><path d="M${100 + bw * .3} ${top + 20}h${bw * .8}q4 8-8 9h-${bw * .7}z" fill="#e33" stroke="#111" stroke-width="4"/><circle cx="100" cy="${top + 2}" r="4" fill="#fff"/>`,
+    "ニットぼう": `<path d="M${100 - bw * .74} ${top + 24}Q100 ${top - 28} ${100 + bw * .74} ${top + 24}Z" fill="#4a7a5a" stroke="#111" stroke-width="4"/><rect x="${100 - bw * .78}" y="${top + 16}" width="${bw * 1.56}" height="14" rx="6" fill="#6a9a7a" stroke="#111" stroke-width="4"/><circle cx="100" cy="${top - 10}" r="9" fill="#eee" stroke="#111" stroke-width="3"/>`,
+    "ヘッドホン": `<path d="M${100 - bw * .9} ${cy - 2}Q${100 - bw * .9} ${top - 16} 100 ${top - 14}T${100 + bw * .9} ${cy - 2}" fill="none" stroke="#222" stroke-width="7"/><rect x="${100 - bw - 6}" y="${cy - 20}" width="16" height="28" rx="6" fill="#333" stroke="#111" stroke-width="3"/><rect x="${100 + bw - 10}" y="${cy - 20}" width="16" height="28" rx="6" fill="#333" stroke="#111" stroke-width="3"/>`,
+    "ヘッドバンド": `<path d="M${100 - bw * .86} ${top + 30}Q100 ${top + 14} ${100 + bw * .86} ${top + 30}" fill="none" stroke="#fff" stroke-width="9"/><path d="M${100 - bw * .86} ${top + 30}Q100 ${top + 14} ${100 + bw * .86} ${top + 30}" fill="none" stroke="#e33" stroke-width="3"/>` })[g.head[0]] : "";
+  const shoeCol = { "ランニングシューズ": "#ff3a6a", "スニーカー": "#f4f4f4", "サンダル": "#a0703a" }[g.shoes?.[0]] || D;
+  const feet = st ? [-1, 1].map(s => `<ellipse cx="${100 + s * bw * .5}" cy="${cy + 44}" rx="${st >= 2 ? 20 : 14}" ry="${st >= 2 ? 10 : 8}" fill="${st >= 2 ? shoeCol : C}" stroke="#111" stroke-width="3"/>${st >= 2 && g.shoes[0] === "ランニングシューズ" ? `<path d="M${100 + s * bw * .5 - 10} ${cy + 44}h20" stroke="#fff" stroke-width="3"/>` : ""}`).join("") : "";
+  // ink tank on its back shows today's paint
+  const tk = st ? `<g transform="translate(${100 - bw - 24} ${cy - 30})"><rect width="22" height="48" rx="8" fill="rgba(10,10,14,.8)" stroke="#111" stroke-width="3"/><clipPath id="${id}tk"><rect x="2" y="2" width="18" height="44" rx="6"/></clipPath><rect x="0" y="${48 - 46 * tank}" width="22" height="48" fill="${C}" clip-path="url(#${id}tk)"/><rect x="5" y="6" width="4" height="34" rx="2" fill="rgba(255,255,255,.4)"/><rect x="5" y="-6" width="12" height="8" rx="2" fill="#aaa" stroke="#111" stroke-width="2"/></g>` : "";
+  const weapon = st >= 2 ? `<g transform="translate(${100 + bw - 14} ${cy - 2}) rotate(-12)">${WPN_SVG[p.wpn].replace(/INK/g, C)}</g>` : "";
+  const crown = st >= 3 ? `<g transform="translate(100 ${top - 30})"><path d="M-22 0l-6-18l14 8l14-18l14 18l14-8l-6 18z" fill="#ffd23a" stroke="#111" stroke-width="3" stroke-linejoin="round"/></g>${[[-1, -.3], [1, -.5], [-.8, .6]].map(([a, b], i) => `<path d="M${100 + a * (bw + 26)} ${cy + b * bh}l3 8l8 3l-8 3l-3 8l-3-8l-8-3l8-3z" fill="#fff" opacity=".9"><animate attributeName="opacity" values=".2;1;.2" dur="${1.4 + i * .5}s" repeatCount="indefinite"/></path>`).join("")}` : "";
+  return `<defs><clipPath id="${id}b"><path d="${body}"/></clipPath><radialGradient id="${id}g" cx=".35" cy=".25" r=".8"><stop offset="0" stop-color="#fff" stop-opacity=".55"/><stop offset=".35" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>
+    <ellipse cx="100" cy="${cy + 52}" rx="${bw + 10}" ry="10" fill="rgba(0,0,0,.45)"/>
+    <g transform="translate(100 ${cy + 52}) scale(${sc}) translate(-100 -${cy + 52})">
+      ${tk}${crown}<g ${ink}>${tf}</g>
+      <path d="${body}" ${ink}/>
+      <g clip-path="url(#${id}b)">${cl}<path d="${body}" fill="url(#${id}g)"/></g>
+      ${st ? `<path d="M${100 - bw * .62} ${cy + 30}q-4 16 2 22q6-6 2-22z" fill="${C}"/><path d="M${100 + bw * .3} ${cy + 36}q-3 12 2 16q5-4 2-16z" fill="${C}"/>` : ""}
+      ${feet}${eye(100 - eX)}${eye(100 + eX)}${cheeks}${mouth}${hat}${weapon}
+    </g>`;
+}
 function drawTank() {
-  const today = ymd(new Date()), e = data[today], len = e ? e.text.length : 0, lvl = Math.min(1, len / GOAL), col = e && e.mood ? MC[e.mood] : MODES[mode].c;
-  const top = 250 - 170 * lvl, d = new Date();
-  const tm = match(today);
-  $("tDate").innerHTML = `${d.getMonth() + 1}/${d.getDate()}<small>${tm ? `${len}p ・ ${tm.win ? "WIN!" : "LOSE..."}` : "きょうの試合 まだ"}</small>`;
-  $("tankSvg").innerHTML = `<defs><linearGradient id="gl" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity=".35"/><stop offset=".25" stop-color="#fff" stop-opacity=".05"/><stop offset=".8" stop-color="#fff" stop-opacity=".02"/><stop offset="1" stop-color="#fff" stop-opacity=".25"/></linearGradient>
-    <linearGradient id="mt" x1="0" x2="1"><stop offset="0" stop-color="#5a5a64"/><stop offset=".4" stop-color="#d8d8e0"/><stop offset=".7" stop-color="#8a8a94"/><stop offset="1" stop-color="#3a3a44"/></linearGradient>
-    <clipPath id="tc"><rect x="44" y="70" width="112" height="190" rx="40"/></clipPath></defs>
-    <ellipse cx="100" cy="286" rx="70" ry="12" fill="rgba(0,0,0,.5)"/>
-    <rect x="58" y="22" width="84" height="40" rx="10" fill="url(#mt)" stroke="#111" stroke-width="4"/><rect x="80" y="8" width="40" height="18" rx="5" fill="url(#mt)" stroke="#111" stroke-width="4"/>
-    <rect x="44" y="70" width="112" height="190" rx="40" fill="rgba(10,10,14,.75)" stroke="#111" stroke-width="5"/>
-    <g clip-path="url(#tc)"><g style="transform:translateY(${top}px)"><g style="animation:wave 2.4s linear infinite"><path d="M0 0q20 -10 40 0t40 0t40 0t40 0t40 0t40 0t40 0t40 0v300H0z" fill="${col}"/></g>
-      <path d="M0 12q20 -10 40 0t40 0t40 0t40 0t40 0t40 0v300H0z" fill="rgba(0,0,0,.18)"/></g>
-      ${lvl > 0 ? [0, 1, 2, 3, 4].map(i => `<circle cx="${62 + i * 19}" cy="${250 - (i * 37) % (170 * lvl)}" r="${3 + i % 3}" fill="rgba(255,255,255,.45)"><animate attributeName="cy" from="255" to="${top + 6}" dur="${2 + i * .4}s" repeatCount="indefinite"/></circle>`).join("") : ""}</g>
-    <rect x="44" y="70" width="112" height="190" rx="40" fill="url(#gl)"/>
-    <rect x="54" y="84" width="10" height="150" rx="5" fill="rgba(255,255,255,.35)"/>
-    <rect x="40" y="252" width="120" height="22" rx="8" fill="url(#mt)" stroke="#111" stroke-width="4"/>
-    <g font-family="Lilita One,sans-serif" font-size="13" fill="#fff" opacity=".8">${[50, 100, 150, 200].map((v, i) => `<path d="M150 ${250 - 170 * v / GOAL}h8" stroke="#fff" stroke-width="2"/>`).join("")}</g>`;
+  const today = ymd(new Date()), e = data[today], len = e ? e.text.length : 0, d = new Date(), p = profile(), tm = match(today);
+  $("tDate").innerHTML = `${d.getMonth() + 1}/${d.getDate()}<small>${tm ? `${len}p ・ ${tm.win ? "WIN!" : "LOSE..."}` : "きょうの試合 まだ"}</small><span class="np">${esc(p.title)}</span>`;
+  $("tankSvg").innerHTML = buddySvg(p, "lb", Math.min(1, len / GOAL));
+}
+// profile screen
+function openProf() {
+  const p = profile(), T = [["ことば", p.t.word, "書く長さ"], ["つづける", p.t.keep, "書くペース"], ["げんき", p.t.genki, "調子と「！」"], ["おちつき", p.t.calm, "気分の安定"], ["こうきしん", p.t.curio, "話題の広さ"]];
+  $("pfBuddy").innerHTML = buddySvg(p, "pf", 0);
+  $("pfPlate").style.setProperty("--pc", p.col);
+  $("pfPlate").innerHTML = `<small>${esc(p.title)}</small><b>あいぼう</b><span>${STAGES[p.stage]} ・ ${p.n}試合</span>`;
+  const next = [3, 10, 30][p.stage];
+  $("pfInfo").innerHTML = `<div class="pbox"><h4>さいきんの あなた</h4><p>${esc(p.blurb)}</p>${next ? `<p class="pnext">あと ${next - p.n} 試合で 「${STAGES[p.stage + 1]}」に そだつ</p>` : ""}</div>
+    ${p.wpn && p.stage >= 2 ? `<div class="pbox prow2"><svg viewBox="0 0 56 42">${WPN_SVG[p.wpn].replace(/INK/g, p.col)}</svg><div><h4>ブキ：${WPN[p.wpn].nm}</h4><p>${p.cat ? WPN[p.wpn].why : "話題がまだ少ない → 万能タイプ"}</p></div></div>` : ""}
+    ${p.stage >= 2 ? `<div class="pbox"><h4>ギア</h4>${[["アタマ", p.gear.head], ["フク", p.gear.body], ["クツ", p.gear.shoes]].map(([s, gg]) => `<div class="gr"><i>${s}</i><b>${gg[0]}</b><small>${gg[1]}</small></div>`).join("")}</div>` : `<div class="pbox"><h4>ギア・ブキ</h4><p>「インクっこ」に そだつと、あなたに合った ギアと ブキを 身につける。</p></div>`}
+    <div class="pbox"><h4>とくせい</h4>${T.map(([nm, v, why]) => `<div class="tr2"><span>${nm}<small>${why}</small></span><span class="tb"><i style="width:${Math.round(v * 100)}%;background:${p.col}"></i></span></div>`).join("")}</div>
+    ${p.hits.some(h => h.n) ? `<div class="pbox"><h4>よく出てくる話題（さいきん30件）</h4><div class="chips">${p.hits.filter(h => h.n).map(h => `<span>${CATS[h.key].topic}<b>${h.n}</b></span>`).join("")}</div></div>` : ""}`;
+  $("prof").classList.add("show");
 }
 
 // ---------- lobby ----------
@@ -657,6 +798,7 @@ function act() {
   if (id === "write") return openEd(today);
   if (id === "hist") return openHist();
   if (id === "cal") { calSel = today; return openCal(); }
+  if (id === "me") return openProf();
   if (id === "yday") { const d = new Date(); d.setDate(d.getDate() - 1); return openEd(ymd(d)); }
 }
 const swapMode = d => { mode = (mode + d + MODES.length) % MODES.length; SE.swap(mode); render(true); };
@@ -751,7 +893,7 @@ const closeEd = (snd = true) => { if (snd) SE.back(); $("ed").classList.remove("
 async function save() {
   const text = $("body").value.trim(); if (!text) { $("body").focus(); return; }
   if (busy) return; busy = true;
-  const k = selected, isNew = !data[k], prev = match(k), xp0 = totalXp(), r0 = rank(), best0 = bestStreak(), long0 = Object.values(data).reduce((m, x) => Math.max(m, x.text.length), 0), rec0 = record();
+  const p0 = profile(), k = selected, isNew = !data[k], prev = match(k), xp0 = totalXp(), r0 = rank(), best0 = bestStreak(), long0 = Object.values(data).reduce((m, x) => Math.max(m, x.text.length), 0), rec0 = record();
   data[k] = { mood, text }; store(data); closeEd(false); SE.finish();
   const m = match(k), cols = teamCols(mood), rec = record();
   const res = $("res"); res.style.setProperty("--c", cols[0]); res.style.setProperty("--enemy", cols[1]);
@@ -781,7 +923,10 @@ async function save() {
   $("rRec").textContent = `せんせき ${rec.w}勝 ${rec.l}敗${rec.cur >= 2 ? ` ／ ${rec.cur}連勝中！` : ""}`;
   $("rk").classList.add("on"); SE.xp(); if (rank() > r0) setTimeout(() => SE.rankUp(), 600); setTimeout(() => $("rXpB").style.setProperty("--v", `${rank() > r0 ? 100 : xp1 % XP_PER_RANK / XP_PER_RANK * 100}%`), 200);
   $("rUp").classList.toggle("on", rank() > r0); $("rUp").textContent = `ランクアップ！ ${rank()}`;
-  const aw = [];
+  const aw = [], p1 = profile();
+  if (p1.stage > p0.stage) aw.push(`あいぼうが「${STAGES[p1.stage]}」に そだった！`);
+  else if (p1.stage >= 2 && p1.wpn !== p0.wpn) aw.push(`あいぼうの ブキが ${WPN[p1.wpn].nm} に！`);
+  else if (p1.title !== p0.title) aw.push(`二つ名「${p1.title}」`);
   if (m.win && prev && !prev.win) aw.push("リベンジ せいこう！");
   if (m.win && rec.cur >= 2) aw.push(`${rec.cur}連勝！`);
   if (m.win && m.me - m.en >= 25) aw.push("あっしょう！");
@@ -800,7 +945,7 @@ async function save() {
 function closeRes() { SE.ok(); $("res").classList.remove("show"); busy = false; render(); }
 
 // ---------- input ----------
-function closeAll(snd) { if (snd) SE.back(); ["hist", "cal"].forEach(id => $(id).classList.remove("show")); if (document.activeElement && document.activeElement.closest(".ov")) document.activeElement.blur(); }
+function closeAll(snd) { if (snd) SE.back(); ["hist", "cal", "prof"].forEach(id => $(id).classList.remove("show")); if (document.activeElement && document.activeElement.closest(".ov")) document.activeElement.blur(); }
 document.addEventListener("click", e => {
   if ($("res").classList.contains("show")) { if (e.target.closest("#rOk") && $("rNext").classList.contains("on")) closeRes(); return; }
   if (busy) return;
@@ -809,7 +954,8 @@ document.addEventListener("click", e => {
   if (e.target.closest("#card") || e.target.closest("#bGo")) return act();
   if (e.target.closest("#bSwap")) return swapMode(1);
   if (e.target.closest("#bBack")) { SE.back(); location.href = "index.html"; return; }
-  if (e.target.closest("#tank")) { SE.glug(); return openEd(ymd(new Date())); }
+  if (e.target.closest("#tank")) { SE.glug(); return openProf(); }
+  if (e.target.closest("#pWrite")) { SE.ok(); return openEd(ymd(new Date())); }
   const sg = e.target.closest(".stage"); if (sg) { SE.ok(); return openEd(sg.dataset.k); }
   const hr = e.target.closest(".hr"); if (hr) { hcur = +hr.dataset.h; SE.move(); return renderHist(); }
   if (e.target.closest("#hWrite")) { SE.ok(); return openEd(hKey(hcur)); }
@@ -826,7 +972,7 @@ document.addEventListener("click", e => {
 });
 document.addEventListener("dblclick", e => { const hr = e.target.closest(".hr"); if (hr) { SE.ok(); openEd(hKey(+hr.dataset.h)); } });
 document.addEventListener("keydown", e => {
-  const k = e.key, K = k.toLowerCase(), edOpen = $("ed").classList.contains("show"), hOpen = $("hist").classList.contains("show"), cOpen = $("cal").classList.contains("show");
+  const k = e.key, K = k.toLowerCase(), edOpen = $("ed").classList.contains("show"), hOpen = $("hist").classList.contains("show"), cOpen = $("cal").classList.contains("show"), pOpen = $("prof").classList.contains("show");
   if ($("res").classList.contains("show")) { if ((k === "Enter" || k === " " || K === "a" || k === "Escape") && $("rNext").classList.contains("on")) { e.preventDefault(); closeRes(); } return; }
   if (busy) return;
   if (edOpen) {
@@ -844,6 +990,11 @@ document.addEventListener("keydown", e => {
     if (k === "ArrowRight" || K === "r" || K === "e") { e.preventDefault(); if (hpage < hPages() - 1) { hpage++; hcur = 0; SE.page(); renderHist(); } return; }
     if ((k === "ArrowLeft" || K === "l" || K === "q") && hpage) { e.preventDefault(); hpage--; hcur = 0; SE.page(); return renderHist(); }
     if (enter) { e.preventDefault(); SE.ok(); return openEd(hKey(hcur)); }
+    return;
+  }
+  if (pOpen) {
+    if (k === "Escape" || K === "b") return closeAll(true);
+    if (enter) { e.preventDefault(); SE.ok(); return openEd(ymd(new Date())); }
     return;
   }
   if (cOpen) {
